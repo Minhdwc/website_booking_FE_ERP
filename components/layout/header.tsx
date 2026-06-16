@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ActionIcon,
@@ -9,20 +9,18 @@ import {
   UnstyledButton,
   useMantineColorScheme,
   useComputedColorScheme,
-} from "@mantine/core";
-import { Bell, LogOut, Search, Settings, User } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { Sun, Moon } from "lucide-react";
+} from '@mantine/core';
+import { Bell, LogOut, Search, Settings, User } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Sun, Moon } from 'lucide-react';
 
 export default function Header() {
   const pathname = usePathname();
-  const segment = pathname.split("/")[1];
-  const pageTitle = segment
-    ? segment.charAt(0).toUpperCase() + segment.slice(1)
-    : "Dashboard";
+  const segment = pathname.split('/')[1];
+  const pageTitle = segment ? segment.charAt(0).toUpperCase() + segment.slice(1) : 'Dashboard';
 
   const { setColorScheme } = useMantineColorScheme();
-  const computedColorScheme = useComputedColorScheme("light", {
+  const computedColorScheme = useComputedColorScheme('light', {
     getInitialValueInEffect: true,
   });
 
@@ -60,7 +58,7 @@ export default function Header() {
           size="lg"
           variant="subtle"
           onClick={() => {
-            setColorScheme(computedColorScheme === "dark" ? "light" : "dark");
+            setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark');
           }}
         >
           <Sun size={18} className="block dark:hidden" />
@@ -99,12 +97,8 @@ export default function Header() {
             </div>
           </div>
 
-          <Menu.Item leftSection={<User className="h-4 w-4" />}>
-            Profile
-          </Menu.Item>
-          <Menu.Item leftSection={<Settings className="h-4 w-4" />}>
-            Settings
-          </Menu.Item>
+          <Menu.Item leftSection={<User className="h-4 w-4" />}>Profile</Menu.Item>
+          <Menu.Item leftSection={<Settings className="h-4 w-4" />}>Settings</Menu.Item>
           <Menu.Item color="red" leftSection={<LogOut className="h-4 w-4" />}>
             Logout
           </Menu.Item>

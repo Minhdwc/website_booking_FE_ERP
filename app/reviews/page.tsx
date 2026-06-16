@@ -1,26 +1,26 @@
-import { StatusBadge } from "@/components/ui/status-badge";
+import { StatusBadge } from '@/components/ui/status-badge';
 
 export default function ReviewsPage() {
   const reviews = [
     {
-      user: "Le Thu Ha",
-      field: "A1 Turf",
-      rating: "5/5",
-      comment: "Clean field and quick check-in",
+      user: 'Le Thu Ha',
+      field: 'A1 Turf',
+      rating: '5/5',
+      comment: 'Clean field and quick check-in',
       status: <StatusBadge tone="success">Positive</StatusBadge>,
     },
     {
-      user: "Dang Khoa",
-      field: "Court 3",
-      rating: "3/5",
-      comment: "Lighting was uneven",
+      user: 'Dang Khoa',
+      field: 'Court 3',
+      rating: '3/5',
+      comment: 'Lighting was uneven',
       status: <StatusBadge tone="warning">Follow up</StatusBadge>,
     },
     {
-      user: "Vo My Linh",
-      field: "B2 Indoor",
-      rating: "2/5",
-      comment: "Late start time",
+      user: 'Vo My Linh',
+      field: 'B2 Indoor',
+      rating: '2/5',
+      comment: 'Late start time',
       status: <StatusBadge tone="danger">Priority</StatusBadge>,
     },
   ];
@@ -29,9 +29,7 @@ export default function ReviewsPage() {
     <section className="space-y-6">
       <div>
         <p className="text-sm font-medium text-muted">Quality</p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">
-          Reviews
-        </h1>
+        <h1 className="mt-2 text-2xl font-semibold text-foreground">Reviews</h1>
         <p className="mt-2 text-sm text-muted">
           Inspect field ratings and customer comments for service follow-up.
         </p>

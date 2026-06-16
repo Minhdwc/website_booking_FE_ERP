@@ -1,22 +1,22 @@
 export default function VenuesPage() {
   const venues = [
     {
-      name: "District 1 Arena",
-      location: "Ho Chi Minh City",
-      fields: "12",
-      description: "Central indoor venue",
+      name: 'District 1 Arena',
+      location: 'Ho Chi Minh City',
+      fields: '12',
+      description: 'Central indoor venue',
     },
     {
-      name: "Riverside Courts",
-      location: "Thu Duc",
-      fields: "8",
-      description: "Outdoor multi-sport complex",
+      name: 'Riverside Courts',
+      location: 'Thu Duc',
+      fields: '8',
+      description: 'Outdoor multi-sport complex',
     },
     {
-      name: "North Hub",
-      location: "Go Vap",
-      fields: "6",
-      description: "Evening peak location",
+      name: 'North Hub',
+      location: 'Go Vap',
+      fields: '6',
+      description: 'Evening peak location',
     },
   ];
 
@@ -24,9 +24,7 @@ export default function VenuesPage() {
     <section className="space-y-6">
       <div>
         <p className="text-sm font-medium text-muted">Locations</p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">
-          Venues
-        </h1>
+        <h1 className="mt-2 text-2xl font-semibold text-foreground">Venues</h1>
         <p className="mt-2 text-sm text-muted">
           Manage venue names, locations, descriptions, and linked fields.
         </p>

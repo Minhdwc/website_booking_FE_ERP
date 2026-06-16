@@ -1,26 +1,26 @@
-import { StatusBadge } from "@/components/ui/status-badge";
+import { StatusBadge } from '@/components/ui/status-badge';
 
 export default function UsersPage() {
   const users = [
     {
-      name: "Nguyen Minh Anh",
-      email: "anh@example.com",
-      phone: "0901 234 567",
-      role: "admin",
+      name: 'Nguyen Minh Anh',
+      email: 'anh@example.com',
+      phone: '0901 234 567',
+      role: 'admin',
       status: <StatusBadge tone="success">Active</StatusBadge>,
     },
     {
-      name: "Tran Bao Long",
-      email: "long@example.com",
-      phone: "0912 345 678",
-      role: "staff",
+      name: 'Tran Bao Long',
+      email: 'long@example.com',
+      phone: '0912 345 678',
+      role: 'staff',
       status: <StatusBadge tone="success">Active</StatusBadge>,
     },
     {
-      name: "Le Thu Ha",
-      email: "ha@example.com",
-      phone: "0933 456 789",
-      role: "user",
+      name: 'Le Thu Ha',
+      email: 'ha@example.com',
+      phone: '0933 456 789',
+      role: 'user',
       status: <StatusBadge>Inactive</StatusBadge>,
     },
   ];
@@ -30,9 +30,7 @@ export default function UsersPage() {
       <div>
         <p className="text-sm font-medium text-muted">People</p>
         <h1 className="mt-2 text-2xl font-semibold text-foreground">Users</h1>
-        <p className="mt-2 text-sm text-muted">
-          Manage admin, staff, and customer accounts.
-        </p>
+        <p className="mt-2 text-sm text-muted">Manage admin, staff, and customer accounts.</p>
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">

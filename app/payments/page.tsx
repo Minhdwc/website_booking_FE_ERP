@@ -1,26 +1,26 @@
-import { StatusBadge } from "@/components/ui/status-badge";
+import { StatusBadge } from '@/components/ui/status-badge';
 
 export default function PaymentsPage() {
   const payments = [
     {
-      booking: "BK-1024",
-      amount: "320,000 VND",
-      method: "bank_transfer",
-      createdAt: "2026-05-26",
+      booking: 'BK-1024',
+      amount: '320,000 VND',
+      method: 'bank_transfer',
+      createdAt: '2026-05-26',
       status: <StatusBadge tone="success">Completed</StatusBadge>,
     },
     {
-      booking: "BK-1025",
-      amount: "260,000 VND",
-      method: "cash",
-      createdAt: "2026-05-26",
+      booking: 'BK-1025',
+      amount: '260,000 VND',
+      method: 'cash',
+      createdAt: '2026-05-26',
       status: <StatusBadge tone="warning">Pending</StatusBadge>,
     },
     {
-      booking: "BK-1026",
-      amount: "180,000 VND",
-      method: "credit_card",
-      createdAt: "2026-05-26",
+      booking: 'BK-1026',
+      amount: '180,000 VND',
+      method: 'credit_card',
+      createdAt: '2026-05-26',
       status: <StatusBadge tone="danger">Failed</StatusBadge>,
     },
   ];
@@ -29,9 +29,7 @@ export default function PaymentsPage() {
     <section className="space-y-6">
       <div>
         <p className="text-sm font-medium text-muted">Finance</p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">
-          Payments
-        </h1>
+        <h1 className="mt-2 text-2xl font-semibold text-foreground">Payments</h1>
         <p className="mt-2 text-sm text-muted">
           Monitor booking payments, methods, amounts, and reconciliation state.
         </p>

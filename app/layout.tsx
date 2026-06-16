@@ -1,16 +1,12 @@
-import type { Metadata } from "next";
-import "@mantine/core/styles.css";
-import "./globals.css";
-import {
-  ColorSchemeScript,
-  MantineProvider,
-  mantineHtmlProps,
-} from "@mantine/core";
-import { DefaultLayout } from "@/components/layout";
+import type { Metadata } from 'next';
+import '@mantine/core/styles.css';
+import './globals.css';
+import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
+import { DefaultLayout } from '@/components/layout';
 
 export const metadata: Metadata = {
-  title: "FieldOps ERP",
-  description: "Operations dashboard for sports field booking management",
+  title: 'FieldOps ERP',
+  description: 'Operations dashboard for sports field booking management',
 };
 
 export default function RootLayout({
@@ -19,12 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className="h-full antialiased"
-      {...mantineHtmlProps}
-      suppressHydrationWarning
-    >
+    <html lang="en" className="h-full antialiased" {...mantineHtmlProps} suppressHydrationWarning>
       <head>
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>

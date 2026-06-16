@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import LogoMain from "@/assets/logo/logo-16-9.png";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import LogoMain from '@/assets/logo/logo-16-9.png';
 import {
   Banknote,
   Bell,
@@ -14,27 +14,26 @@ import {
   MessageSquareText,
   Trophy,
   Users,
-} from "lucide-react";
-import Image from "next/image";
-import { Badge } from "@mantine/core";
+} from 'lucide-react';
+import Image from 'next/image';
+import { Badge } from '@mantine/core';
 
 const menu = [
-  { name: "Dashboard", path: "/dashboard", icon: House },
-  { name: "Users", path: "/users", icon: Users },
-  { name: "Sports", path: "/sports", icon: Trophy },
-  { name: "Venues", path: "/venues", icon: MapPin },
-  { name: "Fields", path: "/fields", icon: Dumbbell },
-  { name: "Timeslots", path: "/timeslots", icon: Clock },
-  { name: "Bookings", path: "/bookings", icon: CalendarClock },
-  { name: "Payments", path: "/payments", icon: Banknote },
-  { name: "Reviews", path: "/reviews", icon: MessageSquareText },
-  { name: "Notifications", path: "/notifications", icon: Bell, badge: 3 },
+  { name: 'Dashboard', path: '/dashboard', icon: House },
+  { name: 'Users', path: '/users', icon: Users },
+  { name: 'Sports', path: '/sports', icon: Trophy },
+  { name: 'Venues', path: '/venues', icon: MapPin },
+  { name: 'Fields', path: '/fields', icon: Dumbbell },
+  { name: 'Timeslots', path: '/timeslots', icon: Clock },
+  { name: 'Bookings', path: '/bookings', icon: CalendarClock },
+  { name: 'Payments', path: '/payments', icon: Banknote },
+  { name: 'Reviews', path: '/reviews', icon: MessageSquareText },
+  { name: 'Notifications', path: '/notifications', icon: Bell, badge: 3 },
 ];
 
 export default function AppSidebarMenu() {
   const pathname = usePathname();
-  const isActive = (path: string) =>
-    pathname === path || pathname.startsWith(path + "/");
+  const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/');
 
   return (
     <div className="flex flex-col gap-1">
@@ -53,7 +52,7 @@ export default function AppSidebarMenu() {
       {/* Label */}
       <p
         className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest"
-        style={{ color: "var(--mantine-color-dimmed)" }}
+        style={{ color: 'var(--mantine-color-dimmed)' }}
       >
         Main Menu
       </p>
@@ -71,25 +70,24 @@ export default function AppSidebarMenu() {
             style={
               active
                 ? {
-                    backgroundColor: "var(--mantine-color-teal-6)",
-                    color: "#fff",
+                    backgroundColor: 'var(--mantine-color-teal-6)',
+                    color: '#fff',
                     boxShadow:
-                      "0 2px 8px color-mix(in srgb, var(--mantine-color-teal-6) 40%, transparent)",
+                      '0 2px 8px color-mix(in srgb, var(--mantine-color-teal-6) 40%, transparent)',
                   }
                 : {
-                    color: "var(--mantine-color-text)",
+                    color: 'var(--mantine-color-text)',
                   }
             }
             // Hover xử lý bằng CSS vì Tailwind không biết Mantine variables
             onMouseEnter={(e) => {
               if (!active) {
-                e.currentTarget.style.backgroundColor =
-                  "var(--mantine-color-default-hover)";
+                e.currentTarget.style.backgroundColor = 'var(--mantine-color-default-hover)';
               }
             }}
             onMouseLeave={(e) => {
               if (!active) {
-                e.currentTarget.style.backgroundColor = "transparent";
+                e.currentTarget.style.backgroundColor = 'transparent';
               }
             }}
           >
@@ -100,10 +98,10 @@ export default function AppSidebarMenu() {
 
             <Icon
               className={[
-                "h-[18px] w-[18px] shrink-0 transition-transform duration-200",
-                active ? "text-white" : "group-hover:scale-110",
-              ].join(" ")}
-              style={active ? {} : { color: "var(--mantine-color-dimmed)" }}
+                'h-[18px] w-[18px] shrink-0 transition-transform duration-200',
+                active ? 'text-white' : 'group-hover:scale-110',
+              ].join(' ')}
+              style={active ? {} : { color: 'var(--mantine-color-dimmed)' }}
             />
 
             <span className="flex-1 truncate">{item.name}</span>

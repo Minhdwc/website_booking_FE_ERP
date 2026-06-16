@@ -1,4 +1,4 @@
-import { apiRequest, ApiResponse } from "@/lib/api/client";
+import { apiRequest, ApiResponse } from '@/lib/api/client';
 import {
   Booking,
   Field,
@@ -9,40 +9,38 @@ import {
   Timeslot,
   User,
   Venue,
-} from "@/lib/api/types";
+} from '@/lib/api/types';
 
 type ResourcePath =
-  | "bookings"
-  | "fields"
-  | "notifications"
-  | "payments"
-  | "reviews"
-  | "sports"
-  | "timeslots"
-  | "users"
-  | "venues";
+  | 'bookings'
+  | 'fields'
+  | 'notifications'
+  | 'payments'
+  | 'reviews'
+  | 'sports'
+  | 'timeslots'
+  | 'users'
+  | 'venues';
 
 function resource<T>(path: ResourcePath) {
   return {
-    list: (token?: string) =>
-      apiRequest<ApiResponse<T[]>>(`/${path}`, { token }),
-    get: (id: string, token?: string) =>
-      apiRequest<ApiResponse<T>>(`/${path}/${id}`, { token }),
+    list: (token?: string) => apiRequest<ApiResponse<T[]>>(`/${path}`, { token }),
+    get: (id: string, token?: string) => apiRequest<ApiResponse<T>>(`/${path}/${id}`, { token }),
     create: <Payload>(body: Payload, token?: string) =>
       apiRequest<ApiResponse<T>>(`/${path}`, {
-        method: "POST",
+        method: 'POST',
         body,
         token,
       }),
     update: <Payload>(id: string, body: Payload, token?: string) =>
       apiRequest<ApiResponse<T>>(`/${path}/${id}`, {
-        method: "PUT",
+        method: 'PUT',
         body,
         token,
       }),
     remove: (id: string, token?: string) =>
       apiRequest<{ message: string }>(`/${path}/${id}`, {
-        method: "DELETE",
+        method: 'DELETE',
         token,
       }),
   };
@@ -55,29 +53,29 @@ export const api = {
         message: string;
         accessToken: string;
         refreshToken: string;
-      }>("/auth/login", { method: "POST", body }),
+      }>('/auth/login', { method: 'POST', body }),
     register: (body: unknown) =>
-      apiRequest<ApiResponse<User>>("/auth/register", {
-        method: "POST",
+      apiRequest<ApiResponse<User>>('/auth/register', {
+        method: 'POST',
         body,
       }),
   },
-  bookings: resource<Booking>("bookings"),
-  fields: resource<Field>("fields"),
+  bookings: resource<Booking>('bookings'),
+  fields: resource<Field>('fields'),
   notifications: {
-    ...resource<Notification>("notifications"),
+    ...resource<Notification>('notifications'),
     mine: (token: string) =>
-      apiRequest<ApiResponse<Notification[]>>("/notifications/me", { token }),
+      apiRequest<ApiResponse<Notification[]>>('/notifications/me', { token }),
     markRead: (id: string, token: string) =>
       apiRequest<ApiResponse<Notification>>(`/notifications/${id}/read`, {
-        method: "PATCH",
+        method: 'PATCH',
         token,
       }),
   },
-  payments: resource<Payment>("payments"),
-  reviews: resource<Review>("reviews"),
-  sports: resource<Sport>("sports"),
-  timeslots: resource<Timeslot>("timeslots"),
-  users: resource<User>("users"),
-  venues: resource<Venue>("venues"),
+  payments: resource<Payment>('payments'),
+  reviews: resource<Review>('reviews'),
+  sports: resource<Sport>('sports'),
+  timeslots: resource<Timeslot>('timeslots'),
+  users: resource<User>('users'),
+  venues: resource<Venue>('venues'),
 };

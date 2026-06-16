@@ -1,17 +1,15 @@
 export default function TimeslotsPage() {
   const timeslots = [
-    { startTime: "06:00", endTime: "07:00", duration: "60 min" },
-    { startTime: "18:00", endTime: "19:00", duration: "60 min" },
-    { startTime: "21:00", endTime: "22:00", duration: "60 min" },
+    { startTime: '06:00', endTime: '07:00', duration: '60 min' },
+    { startTime: '18:00', endTime: '19:00', duration: '60 min' },
+    { startTime: '21:00', endTime: '22:00', duration: '60 min' },
   ];
 
   return (
     <section className="space-y-6">
       <div>
         <p className="text-sm font-medium text-muted">Scheduling</p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">
-          Timeslots
-        </h1>
+        <h1 className="mt-2 text-2xl font-semibold text-foreground">Timeslots</h1>
         <p className="mt-2 text-sm text-muted">
           Define reusable time ranges for booking availability.
         </p>

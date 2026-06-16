@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import AppSidebarMenu from "../app-sidebar/menu";
-import Header from "./header";
+import AppSidebarMenu from '../app-sidebar/menu';
+import Header from './header';
 
 export function DefaultLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -15,9 +15,7 @@ export function DefaultLayout({ children }: { children: React.ReactNode }) {
       <div className="lg:pl-64">
         <Header />
 
-        <main className="mx-auto w-full max-w-7xl px-4 py-6 lg:px-8">
-          {children}
-        </main>
+        <main className="mx-auto w-full max-w-7xl px-4 py-6 lg:px-8">{children}</main>
       </div>
     </div>
   );

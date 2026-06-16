@@ -1,8 +1,8 @@
-export type UserRole = "admin" | "staff" | "user";
-export type FieldStatus = "active" | "inactive" | "maintenance";
-export type BookingStatus = "pending" | "confirmed" | "cancelled";
-export type PaymentMethod = "credit_card" | "cash" | "bank_transfer";
-export type PaymentStatus = "pending" | "completed" | "failed";
+export type UserRole = 'admin' | 'staff' | 'user';
+export type FieldStatus = 'active' | 'inactive' | 'maintenance';
+export type BookingStatus = 'pending' | 'confirmed' | 'cancelled';
+export type PaymentMethod = 'credit_card' | 'cash' | 'bank_transfer';
+export type PaymentStatus = 'pending' | 'completed' | 'failed';
 
 export type Timestamped = {
   createdAt: string;

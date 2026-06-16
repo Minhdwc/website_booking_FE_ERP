@@ -1,26 +1,26 @@
-import { StatusBadge } from "@/components/ui/status-badge";
+import { StatusBadge } from '@/components/ui/status-badge';
 
 export default function FieldsPage() {
   const fields = [
     {
-      name: "A1 Turf",
-      sport: "Football",
-      venue: "District 1 Arena",
-      price: "320,000 VND",
+      name: 'A1 Turf',
+      sport: 'Football',
+      venue: 'District 1 Arena',
+      price: '320,000 VND',
       status: <StatusBadge tone="success">Active</StatusBadge>,
     },
     {
-      name: "Court 3",
-      sport: "Tennis",
-      venue: "Riverside Courts",
-      price: "260,000 VND",
+      name: 'Court 3',
+      sport: 'Tennis',
+      venue: 'Riverside Courts',
+      price: '260,000 VND',
       status: <StatusBadge tone="warning">Maintenance</StatusBadge>,
     },
     {
-      name: "B2 Indoor",
-      sport: "Badminton",
-      venue: "North Hub",
-      price: "180,000 VND",
+      name: 'B2 Indoor',
+      sport: 'Badminton',
+      venue: 'North Hub',
+      price: '180,000 VND',
       status: <StatusBadge>Inactive</StatusBadge>,
     },
   ];
@@ -29,9 +29,7 @@ export default function FieldsPage() {
     <section className="space-y-6">
       <div>
         <p className="text-sm font-medium text-muted">Inventory</p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">
-          Fields
-        </h1>
+        <h1 className="mt-2 text-2xl font-semibold text-foreground">Fields</h1>
         <p className="mt-2 text-sm text-muted">
           Track field pricing, sport mapping, venue assignment, and status.
         </p>

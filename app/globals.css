@@ -1,9 +1,9 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @custom-variant dark (&:where([data-mantine-color-scheme=dark], [data-mantine-color-scheme=dark] *));
 
 :root,
-[data-mantine-color-scheme="light"] {
+[data-mantine-color-scheme='light'] {
   --background: #f6f7f9;
   --foreground: #17202a;
   --panel: #ffffff;
@@ -17,7 +17,7 @@
   --shadow-card-hover: 0 4px 10px -2px rgb(16 24 40 / 0.12), 0 2px 4px -2px rgb(16 24 40 / 0.06);
 }
 
-[data-mantine-color-scheme="dark"] {
+[data-mantine-color-scheme='dark'] {
   --background: #141517;
   --foreground: #e9ecef;
   --panel: #25262b;
@@ -42,7 +42,7 @@
   --color-accent: var(--accent);
   --color-accent-muted: var(--accent-muted);
   --font-sans: Arial, Helvetica, sans-serif;
-  --font-mono: "Cascadia Code", Consolas, monospace;
+  --font-mono: 'Cascadia Code', Consolas, monospace;
 }
 
 @utility shadow-card {
@@ -57,7 +57,7 @@ html {
   color-scheme: light;
 }
 
-html[data-mantine-color-scheme="dark"] {
+html[data-mantine-color-scheme='dark'] {
   color-scheme: dark;
 }
 
@@ -75,10 +75,10 @@ body {
 }
 
 /* Smooth token transitions on themed surfaces */
-[class*="bg-surface"],
-[class*="bg-background"],
-[class*="bg-muted-surface"],
-[class*="border-border"] {
+[class*='bg-surface'],
+[class*='bg-background'],
+[class*='bg-muted-surface'],
+[class*='border-border'] {
   transition:
     background-color 0.25s ease,
     border-color 0.25s ease,

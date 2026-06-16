@@ -1,4 +1,4 @@
-import { UserRole } from "@/lib/api/types";
+import { UserRole } from '@/lib/api/types';
 
 export type SessionUser = {
   id: string;
@@ -7,21 +7,18 @@ export type SessionUser = {
   role: UserRole;
 };
 
-const ACCESS_TOKEN_KEY = "fieldops.accessToken";
-const REFRESH_TOKEN_KEY = "fieldops.refreshToken";
+const ACCESS_TOKEN_KEY = 'fieldops.accessToken';
+const REFRESH_TOKEN_KEY = 'fieldops.refreshToken';
 
 export function getAccessToken() {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     return null;
   }
 
   return window.localStorage.getItem(ACCESS_TOKEN_KEY);
 }
 
-export function saveSession(tokens: {
-  accessToken: string;
-  refreshToken: string;
-}) {
+export function saveSession(tokens: { accessToken: string; refreshToken: string }) {
   window.localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
   window.localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
 }

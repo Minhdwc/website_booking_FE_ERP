@@ -1,17 +1,15 @@
 export default function SportsPage() {
   const sports = [
-    { name: "Football", fields: "14", bookings: "126", createdAt: "2026-03-12" },
-    { name: "Tennis", fields: "9", bookings: "84", createdAt: "2026-03-14" },
-    { name: "Badminton", fields: "13", bookings: "98", createdAt: "2026-03-18" },
+    { name: 'Football', fields: '14', bookings: '126', createdAt: '2026-03-12' },
+    { name: 'Tennis', fields: '9', bookings: '84', createdAt: '2026-03-14' },
+    { name: 'Badminton', fields: '13', bookings: '98', createdAt: '2026-03-18' },
   ];
 
   return (
     <section className="space-y-6">
       <div>
         <p className="text-sm font-medium text-muted">Catalog</p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">
-          Sports
-        </h1>
+        <h1 className="mt-2 text-2xl font-semibold text-foreground">Sports</h1>
         <p className="mt-2 text-sm text-muted">
           Maintain sport categories used by fields, filters, and reporting.
         </p>

@@ -1,26 +1,26 @@
-import { StatusBadge } from "@/components/ui/status-badge";
+import { StatusBadge } from '@/components/ui/status-badge';
 
 export default function NotificationsPage() {
   const notifications = [
     {
-      title: "Booking confirmed",
-      user: "Le Thu Ha",
-      message: "A1 Turf at 18:00 is confirmed.",
-      createdAt: "2026-05-26",
+      title: 'Booking confirmed',
+      user: 'Le Thu Ha',
+      message: 'A1 Turf at 18:00 is confirmed.',
+      createdAt: '2026-05-26',
       status: <StatusBadge tone="success">Read</StatusBadge>,
     },
     {
-      title: "Payment pending",
-      user: "Pham Quang",
-      message: "Please complete payment for BK-1025.",
-      createdAt: "2026-05-26",
+      title: 'Payment pending',
+      user: 'Pham Quang',
+      message: 'Please complete payment for BK-1025.',
+      createdAt: '2026-05-26',
       status: <StatusBadge tone="warning">Unread</StatusBadge>,
     },
     {
-      title: "Schedule changed",
-      user: "Vo My Linh",
-      message: "Your timeslot was updated.",
-      createdAt: "2026-05-25",
+      title: 'Schedule changed',
+      user: 'Vo My Linh',
+      message: 'Your timeslot was updated.',
+      createdAt: '2026-05-25',
       status: <StatusBadge tone="warning">Unread</StatusBadge>,
     },
   ];
@@ -29,9 +29,7 @@ export default function NotificationsPage() {
     <section className="space-y-6">
       <div>
         <p className="text-sm font-medium text-muted">Messaging</p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">
-          Notifications
-        </h1>
+        <h1 className="mt-2 text-2xl font-semibold text-foreground">Notifications</h1>
         <p className="mt-2 text-sm text-muted">
           Audit user messages, booking alerts, and read state.
         </p>

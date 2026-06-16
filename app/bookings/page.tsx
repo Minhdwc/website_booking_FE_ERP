@@ -1,26 +1,26 @@
-import { StatusBadge } from "@/components/ui/status-badge";
+import { StatusBadge } from '@/components/ui/status-badge';
 
 export default function BookingsPage() {
   const bookings = [
     {
-      user: "Le Thu Ha",
-      field: "A1 Turf",
-      date: "2026-05-26",
-      timeslot: "18:00-19:00",
+      user: 'Le Thu Ha',
+      field: 'A1 Turf',
+      date: '2026-05-26',
+      timeslot: '18:00-19:00',
       status: <StatusBadge tone="success">Confirmed</StatusBadge>,
     },
     {
-      user: "Pham Quang",
-      field: "Court 3",
-      date: "2026-05-26",
-      timeslot: "19:00-20:00",
+      user: 'Pham Quang',
+      field: 'Court 3',
+      date: '2026-05-26',
+      timeslot: '19:00-20:00',
       status: <StatusBadge tone="warning">Pending</StatusBadge>,
     },
     {
-      user: "Vo My Linh",
-      field: "B2 Indoor",
-      date: "2026-05-27",
-      timeslot: "07:00-08:00",
+      user: 'Vo My Linh',
+      field: 'B2 Indoor',
+      date: '2026-05-27',
+      timeslot: '07:00-08:00',
       status: <StatusBadge tone="danger">Cancelled</StatusBadge>,
     },
   ];
@@ -29,9 +29,7 @@ export default function BookingsPage() {
     <section className="space-y-6">
       <div>
         <p className="text-sm font-medium text-muted">Operations</p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">
-          Bookings
-        </h1>
+        <h1 className="mt-2 text-2xl font-semibold text-foreground">Bookings</h1>
         <p className="mt-2 text-sm text-muted">
           Review reservations by customer, field, date, timeslot, and status.
         </p>
