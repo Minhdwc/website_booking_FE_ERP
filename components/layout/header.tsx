@@ -47,7 +47,7 @@ export default function Header() {
         size="lg"
         variant="subtle"
       >
-        <Bell className="h-[18px] w-[18px]" />
+        <Bell className="h-4.5 w-4.5" />
         <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500" />
       </ActionIcon>
       <div>

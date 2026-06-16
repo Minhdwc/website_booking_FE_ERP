@@ -93,12 +93,12 @@ export default function AppSidebarMenu() {
           >
             {/* Active indicator bar */}
             {active && (
-              <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-white/50" />
+              <span className="absolute left-0 top-1/2 h-5 w-0.75 -translate-y-1/2 rounded-r-full bg-white/50" />
             )}
 
             <Icon
               className={[
-                'h-[18px] w-[18px] shrink-0 transition-transform duration-200',
+                'h-4.5 w-4.5 shrink-0 transition-transform duration-200',
                 active ? 'text-white' : 'group-hover:scale-110',
               ].join(' ')}
               style={active ? {} : { color: 'var(--mantine-color-dimmed)' }}
