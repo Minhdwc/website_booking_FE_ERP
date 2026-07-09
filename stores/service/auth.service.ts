@@ -46,6 +46,7 @@ export const authService = {
     email: string;
     phone: string;
     password: string;
+    role: string;
   }) => {
     const response = await apiRequest('/auth/register', {
       method: 'POST',
