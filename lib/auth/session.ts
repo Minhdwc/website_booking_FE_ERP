@@ -1,29 +1,24 @@
-import { UserRole } from '@/lib/api/types';
-
-export type SessionUser = {
+export interface SessionUser {
   id: string;
   email: string;
+  name: string;
   username: string;
-  role: UserRole;
-};
-
-const ACCESS_TOKEN_KEY = 'fieldops.accessToken';
-const REFRESH_TOKEN_KEY = 'fieldops.refreshToken';
-
-export function getAccessToken() {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  return window.localStorage.getItem(ACCESS_TOKEN_KEY);
+  phone: string | null;
+  role: string;
+  venueId: string | null;
+  isActive: boolean;
 }
 
-export function saveSession(tokens: { accessToken: string; refreshToken: string }) {
-  window.localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
-  window.localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
+let accessToken: string | null = null;
+
+export function getAccessToken() {
+  return accessToken;
+}
+
+export function setAccessToken(token: string) {
+  accessToken = token;
 }
 
 export function clearSession() {
-  window.localStorage.removeItem(ACCESS_TOKEN_KEY);
-  window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+  accessToken = null;
 }

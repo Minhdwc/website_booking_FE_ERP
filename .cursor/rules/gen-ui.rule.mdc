@@ -1,0 +1,56 @@
+---
+description: Anti-Vibe UI Rules v2 — design like a product designer, not a template generator
+globs:
+  - '**/*.tsx'
+  - '**/*.jsx'
+  - '**/*.css'
+  - '**/*.scss'
+alwaysApply: true
+---
+
+# Anti-Vibe UI Rules v2
+
+Priority order when decisions conflict:
+**usability > readability > domain clarity > visual identity > novelty**
+Never optimize for "looking modern". Optimize for clarity and the user's task.
+This is a business app (calibration management), not a landing page. Default to
+information-dense, task-oriented screens.
+
+## Page-Type Defaults
+
+- **List/admin pages**: table + filters + row actions first. No stat cards unless the metric drives a real decision.
+- **Forms/dialogs**: group fields by business meaning, not by input type. Primary action bottom-right, one primary button only.
+- **Detail pages**: summary header, then tabs/sections (info, history, related records). Not a grid of cards.
+- **Dashboards**: real domain metrics and terminology (thiết bị, hiệu chuẩn, chứng chỉ, hồ sơ...). Never invent generic Revenue/Orders/Users numbers.
+
+## Layout & Density
+
+- Do not give every section the same structure; vary rhythm by content (table, split pane, timeline, sidebar, comparison).
+- Keep ONE spacing scale, but vary density by function: dense for data tables, relaxed for summaries.
+- One clear focal point per screen.
+- Design mobile layouts intentionally; don't just stack desktop sections.
+
+## Anti-Patterns (do NOT generate)
+
+- Every section wrapped in `rounded-2xl border bg-white shadow-sm p-6` — cards are for grouping that aids comprehension, otherwise use headings, dividers, whitespace.
+- Repeating `max-w-7xl mx-auto px-6 py-12` on every block.
+- 3-column icon-feature grids, generic marketing heroes, gradient blobs.
+- Decorative icons that add no meaning; icon + label where label alone works.
+- Uniform `gap-6` / `p-6` everywhere regardless of content.
+- Placeholder AI copy ("Streamline your workflow..."); write concrete domain copy in Vietnamese where the app is Vietnamese.
+
+## Components (shadcn/ui in `src/components/ui`)
+
+- Reuse existing `ui/` components; don't restyle ad-hoc copies.
+- Hierarchy comes from typography (weight, size, tracking) and spacing — not from stacking shadows.
+- Colors carry meaning (status, severity, action); don't add accent colors for decoration.
+
+## States
+
+- Empty states: say WHY it's empty and give the next action (e.g. "Chưa có thiết bị nào trong thư mục này — Thêm thiết bị").
+- Skeletons mirror the real content layout (table skeleton for tables, not generic bars).
+
+## Final Check
+
+Before finishing, ask: would this screen still work with zero shadows, gradients and animations? If any section looks like a Tailwind template, redesign it. đánh giá
+bạn đánh giá rule này như nào

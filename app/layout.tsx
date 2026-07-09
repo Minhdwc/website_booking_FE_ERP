@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
-import '@mantine/core/styles.css';
 import './globals.css';
-import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
-import { DefaultLayout } from '@/components/layout';
+import { Providers } from '@/provider/provider';
+import { Geist } from 'next/font/google';
+import { cn } from '@/lib/utils';
+
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'FieldOps ERP',
+  title: 'Minh Đức Booking Sport',
   description: 'Operations dashboard for sports field booking management',
 };
 
@@ -15,14 +17,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased" {...mantineHtmlProps} suppressHydrationWarning>
-      <head>
-        <ColorSchemeScript defaultColorScheme="auto" />
-      </head>
+    <html
+      lang="en"
+      className={cn('h-full antialiased', 'font-sans', geist.variable)}
+      suppressHydrationWarning
+    >
       <body className="min-h-full bg-background text-foreground">
-        <MantineProvider defaultColorScheme="auto">
-          <DefaultLayout>{children}</DefaultLayout>
-        </MantineProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
