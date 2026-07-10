@@ -5,6 +5,8 @@ import { CalendarDays, CalendarPlus, CreditCard, Landmark, Star } from 'lucide-r
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useSession } from '@/provider/session-provider';
+import Loading from '@/components/custom/loading';
+import { useState } from 'react';
 
 const roleLabels: Record<string, string> = {
   admin: 'Quản trị viên',
@@ -29,33 +31,8 @@ function todayLabel() {
 }
 
 export default function DashboardPage() {
-  const { user } = useSession();
-  const roleLabel = user ? (roleLabels[user.role] ?? user.role) : '';
-
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
-      {/* Header */}
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">Xin chào trở lại,</p>
-          <h1 className="mt-0.5 text-xl font-semibold text-heading">{user?.name ?? '—'}</h1>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            {roleLabel ? <Badge variant="secondary">{roleLabel}</Badge> : null}
-            <span className="text-xs capitalize text-muted-foreground">{todayLabel()}</span>
-          </div>
-        </div>
-        <Button
-          className="w-full sm:w-auto"
-          size="lg"
-          nativeButton={false}
-          render={<Link href="/bookings" />}
-        >
-          <CalendarPlus data-icon="inline-start" />
-          Tạo đặt sân
-        </Button>
-      </header>
-
-      {/* KPI */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpis.map(({ label, value, sub, icon: Icon, featured }) => (
           <div
@@ -86,7 +63,12 @@ export default function DashboardPage() {
             <p className="mt-1 max-w-sm text-xs text-muted-foreground">
               Khi có đặt sân mới, tổng hợp sẽ hiện tại đây.
             </p>
-            <Button size="sm" className="mt-4" nativeButton={false} render={<Link href="/bookings" />}>
+            <Button
+              size="sm"
+              className="mt-4"
+              nativeButton={false}
+              render={<Link href="/bookings" />}
+            >
               Tạo đặt sân
             </Button>
           </div>

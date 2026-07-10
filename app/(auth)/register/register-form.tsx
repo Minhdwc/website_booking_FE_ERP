@@ -88,7 +88,6 @@ export function RegisterForm() {
         email: values.email,
         phone: values.phone,
         password: values.password,
-        role: 'user',
       });
 
       toast.success('Đăng ký thành công');

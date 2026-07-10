@@ -1,7 +1,7 @@
 export type UserRole = 'admin' | 'staff' | 'user';
 export type FieldStatus = 'active' | 'inactive' | 'maintenance';
 export type BookingStatus = 'pending' | 'confirmed' | 'cancelled';
-export type PaymentMethod = 'credit_card' | 'cash' | 'bank_transfer';
+export type PaymentMethod = 'credit_card' | 'cash' | 'bank_transfer' | 'vnpay';
 export type PaymentStatus = 'pending' | 'completed' | 'failed';
 
 export interface IUser {
@@ -11,6 +11,7 @@ export interface IUser {
   email: string;
   phone: string | null;
   role: UserRole;
+  avatarUrl?: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -28,6 +29,7 @@ export interface IVenue {
   name: string;
   location: string;
   description: string | null;
+  images: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -38,6 +40,7 @@ export interface IField {
   description: string | null;
   price: number;
   status: FieldStatus;
+  images: string[];
   sportId: string;
   venueId: string;
   createdAt: string;

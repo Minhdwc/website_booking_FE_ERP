@@ -39,7 +39,6 @@ export const paymentService = {
 
   createPayment: async (body: {
     bookingId: string;
-    amount: number;
     method?: PaymentMethod;
     status?: PaymentStatus;
   }) => {
@@ -57,6 +56,13 @@ export const paymentService = {
 
   deletePayment: async (id: string) => {
     const response = await apiRequest(`/payments/${id}`, { method: 'DELETE' });
+    return response;
+  },
+
+  createVnpayUrl: async (paymentId: string) => {
+    const response = await apiRequest(`/payments/${paymentId}/vnpay-url`, {
+      method: 'POST',
+    });
     return response;
   },
 };
