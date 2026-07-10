@@ -1,23 +1,25 @@
 'use client';
 
-import { useSession } from '@/provider/session-provider';
-import { Loader2Icon } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Loader2Icon } from 'lucide-react';
+
+import { useSession } from '@/provider/session-provider';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, isLoading } = useSession();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated && !pathname.startsWith('/login')) {
       router.replace('/login');
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, pathname, router]);
 
   if (isLoading) {
     return (
-      <div className="flex min-h-full items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2Icon className="size-5 animate-spin text-muted-foreground" />
       </div>
     );
@@ -27,5 +29,5 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return null;
   }
 
-  return children;
+  return <>{children}</>;
 }

@@ -5,18 +5,30 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* Brand scale */
+  /* ── Brand: navy (text / sidebar only) ── */
   --brand-primary-50: #f2f7fc;
   --brand-primary-100: #dceaf7;
+  --brand-primary-200: #b8d4ef;
   --brand-primary-400: #4c90d3;
   --brand-primary-500: #0e2f52;
   --brand-primary-700: #081f38;
   --brand-primary-900: #021735;
-  --brand-secondary-500: #5bae20;
-  --brand-secondary-400: #8dcc2a;
-  --brand-accent-500: #f9b000;
 
-  /* Semantic */
+  /* ── Brand: green (main accent / CTAs) ── */
+  --brand-secondary-50: #f0fdf4;
+  --brand-secondary-100: #e8f6c9;
+  --brand-secondary-200: #c8e88a;
+  --brand-secondary-400: #8dcc2a;
+  --brand-secondary-500: #5bae20;
+  --brand-secondary-600: #4a9218;
+  --brand-secondary-700: #203f0b;
+
+  /* ── Brand: amber (accent only, not decorative) ── */
+  --brand-accent-50: #fff9e6;
+  --brand-accent-500: #f9b000;
+  --brand-accent-700: #5a3f00;
+
+  /* Semantic — status only, not decoration */
   --success: #16a34a;
   --warning: #f59e0b;
   --error: #dc2626;
@@ -30,50 +42,55 @@
   --status-vip: #7c3aed;
   --status-offline: #94a3b8;
 
-  /* Layout */
-  --heading: #021735;
-  --background: #f7f9fc;
+  /* Layout surfaces — white-first ops UI */
+  --heading: #ffffff;
+  --background: #ffffff;
   --foreground: #334155;
   --surface: #ffffff;
   --panel: #ffffff;
-  --muted-surface: #f1f5f9;
-  --hover: #f1f5f9;
-  --pressed: #e2e8f0;
+  --muted-surface: #fffff;
+  --hover: #f5f5f5; 
+  --pressed: #ffffff;
   --divider: #eef2f6;
 
-  /* shadcn tokens */
+  /*
+   * shadcn tokens
+   * primary = green accent (CTAs, focus actions)
+   * navy chỉ dùng cho text heading
+   */
   --card: #ffffff;
   --card-foreground: #021735;
   --popover: #ffffff;
   --popover-foreground: #334155;
-  --primary: #0e2f52;
+  --primary: #5bae20;
   --primary-foreground: #ffffff;
   --secondary: #e8f6c9;
   --secondary-foreground: #203f0b;
-  --muted: #f1f5f9;
+  --muted: #f8fafc;
   --muted-foreground: #64748b;
-  --accent: #fff9e6;
-  --accent-foreground: #5a3f00;
+  --accent: #f0fdf4;
+  --accent-foreground: #5bae20;
   --destructive: #dc2626;
   --border: #e5e7eb;
   --input: #e5e7eb;
-  --ring: #4c90d3;
+  --ring: #5bae20;
   --radius: 0.625rem;
 
-  --chart-1: #2563eb;
-  --chart-2: #16a34a;
+  --chart-1: #5bae20;
+  --chart-2: #0e2f52;
   --chart-3: #f59e0b;
   --chart-4: #dc2626;
-  --chart-5: #7c3aed;
+  --chart-5: #4c90d3;
 
-  --sidebar: #021735;
-  --sidebar-foreground: #e2e8f0;
+  /* Sidebar trắng — đồng bộ toàn site */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #021735;
   --sidebar-primary: #5bae20;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #133d68;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #081f38;
-  --sidebar-ring: #4c90d3;
+  --sidebar-accent: #f0fdf4;
+  --sidebar-accent-foreground: #203f0b;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #5bae20;
 
   --shadow-card: 0 1px 2px rgb(2 23 53 / 0.05), 0 0 0 1px rgb(2 23 53 / 0.05);
   --shadow-card-hover: 0 4px 16px rgb(2 23 53 / 0.1), 0 0 0 1px rgb(2 23 53 / 0.04);
@@ -95,18 +112,24 @@
   --card-foreground: #f8fafc;
   --popover: #1e293b;
   --popover-foreground: #e2e8f0;
-  --primary: #4c90d3;
-  --primary-foreground: #021735;
+  --primary: #8dcc2a;
+  --primary-foreground: #203f0b;
   --secondary: #2c5610;
   --secondary-foreground: #e8f6c9;
   --muted: #273449;
   --muted-foreground: #cbd5e1;
-  --accent: #5a3f00;
-  --accent-foreground: #fff0b8;
+  --accent: #1a3d12;
+  --accent-foreground: #8dcc2a;
   --destructive: #dc2626;
   --border: #334155;
   --input: #334155;
-  --ring: #4c90d3;
+  --ring: #8dcc2a;
+
+  --chart-1: #8dcc2a;
+  --chart-2: #4c90d3;
+  --chart-3: #f59e0b;
+  --chart-4: #dc2626;
+  --chart-5: #94a3b8;
 
   --sidebar: #0f172a;
   --sidebar-foreground: #e2e8f0;
@@ -115,10 +138,31 @@
   --sidebar-accent: #1e293b;
   --sidebar-accent-foreground: #f8fafc;
   --sidebar-border: #334155;
-  --sidebar-ring: #4c90d3;
+  --sidebar-ring: #8dcc2a;
 }
 
 @theme inline {
+  /* Brand scales — use as bg-brand-secondary-500, text-brand-primary-900, etc. */
+  --color-brand-primary-50: var(--brand-primary-50);
+  --color-brand-primary-100: var(--brand-primary-100);
+  --color-brand-primary-200: var(--brand-primary-200);
+  --color-brand-primary-400: var(--brand-primary-400);
+  --color-brand-primary-500: var(--brand-primary-500);
+  --color-brand-primary-700: var(--brand-primary-700);
+  --color-brand-primary-900: var(--brand-primary-900);
+
+  --color-brand-secondary-50: var(--brand-secondary-50);
+  --color-brand-secondary-100: var(--brand-secondary-100);
+  --color-brand-secondary-200: var(--brand-secondary-200);
+  --color-brand-secondary-400: var(--brand-secondary-400);
+  --color-brand-secondary-500: var(--brand-secondary-500);
+  --color-brand-secondary-600: var(--brand-secondary-600);
+  --color-brand-secondary-700: var(--brand-secondary-700);
+
+  --color-brand-accent-50: var(--brand-accent-50);
+  --color-brand-accent-500: var(--brand-accent-500);
+  --color-brand-accent-700: var(--brand-accent-700);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-heading: var(--heading);

@@ -1,11 +1,12 @@
 import { apiRequest } from '@/stores/api/api-request';
-
+import { IUser } from '../api/types';
 export interface AuthLoginResponse {
   statusCode: number;
   message: string;
   data: {
     accessToken: string;
-    user?: unknown;
+    refreshToken: string;
+    user: IUser;
   };
 }
 
@@ -14,6 +15,7 @@ export interface AuthRefreshResponse {
   message: string;
   data: {
     accessToken: string;
+    refreshToken: string;
   };
 }
 
@@ -33,9 +35,10 @@ export const authService = {
     return response;
   },
 
-  refresh: async () => {
+  refresh: async (refreshToken: string) => {
     const response = await apiRequest('/auth/refresh', {
       method: 'POST',
+      body: { refreshToken },
     });
     return response;
   },

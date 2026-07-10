@@ -1,6 +1,12 @@
 'use client';
 
-import { clearSession, getAccessToken, setAccessToken, type SessionUser } from '@/lib/auth/session';
+import {
+  clearSession,
+  getAccessToken,
+  getRefreshToken,
+  setTokens,
+  type SessionUser,
+} from '@/lib/auth/session';
 import { accountService, type AccountMeResponse } from '@/stores/service/account.service';
 import {
   authService,
@@ -21,37 +27,47 @@ type SessionContextValue = {
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
+const ERP_ROLES = ['admin', 'staff', 'super_staff'];
+
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const logout = useCallback(async () => {
-    try {
-      await authService.logout();
-    } catch {
-      // Cookie có thể đã hết hạn — vẫn xóa session phía client.
-    } finally {
-      clearSession();
-      setUser(null);
-      router.replace('/login');
-    }
+    await authService.logout();
+    clearSession();
+    setUser(null);
+    router.replace('/login');
   }, [router]);
 
   useEffect(() => {
     const init = async () => {
       try {
-        if (!getAccessToken()) {
-          try {
-            const refreshed = (await authService.refresh()) as AuthRefreshResponse;
-            setAccessToken(refreshed.data.accessToken);
-          } catch {
-            setUser(null);
-            return;
+        let accessToken = getAccessToken();
+        const refreshToken = getRefreshToken();
+
+        if (!accessToken && refreshToken) {
+          const refreshed = (await authService.refresh(refreshToken)) as AuthRefreshResponse;
+          if (!refreshed?.data?.accessToken || !refreshed?.data?.refreshToken) {
+            throw new Error('Refresh thất bại');
           }
+          setTokens(refreshed.data.accessToken, refreshed.data.refreshToken);
+          accessToken = refreshed.data.accessToken;
+        }
+
+        if (!accessToken) {
+          setUser(null);
+          return;
         }
 
         const me = (await accountService.me()) as AccountMeResponse;
+        if (!me?.data?.id || !ERP_ROLES.includes(me.data.role)) {
+          clearSession();
+          setUser(null);
+          return;
+        }
+
         setUser(me.data);
       } catch {
         clearSession();
@@ -66,17 +82,21 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const response = (await authService.login({ email, password })) as AuthLoginResponse;
-    setAccessToken(response.data.accessToken);
+    const { accessToken, refreshToken } = response?.data ?? {};
+    if (!accessToken || !refreshToken) {
+      throw new Error('Đăng nhập thất bại');
+    }
+
+    setTokens(accessToken, refreshToken);
 
     const me = (await accountService.me()) as AccountMeResponse;
-
-    if (!['admin', 'staff', 'super_staff'].includes(me.data.role)) {
+    if (!me?.data?.id) {
       clearSession();
-      try {
-        await authService.logout();
-      } catch {
-        // Bỏ qua nếu cookie đã bị xóa.
-      }
+      throw new Error('Không lấy được thông tin tài khoản');
+    }
+
+    if (!ERP_ROLES.includes(me.data.role)) {
+      clearSession();
       throw new Error('Tài khoản không có quyền truy cập hệ thống ERP');
     }
 

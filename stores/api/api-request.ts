@@ -1,11 +1,15 @@
 import axios, { AxiosError, InternalAxiosRequestConfig, Method } from 'axios';
-import { clearSession, getAccessToken, setAccessToken } from '@/lib/auth/session';
+import {
+  clearSession,
+  getAccessToken,
+  getRefreshToken,
+  setTokens,
+} from '@/lib/auth/session';
 
 const API_PREFIX = '/api/v1';
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001',
-  withCredentials: true,
 });
 
 type ApiRequestParams = {
@@ -54,6 +58,15 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) {
+      clearSession();
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+        window.location.replace('/login');
+      }
+      return Promise.reject(error);
+    }
+
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         refreshQueue.push({
@@ -70,31 +83,28 @@ api.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const response = await api.post<{ data: { accessToken: string } }>(
-        `${API_PREFIX}/auth/refresh`,
-      );
-      const newToken = response.data.data.accessToken;
-      setAccessToken(newToken);
+      const response = await api.post<{
+        data: { accessToken: string; refreshToken: string };
+      }>(`${API_PREFIX}/auth/refresh`, { refreshToken });
 
-      refreshQueue.forEach(({ resolve, reject }) => {
-        if (!newToken) {
-          reject(error);
-          return;
-        }
-        resolve(newToken);
-      });
+      const newAccessToken = response.data?.data?.accessToken;
+      const newRefreshToken = response.data?.data?.refreshToken;
+      if (!newAccessToken || !newRefreshToken) {
+        throw new Error('Refresh không trả token');
+      }
+
+      setTokens(newAccessToken, newRefreshToken);
+
+      refreshQueue.forEach(({ resolve }) => resolve(newAccessToken));
       refreshQueue = [];
 
-      originalRequest.headers.Authorization = `Bearer ${newToken}`;
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
       return api(originalRequest);
     } catch (refreshError) {
-      refreshQueue.forEach(({ reject }) => {
-        reject(refreshError);
-      });
+      refreshQueue.forEach(({ reject }) => reject(refreshError));
       refreshQueue = [];
 
       clearSession();
-
       if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
         window.location.replace('/login');
       }
