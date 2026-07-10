@@ -1,10 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig, Method } from 'axios';
-import {
-  clearSession,
-  getAccessToken,
-  getRefreshToken,
-  setTokens,
-} from '@/lib/auth/session';
+import { clearSession, getAccessToken, getRefreshToken, setTokens } from '@/lib/auth/session';
 
 const API_PREFIX = '/api/v1';
 

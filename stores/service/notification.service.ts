@@ -33,23 +33,14 @@ export interface NotificationUnreadCountResponse {
 }
 
 export const notificationService = {
-  getNotifications: async () => {
-    const response = await apiRequest('/notifications', { method: 'GET' });
-    return response;
-  },
+  getNotifications: () => apiRequest<NotificationResponse>('/notifications', { method: 'GET' }),
 
-  getUnreadCount: async () => {
-    const response = await apiRequest('/notifications/unread-count', { method: 'GET' });
-    return response;
-  },
+  getUnreadCount: () =>
+    apiRequest<NotificationUnreadCountResponse>('/notifications/unread-count', { method: 'GET' }),
 
-  markAsRead: async (id: string) => {
-    const response = await apiRequest(`/notifications/${id}/read`, { method: 'PATCH' });
-    return response;
-  },
+  markAsRead: (id: string) =>
+    apiRequest<NotificationDetailResponse>(`/notifications/${id}/read`, { method: 'PATCH' }),
 
-  markAllAsRead: async () => {
-    const response = await apiRequest('/notifications/read-all', { method: 'PATCH' });
-    return response;
-  },
+  markAllAsRead: () =>
+    apiRequest<NotificationsResponse>('/notifications/read-all', { method: 'PATCH' }),
 };

@@ -27,37 +27,25 @@ export interface BookingsResponse {
 }
 
 export const bookingService = {
-  getBookings: async () => {
-    const response = await apiRequest('/bookings', { method: 'GET' });
-    return response;
-  },
+  getBookings: () => apiRequest<BookingResponse>('/bookings', { method: 'GET' }),
 
-  getBooking: async (id: string) => {
-    const response = await apiRequest(`/bookings/${id}`, { method: 'GET' });
-    return response;
-  },
+  getBooking: (id: string) =>
+    apiRequest<BookingDetailResponse>(`/bookings/${id}`, { method: 'GET' }),
 
-  createBooking: async (body: {
+  createBooking: (body: {
     userId: string;
     fieldId: string;
     timeslotId: string;
     date: string;
     status?: BookingStatus;
-  }) => {
-    const response = await apiRequest('/bookings', { method: 'POST', body });
-    return response;
-  },
+  }) => apiRequest<BookingDetailResponse>('/bookings', { method: 'POST', body }),
 
-  updateBooking: async (id: string, body: { value: IBooking }) => {
-    const response = await apiRequest(`/bookings/${id}`, {
+  updateBooking: (id: string, body: { value: IBooking }) =>
+    apiRequest<BookingDetailResponse>(`/bookings/${id}`, {
       method: 'PUT',
       body: { value: body.value },
-    });
-    return response;
-  },
+    }),
 
-  deleteBooking: async (id: string) => {
-    const response = await apiRequest(`/bookings/${id}`, { method: 'DELETE' });
-    return response;
-  },
+  deleteBooking: (id: string) =>
+    apiRequest<BookingDetailResponse>(`/bookings/${id}`, { method: 'DELETE' }),
 };

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SearchIcon } from 'lucide-react';
-import { Icon } from '@iconify/react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -14,20 +13,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-
-const searchItems = [
-  { name: 'Trang chủ', href: '/dashboard', icon: 'mdi:home-outline' },
-  { name: 'Danh sách đặt sân', href: '/bookings', icon: 'mdi:calendar-check-outline' },
-  { name: 'Cơ sở', href: '/venues', icon: 'mdi:stadium' },
-  { name: 'Sân thi đấu', href: '/fields', icon: 'mdi:soccer-field' },
-  { name: 'Môn thể thao', href: '/sports', icon: 'mdi:basketball' },
-  { name: 'Khung giờ', href: '/timeslots', icon: 'mdi:clock-outline' },
-  { name: 'Phương thức thanh toán', href: '/payment-methods', icon: 'mdi:credit-card-outline' },
-  { name: 'Giao dịch', href: '/payments', icon: 'mdi:receipt-text-outline' },
-  { name: 'Đánh giá', href: '/reviews', icon: 'mdi:star-outline' },
-  { name: 'Người dùng', href: '/users', icon: 'mdi:account-group-outline' },
-  { name: 'Thông báo', href: '/notifications', icon: 'mdi:bell-outline' },
-];
+import { navSearchItems } from '@/lib/utils/menu-config';
 
 export function Search() {
   const router = useRouter();
@@ -50,17 +36,22 @@ export function Search() {
     router.push(href);
   };
 
+  const itemsByGroup = navSearchItems.reduce<Record<string, typeof navSearchItems>>((acc, item) => {
+    (acc[item.groupLabel] ??= []).push(item);
+    return acc;
+  }, {});
+
   return (
     <>
       <Button
         variant="outline"
         size="sm"
         onClick={() => setOpen(true)}
-        className="hidden h-8 gap-2 border-slate-200 bg-slate-50 px-3 text-[13px] text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-700 md:inline-flex"
+        className="hidden h-8 gap-2 border-border bg-muted-surface px-3 text-[13px] text-muted-foreground shadow-none hover:bg-hover hover:text-foreground md:inline-flex"
       >
         <SearchIcon className="size-3.5" />
         Tìm kiếm
-        <kbd className="pointer-events-none ml-1 rounded border border-slate-200 bg-white px-1.5 font-mono text-[10px] text-slate-400">
+        <kbd className="pointer-events-none ml-1 rounded border border-border bg-surface px-1.5 font-mono text-[10px] text-muted-foreground">
           Ctrl K
         </kbd>
       </Button>
@@ -84,14 +75,23 @@ export function Search() {
         <CommandInput placeholder="Tìm trang, chức năng..." />
         <CommandList>
           <CommandEmpty>Không tìm thấy kết quả.</CommandEmpty>
-          <CommandGroup heading="Điều hướng">
-            {searchItems.map((item) => (
-              <CommandItem key={item.href} value={item.name} onSelect={() => onSelect(item.href)}>
-                <Icon icon={item.icon} className="size-4" />
-                <span>{item.name}</span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          {Object.entries(itemsByGroup).map(([groupLabel, items]) => (
+            <CommandGroup key={groupLabel} heading={groupLabel}>
+              {items.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <CommandItem
+                    key={item.href}
+                    value={item.title}
+                    onSelect={() => onSelect(item.href)}
+                  >
+                    <Icon className="size-4" />
+                    <span>{item.title}</span>
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          ))}
         </CommandList>
       </CommandDialog>
     </>

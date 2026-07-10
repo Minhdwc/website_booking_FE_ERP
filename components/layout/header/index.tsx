@@ -20,7 +20,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useSession } from '@/provider/session-provider';
-import { navTitleByHref } from '@/nav-config';
+import { navTitleByHref } from '@/lib/utils/menu-config';
 
 const roleLabels: Record<string, string> = {
   admin: 'Quản trị viên',
@@ -47,7 +47,12 @@ export function Header() {
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="ghost" size="icon-sm" className="rounded-full" aria-label="Tài khoản" />
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="rounded-full"
+                aria-label="Tài khoản"
+              />
             }
           >
             <Avatar size="sm">

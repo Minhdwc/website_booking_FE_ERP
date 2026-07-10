@@ -44,7 +44,12 @@ export default function DashboardPage() {
             <span className="text-xs capitalize text-muted-foreground">{todayLabel()}</span>
           </div>
         </div>
-        <Button className="w-full sm:w-auto" size="lg" render={<Link href="/bookings" />}>
+        <Button
+          className="w-full sm:w-auto"
+          size="lg"
+          nativeButton={false}
+          render={<Link href="/bookings" />}
+        >
           <CalendarPlus data-icon="inline-start" />
           Tạo đặt sân
         </Button>
@@ -81,7 +86,7 @@ export default function DashboardPage() {
             <p className="mt-1 max-w-sm text-xs text-muted-foreground">
               Khi có đặt sân mới, tổng hợp sẽ hiện tại đây.
             </p>
-            <Button size="sm" className="mt-4" render={<Link href="/bookings" />}>
+            <Button size="sm" className="mt-4" nativeButton={false} render={<Link href="/bookings" />}>
               Tạo đặt sân
             </Button>
           </div>
@@ -97,7 +102,13 @@ export default function DashboardPage() {
             <p className="mt-1 max-w-sm text-xs text-muted-foreground">
               Đánh giá và phản hồi sẽ xuất hiện tại đây.
             </p>
-            <Button variant="outline" size="sm" className="mt-4" render={<Link href="/reviews" />}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              nativeButton={false}
+              render={<Link href="/reviews" />}
+            >
               Xem đánh giá
             </Button>
           </div>

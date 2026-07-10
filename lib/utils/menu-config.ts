@@ -12,12 +12,6 @@ import {
   Settings,
 } from 'lucide-react';
 
-/**
- * A leaf link inside a nav group. `badgeKey`, when present, is resolved at
- * render time against live data (see useNavBadges) — never hardcode a count
- * here. Only wire a badgeKey for numbers that should change the user's next
- * click (booking chờ xác nhận, công nợ quá hạn), not vanity metrics.
- */
 export interface NavLeaf {
   title: string;
   href: string;
@@ -44,7 +38,7 @@ export interface NavBadgeCounts {
 export const navConfig: NavGroup[] = [
   {
     label: 'Tổng quan',
-    items: [{ title: 'Tổng quan', icon: LayoutDashboard, href: '/' }],
+    items: [{ title: 'Tổng quan', icon: LayoutDashboard, href: '/dashboard' }],
   },
   {
     label: 'Nghiệp vụ',
@@ -121,4 +115,26 @@ export const navTitleByHref: Record<string, string> = Object.fromEntries(
       ...(item.items?.map((leaf) => [leaf.href, leaf.title] as const) ?? []),
     ]),
   ),
+);
+
+export interface NavSearchItem {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+  groupLabel: string;
+}
+
+/** Flat list of navigable pages for Command Palette (Ctrl+K). */
+export const navSearchItems: NavSearchItem[] = navConfig.flatMap((group) =>
+  group.items.flatMap((item) => {
+    if (item.href) {
+      return [{ title: item.title, href: item.href, icon: item.icon, groupLabel: group.label }];
+    }
+    return (item.items ?? []).map((leaf) => ({
+      title: leaf.title,
+      href: leaf.href,
+      icon: item.icon,
+      groupLabel: group.label,
+    }));
+  }),
 );
