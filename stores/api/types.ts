@@ -1,8 +1,8 @@
-export type UserRole = 'admin' | 'staff' | 'user';
+export type UserRole = 'admin' | 'staff' | 'super_staff' | 'user';
 export type FieldStatus = 'active' | 'inactive' | 'maintenance';
-export type BookingStatus = 'pending' | 'confirmed' | 'cancelled';
+export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
 export type PaymentMethod = 'credit_card' | 'cash' | 'bank_transfer' | 'vnpay';
-export type PaymentStatus = 'pending' | 'completed' | 'failed';
+export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'completed';
 
 export interface IUser {
   id: string;
@@ -28,8 +28,14 @@ export interface IVenue {
   id: string;
   name: string;
   location: string;
-  description: string | null;
-  images: string[];
+  longitude: number;
+  latitude: number;
+  openTime: string;
+  closeTime: string;
+  restStartTime?: string;
+  restEndTime?: string;
+  description?: string;
+  images?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -45,6 +51,8 @@ export interface IField {
   venueId: string;
   createdAt: string;
   updatedAt: string;
+  sport?: ISport;
+  venue?: IVenue;
 }
 
 export interface ITimeslot {
@@ -64,6 +72,10 @@ export interface IBooking {
   status: BookingStatus;
   createdAt: string;
   updatedAt: string;
+  user?: Pick<IUser, 'id' | 'name' | 'email' | 'phone'>;
+  field?: IField;
+  timeslot?: ITimeslot;
+  payments?: IPayment[];
 }
 
 export interface IPayment {

@@ -37,8 +37,16 @@ export const fieldService = {
     return response;
   },
 
-  createField: async (body: { value: IField }) => {
-    const response = await apiRequest('/fields', { method: 'POST', body: { value: body.value } });
+  createField: async (body: {
+    name: string;
+    price: number;
+    sportId: string;
+    venueId: string;
+    description?: string;
+    status?: string;
+    images?: string[];
+  }) => {
+    const response = await apiRequest('/fields', { method: 'POST', body });
     return response;
   },
 

@@ -2,7 +2,7 @@ import { apiRequest } from '@/stores/api/api-request';
 import { IVenue } from '@/stores/api/types';
 
 export interface VenueResponse {
-  status: string;
+  status: number;
   message: string;
   data: VenuePage;
 }
@@ -15,43 +15,41 @@ export interface VenuePage {
 }
 
 export interface VenueDetailResponse {
-  status: string;
+  status: number;
   message: string;
   data: IVenue;
 }
 
 export interface VenuesResponse {
-  status: string;
+  status: number;
   message: string;
   data: IVenue[];
 }
 
 export const venueService = {
-  getVenues: async (params?: Record<string, string>) => {
-    const response = await apiRequest('/venues', { method: 'GET', params });
-    return response;
-  },
+  getVenues: (params?: Record<string, string>) =>
+    apiRequest<VenuesResponse>('/venues', { method: 'GET', params }),
 
-  getVenue: async (id: string) => {
-    const response = await apiRequest(`/venues/${id}`, { method: 'GET' });
-    return response;
-  },
+  getVenue: (id: string) => apiRequest<VenueDetailResponse>(`/venues/${id}`, { method: 'GET' }),
 
-  createVenue: async (body: { name: string; location: string; description?: string }) => {
-    const response = await apiRequest('/venues', { method: 'POST', body });
-    return response;
-  },
+  createVenue: (body: {
+    name: string;
+    location: string;
+    longitude: number;
+    latitude: number;
+    openTime: string;
+    closeTime: string;
+    restStartTime?: string;
+    restEndTime?: string;
+    description?: string;
+    ownerId?: string;
+  }) => apiRequest<VenueDetailResponse>('/venues', { method: 'POST', body }),
 
-  updateVenue: async (id: string, body: { value: IVenue }) => {
-    const response = await apiRequest(`/venues/${id}`, {
+  updateVenue: (id: string, body: { value: IVenue }) =>
+    apiRequest<VenueDetailResponse>(`/venues/${id}`, {
       method: 'PUT',
       body: { value: body.value },
-    });
-    return response;
-  },
+    }),
 
-  deleteVenue: async (id: string) => {
-    const response = await apiRequest(`/venues/${id}`, { method: 'DELETE' });
-    return response;
-  },
+  deleteVenue: (id: string) => apiRequest(`/venues/${id}`, { method: 'DELETE' }),
 };

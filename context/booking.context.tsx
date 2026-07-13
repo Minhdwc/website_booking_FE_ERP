@@ -3,7 +3,6 @@
 import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { NavBadgeCounts } from '@/lib/utils/menu-config';
 import type { BookingStatus, IBooking } from '@/stores/api/types';
 import { bookingService, type BookingDetailResponse } from '@/stores/service/booking.service';
 
@@ -25,7 +24,6 @@ type BookingContextValue = {
   isLoading: boolean;
   isError: boolean;
   pendingCount: number;
-  badgeCounts: NavBadgeCounts;
   refetch: () => void;
   getBooking: (id: string) => Promise<IBooking>;
   createBooking: (body: CreateBookingInput) => Promise<BookingDetailResponse>;
@@ -40,7 +38,10 @@ const BookingContext = createContext<BookingContextValue | null>(null);
 
 async function fetchBookings(): Promise<IBooking[]> {
   const response = await bookingService.getBookings();
-  return response.data?.data || [];
+  const payload = response.data as IBooking[] | { data?: IBooking[] } | undefined;
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray(payload.data)) return payload.data;
+  return [];
 }
 
 export function BookingProvider({ children }: { children: ReactNode }) {
@@ -81,14 +82,6 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     [bookings],
   );
 
-  const badgeCounts = useMemo<NavBadgeCounts>(
-    () => ({
-      pendingBookings: pendingCount,
-      overduePayments: 0,
-    }),
-    [pendingCount],
-  );
-
   const getBooking = useCallback(async (id: string) => {
     const response = await bookingService.getBooking(id);
     return response.data;
@@ -100,7 +93,6 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       isLoading: listQuery.isLoading,
       isError: listQuery.isError,
       pendingCount,
-      badgeCounts,
       refetch: () => {
         void listQuery.refetch();
       },
@@ -116,7 +108,6 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       bookings,
       listQuery,
       pendingCount,
-      badgeCounts,
       getBooking,
       createMutation,
       updateMutation,

@@ -20,7 +20,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useSession } from '@/provider/session-provider';
-import { navTitleByHref } from '@/lib/utils/menu-config';
+import { navSections } from '@/lib/utils/menu-config';
 
 const roleLabels: Record<string, string> = {
   admin: 'Quản trị viên',
@@ -31,7 +31,8 @@ const roleLabels: Record<string, string> = {
 export function Header() {
   const pathname = usePathname();
   const { user, logout } = useSession();
-  const title = navTitleByHref[pathname] ?? 'ERP';
+  const title =
+    navSections.flatMap((s) => s.items).find((item) => item.href === pathname)?.title ?? 'ERP';
   const roleLabel = user ? (roleLabels[user.role] ?? user.role) : '';
 
   return (

@@ -13,10 +13,12 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { navSearchItems } from '@/lib/utils/menu-config';
+import { navSections } from '@/lib/utils/menu-config';
+import { useSession } from '@/provider/session-provider';
 
 export function Search() {
   const router = useRouter();
+  const { user } = useSession();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -36,10 +38,13 @@ export function Search() {
     router.push(href);
   };
 
-  const itemsByGroup = navSearchItems.reduce<Record<string, typeof navSearchItems>>((acc, item) => {
-    (acc[item.groupLabel] ??= []).push(item);
-    return acc;
-  }, {});
+  const role = user?.role;
+  const itemsByGroup = navSections
+    .map((section) => ({
+      label: section.label,
+      items: section.items.filter((item) => !item.roles || (role && item.roles.includes(role))),
+    }))
+    .filter((section) => section.items.length > 0);
 
   return (
     <>
@@ -75,9 +80,9 @@ export function Search() {
         <CommandInput placeholder="Tìm trang, chức năng..." />
         <CommandList>
           <CommandEmpty>Không tìm thấy kết quả.</CommandEmpty>
-          {Object.entries(itemsByGroup).map(([groupLabel, items]) => (
-            <CommandGroup key={groupLabel} heading={groupLabel}>
-              {items.map((item) => {
+          {itemsByGroup.map((group) => (
+            <CommandGroup key={group.label} heading={group.label}>
+              {group.items.map((item) => {
                 const Icon = item.icon;
                 return (
                   <CommandItem

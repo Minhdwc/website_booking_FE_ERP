@@ -14,6 +14,15 @@ export function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+export function formatLongDate(value: string | Date = new Date()) {
+  return new Intl.DateTimeFormat('vi-VN', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  }).format(typeof value === 'string' ? new Date(value) : value);
+}
+
 export function formatTimeRange(startTime: string, endTime: string) {
   return `${startTime.slice(0, 5)} - ${endTime.slice(0, 5)}`;
 }
