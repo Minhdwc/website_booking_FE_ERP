@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { BellIcon } from 'lucide-react';
 
-import { useNotification } from '@/context/notification.context';
 import { formatRelativeTime } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,22 +15,24 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import {
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useNotificationUnreadCount,
+  useNotifications,
+} from '@/stores/queries/notification.query';
+import { INotification } from '@/stores/api/types';
 
 export function Notification() {
   const [open, setOpen] = useState(false);
-  const {
-    notifications,
-    unreadCount,
-    isLoading,
-    isError,
-    markAsRead,
-    markAllAsRead,
-    isMarkingAll,
-  } = useNotification();
+  const { data: notifications = [], isLoading, isError } = useNotifications();
+  const { data: unreadCount = 0 } = useNotificationUnreadCount();
+  const markAsReadMutation = useMarkNotificationRead();
+  const markAllAsReadMutation = useMarkAllNotificationsRead();
 
   const handleItemClick = async (id: string, isRead: boolean) => {
     if (!isRead) {
-      await markAsRead(id);
+      await markAsReadMutation.mutateAsync(id);
     }
   };
 
@@ -66,8 +67,8 @@ export function Notification() {
                 variant="ghost"
                 size="sm"
                 className="shrink-0 text-xs"
-                disabled={isMarkingAll}
-                onClick={() => void markAllAsRead()}
+                disabled={markAllAsReadMutation.isPending}
+                onClick={() => markAllAsReadMutation.mutateAsync()}
               >
                 Đọc tất cả
               </Button>
@@ -106,11 +107,11 @@ export function Notification() {
 
             {!isLoading &&
               !isError &&
-              notifications.map((item) => (
+              notifications.map((item: INotification) => (
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => void handleItemClick(item.id, item.isRead)}
+                  onClick={() => handleItemClick(item.id, item.isRead)}
                   className="flex gap-3 border-b border-border px-4 py-3.5 text-left transition-colors hover:bg-muted/50"
                 >
                   <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">

@@ -32,23 +32,13 @@ export const venueService = {
 
   getVenue: (id: string) => apiRequest<VenueDetailResponse>(`/venues/${id}`, { method: 'GET' }),
 
-  createVenue: (body: {
-    name: string;
-    location: string;
-    longitude: number;
-    latitude: number;
-    openTime: string;
-    closeTime: string;
-    restStartTime?: string;
-    restEndTime?: string;
-    description?: string;
-    ownerId?: string;
-  }) => apiRequest<VenueDetailResponse>('/venues', { method: 'POST', body }),
+  createVenue: (body: Omit<IVenue, 'id' | 'createdAt' | 'updatedAt' | 'fields'>) =>
+    apiRequest<VenueDetailResponse>('/venues', { method: 'POST', body }),
 
-  updateVenue: (id: string, body: { value: IVenue }) =>
+  updateVenue: (id: string, body: Partial<IVenue>) =>
     apiRequest<VenueDetailResponse>(`/venues/${id}`, {
-      method: 'PUT',
-      body: { value: body.value },
+      method: 'PATCH',
+      body,
     }),
 
   deleteVenue: (id: string) => apiRequest(`/venues/${id}`, { method: 'DELETE' }),

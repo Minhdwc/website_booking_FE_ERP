@@ -2,7 +2,7 @@ import { apiRequest } from '@/stores/api/api-request';
 import { ITimeslot } from '@/stores/api/types';
 
 export interface TimeslotResponse {
-  status: string;
+  status: number;
   message: string;
   data: TimeslotPage;
 }
@@ -15,40 +15,28 @@ export interface TimeslotPage {
 }
 
 export interface TimeslotDetailResponse {
-  status: string;
+  status: number;
   message: string;
   data: ITimeslot;
 }
 
 export interface TimeslotsResponse {
-  status: string;
+  status: number;
   message: string;
   data: ITimeslot[];
 }
 
 export const timeslotService = {
-  getTimeslots: async () => {
-    const response = await apiRequest('/timeslots', { method: 'GET' });
-    return response;
-  },
+  getTimeslots: () => apiRequest<TimeslotsResponse>('/timeslots', { method: 'GET' }),
 
-  getTimeslot: async (id: string) => {
-    const response = await apiRequest(`/timeslots/${id}`, { method: 'GET' });
-    return response;
-  },
+  getTimeslot: (id: string) =>
+    apiRequest<TimeslotDetailResponse>(`/timeslots/${id}`, { method: 'GET' }),
 
-  createTimeslot: async (body: { startTime: string; endTime: string }) => {
-    const response = await apiRequest('/timeslots', { method: 'POST', body });
-    return response;
-  },
+  createTimeslot: (body: Omit<ITimeslot, 'id' | 'createdAt' | 'updatedAt'>) =>
+    apiRequest<TimeslotDetailResponse>('/timeslots', { method: 'POST', body }),
 
-  updateTimeslot: async (id: string, body: { startTime?: string; endTime?: string }) => {
-    const response = await apiRequest(`/timeslots/${id}`, { method: 'PUT', body });
-    return response;
-  },
+  updateTimeslot: (id: string, body: Partial<ITimeslot>) =>
+    apiRequest<TimeslotDetailResponse>(`/timeslots/${id}`, { method: 'PATCH', body }),
 
-  deleteTimeslot: async (id: string) => {
-    const response = await apiRequest(`/timeslots/${id}`, { method: 'DELETE' });
-    return response;
-  },
+  deleteTimeslot: (id: string) => apiRequest(`/timeslots/${id}`, { method: 'DELETE' }),
 };

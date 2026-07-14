@@ -2,7 +2,7 @@ import { apiRequest } from '@/stores/api/api-request';
 import { IField } from '@/stores/api/types';
 
 export interface FieldResponse {
-  status: string;
+  status: number;
   message: string;
   data: FieldPage;
 }
@@ -15,51 +15,30 @@ export interface FieldPage {
 }
 
 export interface FieldDetailResponse {
-  status: string;
+  status: number;
   message: string;
   data: IField;
 }
 
 export interface FieldsResponse {
-  status: string;
+  status: number;
   message: string;
   data: IField[];
 }
 
 export const fieldService = {
-  getFields: async () => {
-    const response = await apiRequest('/fields', { method: 'GET' });
-    return response;
-  },
+  getFields: (params?: any) => apiRequest<FieldsResponse>('/fields', { method: 'GET', params }),
 
-  getField: async (id: string) => {
-    const response = await apiRequest(`/fields/${id}`, { method: 'GET' });
-    return response;
-  },
+  getField: (id: string) => apiRequest<FieldDetailResponse>(`/fields/${id}`, { method: 'GET' }),
 
-  createField: async (body: {
-    name: string;
-    price: number;
-    sportId: string;
-    venueId: string;
-    description?: string;
-    status?: string;
-    images?: string[];
-  }) => {
-    const response = await apiRequest('/fields', { method: 'POST', body });
-    return response;
-  },
+  createField: (body: Omit<IField, 'id' | 'createdAt' | 'updatedAt' | 'sport' | 'venue'>) =>
+    apiRequest<FieldDetailResponse>('/fields', { method: 'POST', body }),
 
-  updateField: async (id: string, body: { value: IField }) => {
-    const response = await apiRequest(`/fields/${id}`, {
-      method: 'PUT',
-      body: { value: body.value },
-    });
-    return response;
-  },
+  updateField: (id: string, body: Partial<IField>) =>
+    apiRequest<FieldDetailResponse>(`/fields/${id}`, {
+      method: 'PATCH',
+      body,
+    }),
 
-  deleteField: async (id: string) => {
-    const response = await apiRequest(`/fields/${id}`, { method: 'DELETE' });
-    return response;
-  },
+  deleteField: (id: string) => apiRequest(`/fields/${id}`, { method: 'DELETE' }),
 };

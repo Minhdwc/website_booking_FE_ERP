@@ -31,9 +31,7 @@ const roleLabels: Record<string, string> = {
 export function Header() {
   const pathname = usePathname();
   const { user, logout } = useSession();
-  const title =
-    navSections.flatMap((s) => s.items).find((item) => item.href === pathname)?.title ?? 'ERP';
-  const roleLabel = user ? (roleLabels[user.role] ?? user.role) : '';
+  const title = navSections.flatMap((s) => s.items).find((item) => item.href === pathname)?.title;
 
   return (
     <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface px-4">
@@ -56,9 +54,9 @@ export function Header() {
               />
             }
           >
-            <Avatar size="sm">
-              <AvatarFallback className="bg-brand-secondary-500 text-[11px] font-semibold text-white">
-                {user?.name?.at(0)?.toUpperCase() ?? 'U'}
+            <Avatar size="default">
+              <AvatarFallback className="bg-brand-secondary-500 text-xs font-semibold text-black">
+                {user?.name?.at(0)?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
@@ -69,9 +67,6 @@ export function Header() {
                 <div className="grid leading-tight">
                   <span className="truncate font-medium text-heading">{user?.name}</span>
                   <span className="truncate text-xs text-muted-foreground">{user?.email}</span>
-                  {roleLabel ? (
-                    <span className="mt-1 text-[11px] text-brand-secondary-500">{roleLabel}</span>
-                  ) : null}
                 </div>
               </DropdownMenuLabel>
             </DropdownMenuGroup>

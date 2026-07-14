@@ -1,64 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { driver, type DriveStep } from 'driver.js';
 import 'driver.js/dist/driver.css';
-
-import type { IVenue } from '@/stores/api/types';
-import { venueService } from '@/stores/service/venue.service';
-
-export const venueKeys = {
-  all: ['venues'] as const,
-};
-
-export type CreateVenueInput = {
-  name: string;
-  location: string;
-  longitude: number;
-  latitude: number;
-  openTime: string;
-  closeTime: string;
-  restStartTime?: string;
-  restEndTime?: string;
-  description?: string;
-};
-
-async function fetchVenues(): Promise<IVenue[]> {
-  const response = await venueService.getVenues();
-  return response.data;
-}
-
-export const useVenues = () => {
-  const queryClient = useQueryClient();
-
-  const listQuery = useQuery<IVenue[]>({
-    queryKey: venueKeys.all,
-    queryFn: fetchVenues,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (input: CreateVenueInput) => venueService.createVenue(input),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: venueKeys.all });
-    },
-  });
-
-  return {
-    venues: listQuery.isSuccess ? listQuery.data : ([] as IVenue[]),
-    isLoading: listQuery.isLoading,
-    isSaving: createMutation.isPending,
-    error: listQuery.isError
-      ? listQuery.error instanceof Error
-        ? listQuery.error.message
-        : 'Không tải được danh sách cơ sở'
-      : null,
-    refetch: () => {
-      void listQuery.refetch();
-    },
-    createVenue: (input: CreateVenueInput) => createMutation.mutateAsync(input),
-  };
-};
 
 const ONBOARDING_STORAGE_KEY = 'erp:venues-onboarding-done';
 

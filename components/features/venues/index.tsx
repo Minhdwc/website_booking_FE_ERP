@@ -1,9 +1,27 @@
 'use client';
 
-import Link from 'next/link';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  Building2Icon,
+  ClockIcon,
+  EyeIcon,
+  TrashIcon,
+  MapPinIcon,
+  MoonIcon,
+  MoreHorizontalIcon,
+  SearchIcon,
+  XIcon,
+  Trash2,
+} from 'lucide-react';
 
-import { VenuesCreateDialog } from '@/components/features/venues/create-dialog';
+import { VenuesCreateDialog } from '@/components/features/venues/dialog-create';
+import { DialogEditVenue } from '@/components/features/venues/dialog-edit';
 import { VenuesSetupPage } from '@/components/features/venues/setup-page';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -13,94 +31,249 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useVenues, useVenuesOnboarding } from '@/hooks/use-venues';
+import { useVenuesOnboarding } from '@/hooks/use-venues-onboarding';
 import { IVenue } from '@/stores/api/types';
+import { useErpUiStore } from '@/stores/index.store';
+import { prefetchVenue, useDeleteVenue, useVenues } from '@/stores/queries/venue.query';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
-const formatRestTime = (restStartTime?: string | null, restEndTime?: string | null) => {
-  if (!restStartTime || !restEndTime) return '—';
+const formatRestTime = (restStartTime?: string, restEndTime?: string) => {
+  if (!restStartTime || !restEndTime) return null;
   return `${restStartTime} – ${restEndTime}`;
 };
 
 export const VenuesPage = () => {
-  const { venues, isLoading, error } = useVenues();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const venueSearch = useErpUiStore((state) => state.venueSearch);
+  const setVenueSearch = useErpUiStore((state) => state.setVenueSearch);
+  const deleteVenueMutation = useDeleteVenue();
+
+  const {
+    data: venues = [],
+    isLoading,
+    isError,
+    error,
+  } = useVenues(venueSearch ? { search: venueSearch } : undefined);
+
   const isNotEmpty = venues.length > 0;
+  const isSearching = venueSearch.trim().length > 0;
   const { startTour } = useVenuesOnboarding({ enabled: !isLoading && !isNotEmpty });
 
-  if (error) {
-    return (
-      <div className="rounded-lg border border-error/20 bg-error/5 px-4 py-3 text-sm text-error">
-        {error}
-      </div>
-    );
-  }
+  const handleDeleteVenue = async (venueId: string) => {
+    try {
+      if (!window.confirm('Bạn có chắc chắn muốn xóa cơ sở này không?')) {
+        return;
+      }
+      await deleteVenueMutation.mutateAsync(venueId);
+      toast.success('Xóa cơ sở thành công');
+    } catch (error: any) {
+      toast.error(error.message || 'Không xóa được cơ sở');
+    }
+  };
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-heading">Cơ sở</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Quản lý cơ sở trước, rồi gắn sân vào.
-          </p>
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl font-bold tracking-tight text-heading">Cơ sở</h1>
+            {isNotEmpty && (
+              <Badge variant="secondary" className="font-semibold tabular-nums">
+                {venues.length}
+              </Badge>
+            )}
+          </div>
         </div>
 
-        {isNotEmpty ? <VenuesCreateDialog /> : null}
+        {(isNotEmpty || isSearching) && <VenuesCreateDialog />}
       </header>
 
-      {isLoading ? (
-        <div className="space-y-3">
-          <Skeleton className="h-24 w-full rounded-xl" />
-          <Skeleton className="h-24 w-full rounded-xl" />
+      <InputGroup className="max-w-sm bg-surface">
+        <InputGroupAddon>
+          <SearchIcon />
+        </InputGroupAddon>
+        <InputGroupInput
+          placeholder="Tìm kiếm cơ sở theo tên, địa chỉ…"
+          value={venueSearch}
+          onChange={(event) => setVenueSearch(event.target.value)}
+        />
+        {isSearching && (
+          <InputGroupAddon align="inline-end">
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              aria-label="Xoá tìm kiếm"
+              onClick={() => setVenueSearch('')}
+            >
+              <XIcon />
+            </Button>
+          </InputGroupAddon>
+        )}
+      </InputGroup>
+
+      {isError && (
+        <div className="rounded-xl border border-error/20 bg-error/5 px-4 py-3 text-sm text-error">
+          {error instanceof Error ? error.message : 'Không tải được danh sách cơ sở'}
         </div>
-      ) : isNotEmpty ? (
-        <div className="overflow-hidden rounded-xl border border-border bg-surface">
+      )}
+
+      {isLoading && !isError && (
+        <div className="overflow-hidden rounded-xl border border-border/60 bg-surface shadow-sm">
+          <div className="border-b border-border/60 bg-muted/40 px-4 py-3.5">
+            <Skeleton className="h-4 w-2/3 max-w-md" />
+          </div>
+          <div className="space-y-0 divide-y divide-border/40">
+            {[0, 1, 2, 3].map((row) => (
+              <div key={row} className="flex items-center gap-4 px-4 py-4">
+                <Skeleton className="size-9 rounded-lg" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+                <Skeleton className="hidden h-4 w-24 sm:block" />
+                <Skeleton className="hidden h-4 w-20 md:block" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!isLoading && !isError && isNotEmpty && (
+        <div className="overflow-hidden rounded-xl border border-border/60 bg-surface shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="px-4">Tên</TableHead>
-                <TableHead className="px-4">Địa chỉ</TableHead>
-                <TableHead className="px-4">Tọa độ</TableHead>
-                <TableHead className="px-4">Giờ hoạt động</TableHead>
-                <TableHead className="px-4">Giờ nghỉ</TableHead>
-                <TableHead className="px-4 text-right">Sân</TableHead>
+              <TableRow className="border-b border-border/60 bg-muted/40 hover:bg-muted/40">
+                <TableHead className="px-4 py-3 text-xs">Cơ sở</TableHead>
+                <TableHead className="px-4 py-3 text-xs">Địa chỉ</TableHead>
+                <TableHead className="px-4 py-3 text-xs hidden lg:table-cell">Tọa độ</TableHead>
+                <TableHead className="px-4 py-3 text-xs">Giờ hoạt động</TableHead>
+                <TableHead className="px-4 py-3 text-xs hidden md:table-cell">Giờ nghỉ</TableHead>
+                <TableHead className="px-4 py-3 text-xs w-14 text-right">
+                  <span className="sr-only">Thao tác</span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {venues.map((venue: IVenue) => (
-                <TableRow key={venue.id}>
-                  <TableCell className="max-w-[180px] px-4 whitespace-normal">
-                    <p className="truncate font-semibold text-heading">{venue.name}</p>
-                    {venue.description ? (
-                      <p className="truncate text-xs text-muted-foreground">{venue.description}</p>
-                    ) : null}
-                  </TableCell>
-                  <TableCell className="max-w-[220px] px-4 text-muted-foreground whitespace-normal">
-                    <span className="line-clamp-2">{venue.location}</span>
-                  </TableCell>
-                  <TableCell className="px-4 text-xs text-muted-foreground whitespace-nowrap">
-                    <div>{venue.latitude.toFixed(5)}</div>
-                    <div>{venue.longitude.toFixed(5)}</div>
-                  </TableCell>
-                  <TableCell className="px-4 text-sm whitespace-nowrap">
-                    {venue.openTime} – {venue.closeTime}
-                  </TableCell>
-                  <TableCell className="px-4 text-sm text-muted-foreground whitespace-nowrap">
-                    {formatRestTime(venue.restStartTime, venue.restEndTime)}
-                  </TableCell>
-                  <TableCell className="px-4 text-right">
-                    <Link
-                      href="/fields"
-                      className="text-xs text-brand-secondary-600 underline-offset-4 hover:underline"
+              {venues.map((venue: IVenue) => {
+                const restTime = formatRestTime(venue.restStartTime, venue.restEndTime);
+
+                return (
+                  <TableRow
+                    key={venue.id}
+                    className="group cursor-pointer border-b border-border/40 last:border-b-0 hover:bg-muted/30"
+                    onMouseEnter={() => {
+                      prefetchVenue(queryClient, venue.id);
+                    }}
+                    onClick={() => router.push(`/venues/${venue.id}`)}
+                  >
+                    <TableCell className="max-w-[240px] px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-muted-foreground transition-colors group-hover:border-brand-secondary-600/20 group-hover:bg-brand-secondary-50 group-hover:text-brand-secondary-600">
+                          <Building2Icon className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-heading">{venue.name}</p>
+                          {venue.description ? (
+                            <p className="truncate text-xs text-muted-foreground">
+                              {venue.description}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell
+                      className="max-w-[240px] px-4 py-3.5 whitespace-normal"
+                      title={venue.location}
                     >
-                      Xem sân
-                    </Link>
-                  </TableCell>
-                </TableRow>
-              ))}
+                      <div className="flex items-start gap-1.5 text-muted-foreground">
+                        <MapPinIcon className="mt-0.5 size-3.5 shrink-0" />
+                        <span className="line-clamp-2 text-sm">{venue.location}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden px-4 py-3.5 font-mono text-xs whitespace-nowrap text-muted-foreground lg:table-cell">
+                      {venue.latitude.toFixed(5)}, {venue.longitude.toFixed(5)}
+                    </TableCell>
+                    <TableCell className="px-4 py-3.5 whitespace-nowrap">
+                      <Badge variant="outline" className="gap-1.5 font-normal tabular-nums">
+                        <ClockIcon className="size-3 text-muted-foreground" />
+                        {venue.openTime} – {venue.closeTime}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden px-4 py-3.5 whitespace-nowrap md:table-cell">
+                      {restTime ? (
+                        <Badge variant="ghost" className="gap-1.5 font-normal tabular-nums">
+                          <MoonIcon className="size-3 text-muted-foreground" />
+                          {restTime}
+                        </Badge>
+                      ) : (
+                        <span className="text-sm text-muted-foreground/60">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell
+                      className="px-3 py-3.5 text-right"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <Popover>
+                        <PopoverTrigger
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="Mở thao tác"
+                              className="text-muted-foreground opacity-60 transition-opacity group-hover:opacity-100 aria-expanded:opacity-100 cursor-pointer"
+                            />
+                          }
+                        >
+                          <MoreHorizontalIcon className="size-4" />
+                        </PopoverTrigger>
+                        <PopoverContent align="end" className="w-44 gap-0 p-1">
+                          <Button
+                            variant="ghost"
+                            className="h-9 px-3 sm:px-4 text-blue-500 hover:text-blue-600 rounded-lg justify-start"
+                            onClick={() => router.push(`/venues/${venue.id}`)}
+                          >
+                            <EyeIcon className="size-3.5 text-blue-500" />
+                            Xem chi tiết
+                          </Button>
+                          <DialogEditVenue venueId={venue.id} />
+                          <Button
+                            variant="ghost"
+                            className="h-9 px-3 sm:px-4 text-red-500 hover:text-red-600 rounded-lg justify-start"
+                            onClick={() => handleDeleteVenue(venue.id)}
+                          >
+                            <Trash2 className="size-3.5 text-red-500" />
+                            Xóa
+                          </Button>
+                        </PopoverContent>
+                      </Popover>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
-      ) : (
+      )}
+
+      {!isLoading && !isError && !isNotEmpty && isSearching && (
+        <div className="flex flex-col items-center rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
+          <div className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <SearchIcon className="size-5" />
+          </div>
+          <h2 className="mt-4 text-base font-semibold text-heading">Không tìm thấy cơ sở nào</h2>
+          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+            Không có cơ sở nào khớp với “{venueSearch}”. Thử từ khoá khác hoặc xoá bộ lọc.
+          </p>
+          <Button variant="outline" size="sm" className="mt-4" onClick={() => setVenueSearch('')}>
+            <XIcon className="size-3.5" />
+            Xoá tìm kiếm
+          </Button>
+        </div>
+      )}
+
+      {!isLoading && !isError && !isNotEmpty && !isSearching && (
         <VenuesSetupPage onReplayTour={startTour} />
       )}
     </div>

@@ -21,14 +21,14 @@ import {
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { useBooking } from '@/context/booking.context';
 import { navSections } from '@/lib/utils/menu-config';
 import { useSession } from '@/provider/session-provider';
+import { usePendingBookings } from '@/stores/queries/booking.query';
 
 export const AppSidebar = () => {
   const pathname = usePathname();
   const { user, logout } = useSession();
-  const { pendingCount } = useBooking();
+  const { pendingCount } = usePendingBookings();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const role = user?.role;

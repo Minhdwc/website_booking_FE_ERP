@@ -2,7 +2,7 @@ import { apiRequest } from '@/stores/api/api-request';
 import { BookingStatus, IBooking } from '@/stores/api/types';
 
 export interface BookingResponse {
-  status: string;
+  status: number;
   message: string;
   data: BookingPage;
 }
@@ -15,13 +15,13 @@ export interface BookingPage {
 }
 
 export interface BookingDetailResponse {
-  status: string;
+  status: number;
   message: string;
   data: IBooking;
 }
 
 export interface BookingsResponse {
-  status: string;
+  status: number;
   message: string;
   data: IBooking[];
 }
@@ -40,10 +40,10 @@ export const bookingService = {
     status?: BookingStatus;
   }) => apiRequest<BookingDetailResponse>('/bookings', { method: 'POST', body }),
 
-  updateBooking: (id: string, body: { value: IBooking }) =>
+  updateBooking: (id: string, body: Partial<IBooking>) =>
     apiRequest<BookingDetailResponse>(`/bookings/${id}`, {
-      method: 'PUT',
-      body: { value: body.value },
+      method: 'PATCH',
+      body,
     }),
 
   deleteBooking: (id: string) =>

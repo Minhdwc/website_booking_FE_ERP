@@ -11,7 +11,7 @@ export interface IUser {
   email: string;
   phone: string | null;
   role: UserRole;
-  avatarUrl?: string | null;
+  avatarUrl?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -36,6 +36,7 @@ export interface IVenue {
   restEndTime?: string;
   description?: string;
   images?: string[];
+  fields?: IField[];
   createdAt: string;
   updatedAt: string;
 }

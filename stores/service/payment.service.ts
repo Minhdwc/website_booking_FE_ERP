@@ -2,7 +2,7 @@ import { apiRequest } from '@/stores/api/api-request';
 import { IPayment, PaymentMethod, PaymentStatus } from '@/stores/api/types';
 
 export interface PaymentResponse {
-  status: string;
+  status: number;
   message: string;
   data: PaymentPage;
 }
@@ -15,54 +15,43 @@ export interface PaymentPage {
 }
 
 export interface PaymentDetailResponse {
-  status: string;
+  status: number;
   message: string;
   data: IPayment;
 }
 
 export interface PaymentsResponse {
-  status: string;
+  status: number;
   message: string;
   data: IPayment[];
 }
 
+export interface VnpayUrlResponse {
+  status: number;
+  message: string;
+  data: { paymentUrl: string };
+}
+
 export const paymentService = {
-  getPayments: async () => {
-    const response = await apiRequest('/payments', { method: 'GET' });
-    return response;
-  },
+  getPayments: (params?: any) =>
+    apiRequest<PaymentsResponse>('/payments', { method: 'GET', params }),
 
-  getPayment: async (id: string) => {
-    const response = await apiRequest(`/payments/${id}`, { method: 'GET' });
-    return response;
-  },
+  getPayment: (id: string) =>
+    apiRequest<PaymentDetailResponse>(`/payments/${id}`, { method: 'GET' }),
 
-  createPayment: async (body: {
-    bookingId: string;
-    method?: PaymentMethod;
-    status?: PaymentStatus;
-  }) => {
-    const response = await apiRequest('/payments', { method: 'POST', body });
-    return response;
-  },
+  createPayment: (body: { bookingId: string; method?: PaymentMethod; status?: PaymentStatus }) =>
+    apiRequest<PaymentDetailResponse>('/payments', { method: 'POST', body }),
 
-  updatePayment: async (id: string, body: { value: IPayment }) => {
-    const response = await apiRequest(`/payments/${id}`, {
-      method: 'PUT',
-      body: { value: body.value },
-    });
-    return response;
-  },
+  updatePayment: (id: string, body: Partial<IPayment>) =>
+    apiRequest<PaymentDetailResponse>(`/payments/${id}`, {
+      method: 'PATCH',
+      body,
+    }),
 
-  deletePayment: async (id: string) => {
-    const response = await apiRequest(`/payments/${id}`, { method: 'DELETE' });
-    return response;
-  },
+  deletePayment: (id: string) => apiRequest(`/payments/${id}`, { method: 'DELETE' }),
 
-  createVnpayUrl: async (paymentId: string) => {
-    const response = await apiRequest(`/payments/${paymentId}/vnpay-url`, {
+  createVnpayUrl: (paymentId: string) =>
+    apiRequest<VnpayUrlResponse>(`/payments/${paymentId}/vnpay-url`, {
       method: 'POST',
-    });
-    return response;
-  },
+    }),
 };

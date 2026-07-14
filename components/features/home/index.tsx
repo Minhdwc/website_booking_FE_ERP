@@ -12,7 +12,7 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { usePendingBookings } from '@/hooks/use-pending-bookings';
+import { usePendingBookings } from '@/stores/queries/booking.query';
 import { formatDate, formatLongDate, formatRelativeTime } from '@/lib/format';
 import { useSession } from '@/provider/session-provider';
 
