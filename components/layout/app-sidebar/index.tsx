@@ -109,34 +109,6 @@ export const AppSidebar = () => {
           </SidebarGroup>
         ))}
       </SidebarContent>
-
-      {user && (
-        <SidebarFooter className="border-t border-sidebar-border p-3">
-          <div
-            className={`flex items-center gap-2.5 rounded-xl border border-transparent bg-muted-surface px-2.5 py-2 ${
-              collapsed ? 'justify-center px-0' : ''
-            }`}
-          >
-            {!collapsed && (
-              <>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-heading">{user.name}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={logout}
-                  className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-transparent text-muted-foreground hover:border-brand-secondary-400"
-                  aria-label="Đăng xuất"
-                  title="Đăng xuất"
-                >
-                  <LogOutIcon className="size-4" />
-                </button>
-              </>
-            )}
-          </div>
-        </SidebarFooter>
-      )}
-
       <SidebarRail />
     </Sidebar>
   );

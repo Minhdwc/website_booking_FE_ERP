@@ -1,45 +1,83 @@
 import { apiRequest } from '@/stores/api/api-request';
-import { IVenue } from '@/stores/api/types';
-
-export interface VenueResponse {
-  status: number;
-  message: string;
-  data: VenuePage;
-}
-
-export interface VenuePage {
-  page: number;
-  limit: number;
-  total: number;
-  data: IVenue[];
-}
+import { IVenue, IVenueImage } from '@/stores/api/types';
 
 export interface VenueDetailResponse {
-  status: number;
+  status: string;
   message: string;
   data: IVenue;
 }
 
 export interface VenuesResponse {
-  status: number;
+  status: string;
   message: string;
   data: IVenue[];
 }
 
+export interface VenueImageResponse {
+  status: string;
+  message: string;
+  data: IVenueImage;
+}
+
 export const venueService = {
-  getVenues: (params?: Record<string, string>) =>
-    apiRequest<VenuesResponse>('/venues', { method: 'GET', params }),
+  getVenues: async (params?: any) => {
+    const response = await apiRequest('/venues', { method: 'GET', params });
+    return response;
+  },
 
-  getVenue: (id: string) => apiRequest<VenueDetailResponse>(`/venues/${id}`, { method: 'GET' }),
+  getVenue: async (id: string) => {
+    const response = await apiRequest(`/venues/${id}`, { method: 'GET' });
+    return response;
+  },
 
-  createVenue: (body: Omit<IVenue, 'id' | 'createdAt' | 'updatedAt' | 'fields'>) =>
-    apiRequest<VenueDetailResponse>('/venues', { method: 'POST', body }),
+  createVenue: async (body: {
+    name: string;
+    location: string;
+    longitude: number;
+    latitude: number;
+    openTime: string;
+    closeTime: string;
+    restStartTime?: string;
+    restEndTime?: string;
+    description?: string;
+    images?: string[];
+    ownerId?: string;
+  }) => {
+    const response = await apiRequest('/venues', {
+      method: 'POST',
+      body,
+    });
+    return response;
+  },
 
-  updateVenue: (id: string, body: Partial<IVenue>) =>
-    apiRequest<VenueDetailResponse>(`/venues/${id}`, {
+  updateVenue: async (id: string, body: Partial<IVenue> & { images?: string[] }) => {
+    const response = await apiRequest(`/venues/${id}`, {
       method: 'PATCH',
       body,
-    }),
+    });
+    return response;
+  },
 
-  deleteVenue: (id: string) => apiRequest(`/venues/${id}`, { method: 'DELETE' }),
+  deleteVenue: async (id: string) => {
+    const response = await apiRequest(`/venues/${id}`, { method: 'DELETE' });
+    return response;
+  },
+
+  uploadVenueImage: async (id: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await apiRequest(`/venues/${id}/images`, {
+      method: 'POST',
+      formData,
+    });
+    return response;
+  },
+
+  deleteVenueImage: async (venueId: string, imageId: string) => {
+    const response = await apiRequest(`/venues/${venueId}/images/${imageId}`, {
+      method: 'DELETE',
+    });
+    return response;
+  },
 };

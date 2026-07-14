@@ -66,7 +66,8 @@ export const VenuesPage = () => {
       if (!window.confirm('Bạn có chắc chắn muốn xóa cơ sở này không?')) {
         return;
       }
-      await deleteVenueMutation.mutateAsync(venueId);
+      const res = await deleteVenueMutation.mutateAsync(venueId);
+      console.log(res);
       toast.success('Xóa cơ sở thành công');
     } catch (error: any) {
       toast.error(error.message || 'Không xóa được cơ sở');

@@ -46,13 +46,4 @@ export const navSections: NavSection[] = [
       { title: 'Khung giờ', href: '/timeslots', icon: Clock3 },
     ],
   },
-  {
-    label: 'Hệ thống',
-    items: [
-      { title: 'Báo cáo', href: '/reports', icon: ChartColumn },
-      { title: 'Thông báo', href: '/notifications', icon: Bell },
-      { title: 'Nhật ký', href: '/audit-logs', icon: ClipboardList },
-      { title: 'Người dùng', href: '/users', icon: Users, roles: ['admin'] },
-    ],
-  },
 ];

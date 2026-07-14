@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { LandPlotIcon, MoreHorizontalIcon, SearchIcon, Trash2Icon, XIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { FieldsCreateDialog } from '@/components/features/fields/dialog-create';
-import { DialogEditField } from '@/components/features/fields/dialog-edit';
+import { formatCurrency } from '@/lib/format';
+import { DialogCreateField } from '@/components/features/fields/dialog-create-field';
+import { DialogEditField } from '@/components/features/fields/dialog-edit-field';
 import { FieldsSetupPage } from '@/components/features/fields/setup-page';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,19 +34,23 @@ import { useErpUiStore } from '@/stores/index.store';
 import { useDeleteField, useFields } from '@/stores/queries/field.query';
 import { useVenues } from '@/stores/queries/venue.query';
 
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+const formatDurationMinutes = (minutes: number) => {
+  if (!minutes || minutes < 0) return '—';
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins} phút`;
+  if (mins === 0) return hours === 1 ? '1 giờ' : `${hours} giờ`;
+  return `${hours} giờ ${mins} phút`;
+};
 
 const statusLabel: Record<FieldStatus, string> = {
   active: 'Hoạt động',
   inactive: 'Ngưng',
-  maintenance: 'Bảo trì',
 };
 
 const statusVariant: Record<FieldStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
   active: 'default',
   inactive: 'outline',
-  maintenance: 'secondary',
 };
 
 export const FieldsPage = () => {
@@ -99,7 +104,7 @@ export const FieldsPage = () => {
           </p>
         </div>
 
-        {(isNotEmpty || isFiltering) && hasVenues && <FieldsCreateDialog />}
+        {(isNotEmpty || isFiltering) && hasVenues && <DialogCreateField />}
       </header>
 
       {(isNotEmpty || isFiltering) && (
@@ -132,6 +137,10 @@ export const FieldsPage = () => {
             onValueChange={(value) =>
               setFieldVenueFilter(!value || value === '__all__' ? undefined : value)
             }
+            items={{
+              __all__: 'Tất cả cơ sở',
+              ...Object.fromEntries(venues.map((venue: IVenue) => [venue.id, venue.name])),
+            }}
           >
             <SelectTrigger className="w-full sm:w-56">
               <SelectValue placeholder="Lọc theo cơ sở" />
@@ -179,6 +188,9 @@ export const FieldsPage = () => {
                 <TableHead className="px-4 py-3 text-xs">Sân</TableHead>
                 <TableHead className="px-4 py-3 text-xs">Cơ sở</TableHead>
                 <TableHead className="hidden px-4 py-3 text-xs md:table-cell">Bộ môn</TableHead>
+                <TableHead className="hidden px-4 py-3 text-xs lg:table-cell">
+                  Thuê tối thiểu
+                </TableHead>
                 <TableHead className="px-4 py-3 text-xs">Giá</TableHead>
                 <TableHead className="px-4 py-3 text-xs">Trạng thái</TableHead>
                 <TableHead className="w-14 px-4 py-3 text-right text-xs">
@@ -213,8 +225,19 @@ export const FieldsPage = () => {
                   <TableCell className="hidden px-4 py-3.5 text-sm text-muted-foreground md:table-cell">
                     {field.sport?.name || '—'}
                   </TableCell>
+                  <TableCell className="hidden px-4 py-3.5 text-sm text-muted-foreground lg:table-cell">
+                    <div>
+                      <p>{formatDurationMinutes(field.minDurationMinutes)}</p>
+                      <p className="text-xs">
+                        +{formatDurationMinutes(field.durationStepMinutes)}/lần
+                      </p>
+                    </div>
+                  </TableCell>
                   <TableCell className="px-4 py-3.5 text-sm font-medium tabular-nums">
-                    {formatPrice(field.price)}
+                    {formatCurrency(field.price)}
+                    <span className="ml-1 text-xs font-normal text-muted-foreground">
+                      /{formatDurationMinutes(field.minDurationMinutes)}
+                    </span>
                   </TableCell>
                   <TableCell className="px-4 py-3.5">
                     <Badge variant={statusVariant[field.status]}>{statusLabel[field.status]}</Badge>

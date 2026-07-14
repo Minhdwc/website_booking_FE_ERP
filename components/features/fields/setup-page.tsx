@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { LandPlotIcon, LandmarkIcon } from 'lucide-react';
 
-import { FieldsCreateDialog } from '@/components/features/fields/dialog-create';
+import { DialogCreateField } from '@/components/features/fields/dialog-create-field';
 import { buttonVariants } from '@/components/ui/button';
 
 export const FieldsSetupPage = ({ hasVenues }: { hasVenues: boolean }) => {
@@ -22,7 +22,7 @@ export const FieldsSetupPage = ({ hasVenues }: { hasVenues: boolean }) => {
 
       <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
         {hasVenues ? (
-          <FieldsCreateDialog />
+          <DialogCreateField />
         ) : (
           <Link href="/venues" className={`${buttonVariants({ size: 'sm' })} gap-1.5`}>
             <LandmarkIcon className="size-3.5" />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ClockIcon, InfoIcon, Loader2Icon, MapPinIcon, PencilIcon } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
@@ -66,7 +66,7 @@ export const DialogEditVenue = ({ venueId }: { venueId: string }) => {
   const updateVenueMutation = useUpdateVenue();
   const isSaving = updateVenueMutation.isPending;
 
-  const isHasRestTime = restEnabled;
+  const isHasRestTime = restEnabled ?? Boolean(venue?.restStartTime && venue?.restEndTime);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -81,7 +81,12 @@ export const DialogEditVenue = ({ venueId }: { venueId: string }) => {
       restEndTime: '',
       description: '',
     },
-    values: {
+  });
+
+  useEffect(() => {
+    if (!open || !venue) return;
+
+    form.reset({
       name: venue.name,
       location: venue.location,
       longitude: venue.longitude,
@@ -91,8 +96,8 @@ export const DialogEditVenue = ({ venueId }: { venueId: string }) => {
       restStartTime: venue.restStartTime || '',
       restEndTime: venue.restEndTime || '',
       description: venue.description || '',
-    },
-  });
+    });
+  }, [venue, open, form]);
 
   const longitude = useWatch({ control: form.control, name: 'longitude' });
   const latitude = useWatch({ control: form.control, name: 'latitude' });
@@ -186,6 +191,10 @@ export const DialogEditVenue = ({ venueId }: { venueId: string }) => {
       toast.error(error.message || 'Không cập nhật được cơ sở. Thử lại.');
     }
   };
+
+  if (!venue && !isLoading) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
