@@ -173,8 +173,12 @@ export const VenuesCreateDialog = () => {
         openTime: values.openTime,
         closeTime: values.closeTime,
         description: values.description?.trim(),
-        restStartTime: values.restStartTime,
-        restEndTime: values.restEndTime,
+        ...(isHasRestTime
+          ? {
+              restStartTime: values.restStartTime,
+              restEndTime: values.restEndTime,
+            }
+          : {}),
       };
 
       await createVenueMutation.mutateAsync(payload);

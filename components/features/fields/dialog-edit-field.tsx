@@ -3,10 +3,13 @@
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2Icon, PencilIcon } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { ComboboxSport } from '@/components/custom/combobox/combobox-sport';
+import { ComboboxVenue } from '@/components/custom/combobox/combobox-venue';
+import { formatCurrencyInput, parseCurrencyInput } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -26,6 +29,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import {
   Select,
   SelectContent,
@@ -35,19 +39,30 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
-import type { FieldStatus, IField, ISport, IVenue } from '@/stores/api/types';
+import type { FieldStatus, IField } from '@/stores/api/types';
 import { useField, useUpdateField } from '@/stores/queries/field.query';
-import { useSports } from '@/stores/queries/sport.query';
-import { useVenues } from '@/stores/queries/venue.query';
+
+const formatDurationMinutes = (minutes: number) => {
+  if (!minutes || minutes < 0) return '—';
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins} phút`;
+  if (mins === 0) return hours === 1 ? '1 giờ' : `${hours} giờ`;
+  return `${hours} giờ ${mins} phút`;
+};
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Tên sân không được ít hơn 2 ký tự' }),
   venueId: z.string().min(1, { message: 'Chọn cơ sở' }),
   sportId: z.string().min(1, { message: 'Chọn bộ môn' }),
-  price: z
-    .number({ message: 'Giá không hợp lệ' })
-    .min(0, { message: 'Giá phải lớn hơn hoặc bằng 0' }),
-  status: z.enum(['active', 'inactive', 'maintenance']),
+  minDurationMinutes: z
+    .number({ message: 'Nhập thời gian thuê tối thiểu' })
+    .min(15, { message: 'Tối thiểu 15 phút' }),
+  durationStepMinutes: z
+    .number({ message: 'Nhập bước tăng thời gian' })
+    .min(15, { message: 'Bước tăng tối thiểu 15 phút' }),
+  price: z.number({ message: 'Nhập giá thuê' }).min(1, { message: 'Giá phải lớn hơn 0' }),
+  status: z.enum(['active', 'inactive']),
   description: z.string().optional(),
 });
 
@@ -56,16 +71,13 @@ type FormValues = z.infer<typeof formSchema>;
 const statusOptions: { value: FieldStatus; label: string }[] = [
   { value: 'active', label: 'Hoạt động' },
   { value: 'inactive', label: 'Ngưng' },
-  { value: 'maintenance', label: 'Bảo trì' },
 ];
+
+const statusItems = Object.fromEntries(statusOptions.map((option) => [option.value, option.label]));
 
 export const DialogEditField = ({ fieldId }: { fieldId: string }) => {
   const [open, setOpen] = useState(false);
   const { data: field, isLoading, isError, error } = useField(fieldId);
-  const venuesQuery = useVenues();
-  const sportsQuery = useSports();
-  const venues = venuesQuery.isSuccess ? venuesQuery.data : [];
-  const sports = sportsQuery.isSuccess ? sportsQuery.data : [];
   const updateFieldMutation = useUpdateField();
   const isSaving = updateFieldMutation.isPending;
 
@@ -75,6 +87,8 @@ export const DialogEditField = ({ fieldId }: { fieldId: string }) => {
       name: '',
       venueId: '',
       sportId: '',
+      minDurationMinutes: 90,
+      durationStepMinutes: 30,
       price: 0,
       status: 'active',
       description: '',
@@ -84,12 +98,18 @@ export const DialogEditField = ({ fieldId }: { fieldId: string }) => {
           name: field.name,
           venueId: field.venueId,
           sportId: field.sportId,
+          minDurationMinutes: field.minDurationMinutes,
+          durationStepMinutes: field.durationStepMinutes,
           price: field.price,
           status: field.status,
           description: field.description || '',
         }
       : undefined,
   });
+
+  const venueId = useWatch({ control: form.control, name: 'venueId' });
+  const minDurationMinutes = useWatch({ control: form.control, name: 'minDurationMinutes' });
+  const durationStepMinutes = useWatch({ control: form.control, name: 'durationStepMinutes' });
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
@@ -104,8 +124,9 @@ export const DialogEditField = ({ fieldId }: { fieldId: string }) => {
         name: values.name.trim(),
         venueId: values.venueId,
         sportId: values.sportId,
+        minDurationMinutes: values.minDurationMinutes,
+        durationStepMinutes: values.durationStepMinutes,
         price: values.price,
-        status: values.status,
         description: values.description?.trim() ? values.description.trim() : null,
       };
 
@@ -132,7 +153,7 @@ export const DialogEditField = ({ fieldId }: { fieldId: string }) => {
         <DialogHeader>
           <DialogTitle>Chỉnh sửa sân</DialogTitle>
           <DialogDescription>
-            Cập nhật thông tin sân, giá và trạng thái hoạt động.
+            Cập nhật thông tin sân, thời gian thuê, giá và trạng thái.
           </DialogDescription>
         </DialogHeader>
 
@@ -178,20 +199,15 @@ export const DialogEditField = ({ fieldId }: { fieldId: string }) => {
                       <FormLabel>
                         Cơ sở <span className="text-destructive">*</span>
                       </FormLabel>
-                      <Select value={venueField.value} onValueChange={venueField.onChange}>
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Chọn cơ sở" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {venues.map((venue: IVenue) => (
-                            <SelectItem key={venue.id} value={venue.id}>
-                              {venue.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <ComboboxVenue
+                          value={venueField.value}
+                          onChange={(id) => {
+                            venueField.onChange(id);
+                            form.setValue('sportId', '');
+                          }}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -205,20 +221,75 @@ export const DialogEditField = ({ fieldId }: { fieldId: string }) => {
                       <FormLabel>
                         Bộ môn <span className="text-destructive">*</span>
                       </FormLabel>
-                      <Select value={sportField.value} onValueChange={sportField.onChange}>
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Chọn bộ môn" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {sports.map((sport: ISport) => (
-                            <SelectItem key={sport.id} value={sport.id}>
-                              {sport.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <ComboboxSport
+                          key={venueId}
+                          value={sportField.value}
+                          onChange={sportField.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="minDurationMinutes"
+                  render={({ field: durationField }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Thời gian thuê tối thiểu <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <InputGroup>
+                          <InputGroupInput
+                            type="number"
+                            min={15}
+                            step={15}
+                            value={durationField.value || ''}
+                            onChange={(event) =>
+                              durationField.onChange(event.target.valueAsNumber || 0)
+                            }
+                            onBlur={durationField.onBlur}
+                            name={durationField.name}
+                            ref={durationField.ref}
+                          />
+                          <InputGroupAddon align="inline-end">phút</InputGroupAddon>
+                        </InputGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="durationStepMinutes"
+                  render={({ field: stepField }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Bước tăng thêm <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <InputGroup>
+                          <InputGroupInput
+                            type="number"
+                            min={15}
+                            step={15}
+                            value={stepField.value || ''}
+                            onChange={(event) =>
+                              stepField.onChange(event.target.valueAsNumber || 0)
+                            }
+                            onBlur={stepField.onBlur}
+                            name={stepField.name}
+                            ref={stepField.ref}
+                          />
+                          <InputGroupAddon align="inline-end">phút</InputGroupAddon>
+                        </InputGroup>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -232,19 +303,24 @@ export const DialogEditField = ({ fieldId }: { fieldId: string }) => {
                   render={({ field: priceField }) => (
                     <FormItem>
                       <FormLabel>
-                        Giá / giờ (VND) <span className="text-destructive">*</span>
+                        Giá / {formatDurationMinutes(minDurationMinutes || 60)}{' '}
+                        <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          min={0}
-                          step={1000}
-                          value={priceField.value}
-                          onChange={(event) => priceField.onChange(event.target.valueAsNumber || 0)}
-                          onBlur={priceField.onBlur}
-                          name={priceField.name}
-                          ref={priceField.ref}
-                        />
+                        <InputGroup>
+                          <InputGroupInput
+                            inputMode="numeric"
+                            placeholder="VD: 200.000"
+                            value={formatCurrencyInput(priceField.value)}
+                            onChange={(event) =>
+                              priceField.onChange(parseCurrencyInput(event.target.value))
+                            }
+                            onBlur={priceField.onBlur}
+                            name={priceField.name}
+                            ref={priceField.ref}
+                          />
+                          <InputGroupAddon align="inline-end">đ</InputGroupAddon>
+                        </InputGroup>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -259,7 +335,11 @@ export const DialogEditField = ({ fieldId }: { fieldId: string }) => {
                       <FormLabel>
                         Trạng thái <span className="text-destructive">*</span>
                       </FormLabel>
-                      <Select value={statusField.value} onValueChange={statusField.onChange}>
+                      <Select
+                        value={statusField.value}
+                        onValueChange={statusField.onChange}
+                        items={statusItems}
+                      >
                         <FormControl>
                           <SelectTrigger className="w-full">
                             <SelectValue />

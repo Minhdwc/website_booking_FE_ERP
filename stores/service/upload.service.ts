@@ -1,7 +1,8 @@
 import { apiRequest } from '@/stores/api/api-request';
+import { UploadFolder } from '@/stores/api/types';
 
 export interface UploadResponse {
-  statusCode: number;
+  status: string;
   message: string;
   data: {
     key: string;
@@ -10,7 +11,7 @@ export interface UploadResponse {
 }
 
 export interface PresignUploadResponse {
-  statusCode: number;
+  status: string;
   message: string;
   data: {
     key: string;
@@ -20,7 +21,7 @@ export interface PresignUploadResponse {
 }
 
 export const uploadService = {
-  upload: async (file: File, folder: 'avatars' | 'venues' | 'fields' = 'avatars') => {
+  upload: async (file: File, folder: UploadFolder = 'avatars') => {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -28,11 +29,11 @@ export const uploadService = {
       method: 'POST',
       formData,
     });
-    return response as UploadResponse;
+    return response;
   },
 
   presign: async (body: {
-    folder: 'avatars' | 'venues' | 'fields';
+    folder: UploadFolder;
     filename: string;
     contentType: string;
   }) => {
@@ -40,6 +41,6 @@ export const uploadService = {
       method: 'POST',
       body,
     });
-    return response as PresignUploadResponse;
+    return response;
   },
 };

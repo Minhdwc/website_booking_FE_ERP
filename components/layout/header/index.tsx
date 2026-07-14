@@ -22,12 +22,6 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useSession } from '@/provider/session-provider';
 import { navSections } from '@/lib/utils/menu-config';
 
-const roleLabels: Record<string, string> = {
-  admin: 'Quản trị viên',
-  super_staff: 'Quản lý chi nhánh',
-  staff: 'Nhân viên',
-};
-
 export function Header() {
   const pathname = usePathname();
   const { user, logout } = useSession();

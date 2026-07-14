@@ -6,6 +6,15 @@ export function formatCurrency(value: number) {
   }).format(value);
 }
 
+export function formatCurrencyInput(value: number) {
+  if (!value || value <= 0) return '';
+  return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(value);
+}
+
+export function parseCurrencyInput(value: string) {
+  return Number(value.replace(/\D/g, '')) || 0;
+}
+
 export function formatDate(value: string) {
   return new Intl.DateTimeFormat('vi-VN', {
     day: '2-digit',

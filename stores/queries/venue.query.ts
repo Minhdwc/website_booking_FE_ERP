@@ -2,7 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { IVenue } from '@/stores/api/types';
-import { venueService } from '@/stores/service/venue.service';
+import { venueService, VenuesResponse, VenueDetailResponse } from '@/stores/service/venue.service';
 
 export type VenueListParams = {
   search?: string;
@@ -19,16 +19,16 @@ export const venueKeys = {
 };
 
 const fetchVenues = async (params?: VenueListParams) => {
-  const response = await venueService.getVenues({
+  const response = (await venueService.getVenues({
     limit: params?.limit ?? '100',
     ...(params?.search ? { search: params.search } : {}),
     ...(params?.page ? { page: params.page } : {}),
-  });
+  })) as VenuesResponse;
   return response.data;
 };
 
 const fetchVenue = async (id: string) => {
-  const response = await venueService.getVenue(id);
+  const response = (await venueService.getVenue(id)) as VenueDetailResponse;
   return response.data;
 };
 
@@ -49,7 +49,7 @@ export const useCreateVenue = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (body: Omit<IVenue, 'id' | 'createdAt' | 'updatedAt' | 'fields'>) =>
+    mutationFn: (body: Parameters<typeof venueService.createVenue>[0]) =>
       venueService.createVenue(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: venueKeys.lists() });
@@ -61,7 +61,7 @@ export const useUpdateVenue = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: Partial<IVenue> }) =>
+    mutationFn: ({ id, body }: { id: string; body: Parameters<typeof venueService.updateVenue>[1] }) =>
       venueService.updateVenue(id, body),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: venueKeys.lists() });
@@ -76,8 +76,36 @@ export const useDeleteVenue = () => {
   return useMutation({
     mutationFn: (id: string) => venueService.deleteVenue(id),
     onSuccess: (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: venueKeys.lists() });
+      queryClient.setQueriesData<IVenue[]>({ queryKey: venueKeys.lists() }, (old?: IVenue[]) =>
+        old?.filter((item) => item.id !== id),
+      );
       queryClient.removeQueries({ queryKey: venueKeys.detail(id) });
+    },
+  });
+};
+
+export const useUploadVenueImage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ venueId, file }: { venueId: string; file: File }) =>
+      venueService.uploadVenueImage(venueId, file),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: venueKeys.detail(variables.venueId) });
+      queryClient.invalidateQueries({ queryKey: venueKeys.lists() });
+    },
+  });
+};
+
+export const useDeleteVenueImage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ venueId, imageId }: { venueId: string; imageId: string }) =>
+      venueService.deleteVenueImage(venueId, imageId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: venueKeys.detail(variables.venueId) });
+      queryClient.invalidateQueries({ queryKey: venueKeys.lists() });
     },
   });
 };

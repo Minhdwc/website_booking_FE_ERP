@@ -1,41 +1,47 @@
 import { apiRequest } from '@/stores/api/api-request';
 import { ISport } from '@/stores/api/types';
 
-export interface SportResponse {
-  status: number;
-  message: string;
-  data: SportPage;
-}
-
-export interface SportPage {
-  page: number;
-  limit: number;
-  total: number;
-  data: ISport[];
-}
-
 export interface SportDetailResponse {
-  status: number;
+  status: string;
   message: string;
   data: ISport;
 }
 
 export interface SportsResponse {
-  status: number;
+  status: string;
   message: string;
   data: ISport[];
 }
 
 export const sportService = {
-  getSports: () => apiRequest<SportsResponse>('/sports', { method: 'GET' }),
+  getSports: async () => {
+    const response = await apiRequest('/sports', { method: 'GET' });
+    return response;
+  },
 
-  getSport: (id: string) => apiRequest<SportDetailResponse>(`/sports/${id}`, { method: 'GET' }),
+  getSport: async (id: string) => {
+    const response = await apiRequest(`/sports/${id}`, { method: 'GET' });
+    return response;
+  },
 
-  createSport: (body: Omit<ISport, 'id' | 'createdAt' | 'updatedAt'>) =>
-    apiRequest<SportDetailResponse>('/sports', { method: 'POST', body }),
+  createSport: async (body: { name: string }) => {
+    const response = await apiRequest('/sports', {
+      method: 'POST',
+      body,
+    });
+    return response;
+  },
 
-  updateSport: (id: string, body: Partial<ISport>) =>
-    apiRequest<SportDetailResponse>(`/sports/${id}`, { method: 'PATCH', body }),
+  updateSport: async (id: string, body: { name?: string }) => {
+    const response = await apiRequest(`/sports/${id}`, {
+      method: 'PATCH',
+      body,
+    });
+    return response;
+  },
 
-  deleteSport: (id: string) => apiRequest(`/sports/${id}`, { method: 'DELETE' }),
+  deleteSport: async (id: string) => {
+    const response = await apiRequest(`/sports/${id}`, { method: 'DELETE' });
+    return response;
+  },
 };

@@ -27,7 +27,7 @@ type SessionContextValue = {
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
-const ERP_ROLES = ['admin', 'staff', 'super_staff'];
+const ERP_ROLES = ['admin', 'staff'];
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
