@@ -27,7 +27,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-import type { IVenueSport } from '@/stores/api/types';
+import { IVenueSport } from '@/stores/api/types';
 import { useCreateVenueSport } from '@/stores/queries/venue-sport.query';
 
 const formSchema = z.object({
@@ -79,9 +79,7 @@ export const DialogRegisterVenueSport = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger
-        render={<Button size="sm" disabled={!venueId} />}
-      >
+      <DialogTrigger render={<Button size="sm" disabled={!venueId} />}>
         <PlusIcon className="size-3.5" />
         Đăng ký bộ môn
       </DialogTrigger>

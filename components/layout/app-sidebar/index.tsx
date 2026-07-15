@@ -3,13 +3,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogOutIcon } from 'lucide-react';
 
 import logoSquare from '@/assets/logo/logo-9-9.png';
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -27,7 +25,7 @@ import { usePendingBookings } from '@/stores/queries/booking.query';
 
 export const AppSidebar = () => {
   const pathname = usePathname();
-  const { user, logout } = useSession();
+  const { user } = useSession();
   const { pendingCount } = usePendingBookings();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';

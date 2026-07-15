@@ -4,7 +4,6 @@ export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
 export type PaymentMethod = 'bank_transfer' | 'momo' | 'zalopay' | 'vnpay';
 export type PaymentStatus = 'pending' | 'success' | 'failed' | 'cancelled';
 export type UserPaymentType = 'card' | 'bank_account' | 'e_wallet';
-export type VenuePaymentType = 'bank_transfer' | 'momo' | 'zalopay' | 'vnpay';
 export type UploadFolder = 'avatars' | 'venues' | 'fields' | 'payments';
 
 export interface IUser {
@@ -56,10 +55,20 @@ export interface IFieldImage extends IEntityImage {
   fieldId: string;
 }
 
+export interface IPaymentMethod {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface IVenuePaymentAccount {
   id: string;
   venueId: string;
-  type: VenuePaymentType;
+  paymentMethodId: string;
   provider?: string;
   accountNumber?: string;
   accountName?: string;
@@ -70,6 +79,7 @@ export interface IVenuePaymentAccount {
   createdAt: string;
   updatedAt: string;
   venue?: Pick<IVenue, 'id' | 'name' | 'location'>;
+  paymentMethod?: IPaymentMethod;
 }
 
 export interface IUserPaymentMethod {

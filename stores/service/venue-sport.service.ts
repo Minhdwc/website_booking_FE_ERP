@@ -1,4 +1,5 @@
 import { apiRequest } from '@/stores/api/api-request';
+import { Response } from '@/stores/api/response';
 import { IVenueSport } from '@/stores/api/types';
 
 export interface VenueSportDetailResponse {
@@ -10,11 +11,17 @@ export interface VenueSportDetailResponse {
 export interface VenueSportsResponse {
   status: string;
   message: string;
-  data: IVenueSport[];
+  data: Response<IVenueSport>;
 }
 
 export const venueSportService = {
-  getVenueSports: async (params?: { venueId?: string }) => {
+  getVenueSports: async (params?: {
+    venueId?: string;
+    search?: string;
+    page?: string;
+    limit?: string;
+    isActive?: boolean;
+  }) => {
     const response = await apiRequest('/venue-sports', {
       method: 'GET',
       params,

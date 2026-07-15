@@ -5,14 +5,10 @@ import {
   getAccessToken,
   getRefreshToken,
   setTokens,
-  type SessionUser,
+  SessionUser,
 } from '@/lib/auth/session';
-import { accountService, type AccountMeResponse } from '@/stores/service/account.service';
-import {
-  authService,
-  type AuthLoginResponse,
-  type AuthRefreshResponse,
-} from '@/stores/service/auth.service';
+import { accountService, AccountMeResponse } from '@/stores/service/account.service';
+import { authService, AuthLoginResponse, AuthRefreshResponse } from '@/stores/service/auth.service';
 import { useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 

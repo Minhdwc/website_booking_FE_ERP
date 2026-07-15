@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { BookingStatus } from '@/stores/api/types';
+import { BookingStatus } from '@/stores/api/types';
 import { useBooking, useUpdateBooking } from '@/stores/queries/booking.query';
 
 const formSchema = z.object({

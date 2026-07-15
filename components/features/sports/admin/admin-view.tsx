@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { ISport } from '@/stores/api/types';
+import { ISport } from '@/stores/api/types';
 import { useDeleteSport, useSports } from '@/stores/queries/sport.query';
 
 const formatDate = (value: string) => {

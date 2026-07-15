@@ -32,11 +32,7 @@ export const uploadService = {
     return response;
   },
 
-  presign: async (body: {
-    folder: UploadFolder;
-    filename: string;
-    contentType: string;
-  }) => {
+  presign: async (body: { folder: UploadFolder; filename: string; contentType: string }) => {
     const response = await apiRequest('/uploads/presign', {
       method: 'POST',
       body,

@@ -1,16 +1,12 @@
-import type { LucideIcon } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard,
   CalendarDays,
   Landmark,
   MapPinned,
-  Receipt,
-  Users,
-  ClipboardList,
-  Bell,
-  ChartColumn,
   Clock3,
   Dumbbell,
+  WalletCards,
 } from 'lucide-react';
 
 export type NavItem = {
@@ -33,8 +29,7 @@ export const navSections: NavSection[] = [
   {
     label: 'Vận hành',
     items: [
-      { title: 'Đặt sân', href: '/bookings', icon: CalendarDays },
-      { title: 'Thanh toán', href: '/payments', icon: Receipt },
+      { title: 'Đặt sân', href: '/bookings', icon: CalendarDays, roles: ['staff'] },
       { title: 'Sân', href: '/fields', icon: MapPinned },
       { title: 'Cơ sở', href: '/venues', icon: Landmark },
     ],
@@ -43,6 +38,7 @@ export const navSections: NavSection[] = [
     label: 'Danh mục',
     items: [
       { title: 'Bộ môn', href: '/sports', icon: Dumbbell },
+      { title: 'Phương thức TT', href: '/payment-method', icon: WalletCards },
       { title: 'Khung giờ', href: '/timeslots', icon: Clock3 },
     ],
   },

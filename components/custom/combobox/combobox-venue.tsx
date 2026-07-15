@@ -31,7 +31,7 @@ export function ComboboxVenue({ value, onChange }: ComboboxVenueProps) {
     search,
   });
 
-  const venues = data ?? [];
+  const venues = data || [];
 
   if (isLoading && venues.length === 0) {
     return <Skeleton className="h-8 w-full" />;
@@ -59,7 +59,7 @@ export function ComboboxVenue({ value, onChange }: ComboboxVenueProps) {
           />
         }
       >
-        <span className="truncate">{selectedLabel ?? 'Chọn cơ sở...'}</span>
+        <span className="truncate">{selectedLabel || 'Chọn cơ sở...'}</span>
 
         <ChevronsUpDownIcon className="size-4 shrink-0 opacity-50" />
       </PopoverTrigger>

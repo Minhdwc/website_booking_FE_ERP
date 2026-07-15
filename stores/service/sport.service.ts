@@ -1,4 +1,5 @@
 import { apiRequest } from '@/stores/api/api-request';
+import { Response } from '@/stores/api/response';
 import { ISport } from '@/stores/api/types';
 
 export interface SportDetailResponse {
@@ -10,12 +11,12 @@ export interface SportDetailResponse {
 export interface SportsResponse {
   status: string;
   message: string;
-  data: ISport[];
+  data: Response<ISport>;
 }
 
 export const sportService = {
-  getSports: async () => {
-    const response = await apiRequest('/sports', { method: 'GET' });
+  getSports: async (params?: { search?: string; page?: string; limit?: string }) => {
+    const response = await apiRequest('/sports', { method: 'GET', params });
     return response;
   },
 

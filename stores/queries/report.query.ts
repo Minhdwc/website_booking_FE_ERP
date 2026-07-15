@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { reportService, type ReportSummary } from '@/stores/service/report.service';
+import { reportService, ReportSummary } from '@/stores/service/report.service';
 
 export type ReportSummaryParams = {
   from?: string;

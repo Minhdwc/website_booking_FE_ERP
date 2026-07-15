@@ -34,7 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useSession } from '@/provider/session-provider';
-import type { BookingStatus, IField, ITimeslot } from '@/stores/api/types';
+import { BookingStatus, IField, ITimeslot } from '@/stores/api/types';
 import { useCreateBooking } from '@/stores/queries/booking.query';
 import { useFields } from '@/stores/queries/field.query';
 import { useTimeslots } from '@/stores/queries/timeslot.query';

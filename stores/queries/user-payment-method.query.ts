@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { unwrapList } from '@/stores/api/response';
 import {
   userPaymentMethodService,
   UserPaymentMethodsResponse,
@@ -9,7 +10,8 @@ import {
 } from '@/stores/service/user-payment-method.service';
 
 export type UserPaymentMethodListParams = {
-  userId?: string;
+  page?: string;
+  limit?: string;
 };
 
 export const userPaymentMethodKeys = {
@@ -22,12 +24,17 @@ export const userPaymentMethodKeys = {
 };
 
 const fetchUserPaymentMethods = async (params?: UserPaymentMethodListParams) => {
-  const response = (await userPaymentMethodService.getUserPaymentMethods(params)) as UserPaymentMethodsResponse;
-  return response.data;
+  const response = (await userPaymentMethodService.getUserPaymentMethods({
+    limit: params?.limit ?? '100',
+    ...(params?.page ? { page: params.page } : {}),
+  })) as UserPaymentMethodsResponse;
+  return unwrapList(response.data);
 };
 
 const fetchUserPaymentMethod = async (id: string) => {
-  const response = (await userPaymentMethodService.getUserPaymentMethod(id)) as UserPaymentMethodDetailResponse;
+  const response = (await userPaymentMethodService.getUserPaymentMethod(
+    id,
+  )) as UserPaymentMethodDetailResponse;
   return response.data;
 };
 

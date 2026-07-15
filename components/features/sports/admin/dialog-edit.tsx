@@ -26,7 +26,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import type { ISport } from '@/stores/api/types';
+import { ISport } from '@/stores/api/types';
 import { useUpdateSport } from '@/stores/queries/sport.query';
 
 const formSchema = z.object({

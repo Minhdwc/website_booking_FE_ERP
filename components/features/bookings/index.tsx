@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { BookingStatus, IBooking } from '@/stores/api/types';
+import { BookingStatus, IBooking } from '@/stores/api/types';
 import { useErpUiStore } from '@/stores/index.store';
 import { useBookings, useDeleteBooking } from '@/stores/queries/booking.query';
 

@@ -26,7 +26,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-import type { IVenueSport } from '@/stores/api/types';
+import { IVenueSport } from '@/stores/api/types';
 import { useUpdateVenueSport } from '@/stores/queries/venue-sport.query';
 import { Switch } from '@/components/ui/switch';
 
@@ -84,7 +84,7 @@ export const DialogEditVenueSport = ({ item }: { item: IVenueSport }) => {
         <DialogHeader>
           <DialogTitle>Sửa bộ môn</DialogTitle>
           <DialogDescription>
-            {item.sport?.name ?? 'Bộ môn'} — thông tin hiển thị cho khách khi đặt sân.
+            {item.sport?.name || 'Bộ môn'} — thông tin hiển thị cho khách khi đặt sân.
           </DialogDescription>
         </DialogHeader>
 

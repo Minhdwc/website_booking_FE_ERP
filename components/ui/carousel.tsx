@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import useEmblaCarousel, { type UseEmblaCarouselType } from 'embla-carousel-react';
+import useEmblaCarousel, { UseEmblaCarouselType } from 'embla-carousel-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -221,7 +221,7 @@ function CarouselNext({
 }
 
 export {
-  type CarouselApi,
+  CarouselApi,
   Carousel,
   CarouselContent,
   CarouselItem,

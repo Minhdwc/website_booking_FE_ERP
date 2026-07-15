@@ -1,4 +1,5 @@
 import { apiRequest } from '@/stores/api/api-request';
+import { Response } from '@/stores/api/response';
 import { IField, IFieldImage } from '@/stores/api/types';
 
 export interface FieldDetailResponse {
@@ -10,7 +11,7 @@ export interface FieldDetailResponse {
 export interface FieldsResponse {
   status: string;
   message: string;
-  data: IField[];
+  data: Response<IField>;
 }
 
 export interface FieldImageResponse {
@@ -20,7 +21,12 @@ export interface FieldImageResponse {
 }
 
 export const fieldService = {
-  getFields: async (params?: any) => {
+  getFields: async (params?: {
+    search?: string;
+    venueId?: string;
+    page?: string;
+    limit?: string;
+  }) => {
     const response = await apiRequest('/fields', { method: 'GET', params });
     return response;
   },

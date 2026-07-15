@@ -7,7 +7,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-import { ComboboxSport } from '@/components/custom/combobox/combobox-sport';
+import { ComboboxSportVenue } from '@/components/custom/combobox/combobox-sport-venue';
 import { ComboboxVenue } from '@/components/custom/combobox/combobox-venue';
 import { formatCurrencyInput, parseCurrencyInput } from '@/lib/format';
 import { Button } from '@/components/ui/button';
@@ -39,7 +39,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
-import type { FieldStatus, IField } from '@/stores/api/types';
+import { FieldStatus, IField } from '@/stores/api/types';
 import { useField, useUpdateField } from '@/stores/queries/field.query';
 
 const formatDurationMinutes = (minutes: number) => {
@@ -222,8 +222,9 @@ export const DialogEditField = ({ fieldId }: { fieldId: string }) => {
                         Bộ môn <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
-                        <ComboboxSport
+                        <ComboboxSportVenue
                           key={venueId}
+                          venueId={venueId}
                           value={sportField.value}
                           onChange={sportField.onChange}
                         />

@@ -78,6 +78,14 @@ export {
   useDeleteSport,
 } from './sport.query';
 export {
+  paymentMethodKeys,
+  usePaymentMethods,
+  usePaymentMethod,
+  useCreatePaymentMethod,
+  useUpdatePaymentMethod,
+  useDeletePaymentMethod,
+} from './payment-method.query';
+export {
   venueSportKeys,
   useVenueSports,
   useVenueSport,
@@ -86,3 +94,4 @@ export {
   useDeleteVenueSport,
 } from './venue-sport.query';
 export { timeslotKeys, useTimeslots } from './timeslot.query';
+export { vietqrKeys, useVietQrBanks } from './vietqr.query';

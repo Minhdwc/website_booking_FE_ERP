@@ -1,17 +1,11 @@
 import { apiRequest } from '@/stores/api/api-request';
+import { Response } from '@/stores/api/response';
 import { INotification } from '@/stores/api/types';
 
 export interface NotificationResponse {
   status: string;
   message: string;
-  data: NotificationPage;
-}
-
-export interface NotificationPage {
-  page: number;
-  limit: number;
-  total: number;
-  data: INotification[];
+  data: Response<INotification>;
 }
 
 export interface NotificationDetailResponse {
@@ -33,7 +27,8 @@ export interface NotificationUnreadCountResponse {
 }
 
 export const notificationService = {
-  getNotifications: () => apiRequest<NotificationResponse>('/notifications', { method: 'GET' }),
+  getNotifications: (params?: { page?: string; limit?: string }) =>
+    apiRequest<NotificationResponse>('/notifications', { method: 'GET', params }),
 
   getUnreadCount: () =>
     apiRequest<NotificationUnreadCountResponse>('/notifications/unread-count', { method: 'GET' }),

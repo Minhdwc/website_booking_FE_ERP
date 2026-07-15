@@ -27,10 +27,10 @@ export function ComboboxSport({ value, onChange, excludeIds }: ComboboxSportProp
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
-  const { data, isLoading } = useSports({ search });
+  const { data, isLoading } = useSports({ search, limit: '200' });
 
-  const excludeSet = new Set(excludeIds ?? []);
-  const sports = (data ?? []).filter((sport) => !excludeSet.has(sport.id));
+  const excludeSet = new Set(excludeIds || []);
+  const sports = (data || []).filter((sport) => !excludeSet.has(sport.id));
 
   if (isLoading && sports.length === 0) {
     return <Skeleton className="h-8 w-full" />;
@@ -58,7 +58,7 @@ export function ComboboxSport({ value, onChange, excludeIds }: ComboboxSportProp
           />
         }
       >
-        <span className="truncate">{selectedLabel ?? 'Chọn bộ môn...'}</span>
+        <span className="truncate">{selectedLabel || 'Chọn bộ môn...'}</span>
 
         <ChevronsUpDownIcon className="size-4 shrink-0 opacity-50" />
       </PopoverTrigger>

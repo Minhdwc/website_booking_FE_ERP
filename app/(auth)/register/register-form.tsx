@@ -94,7 +94,8 @@ export const RegisterForm = () => {
       toast.success('Đăng ký thành công');
       router.push('/dashboard');
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Đăng ký thất bại. Vui lòng thử lại.';
+      const message =
+        error instanceof Error ? error.message : 'Đăng ký thất bại. Vui lòng thử lại.';
       setServerError(message);
       toast.error(message);
     }
@@ -324,7 +325,10 @@ export const RegisterForm = () => {
 
       <p className="mt-5 text-center text-sm text-muted-foreground">
         Đã có tài khoản?{' '}
-        <Link href="/login" className="font-semibold text-foreground underline-offset-4 hover:underline">
+        <Link
+          href="/login"
+          className="font-semibold text-foreground underline-offset-4 hover:underline"
+        >
           Đăng nhập
         </Link>
       </p>

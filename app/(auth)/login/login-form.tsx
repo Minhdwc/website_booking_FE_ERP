@@ -45,7 +45,7 @@ export const LoginForm = () => {
       router.replace('/dashboard');
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        setServerError(err.response?.data?.message ?? 'Đăng nhập thất bại');
+        setServerError(err.response?.data?.message || 'Đăng nhập thất bại');
       } else {
         setServerError(err instanceof Error ? err.message : 'Đăng nhập thất bại');
       }
@@ -107,7 +107,9 @@ export const LoginForm = () => {
                 {...register('email')}
               />
             </div>
-            {errors.email ? <p className="text-xs text-destructive">{errors.email.message}</p> : null}
+            {errors.email ? (
+              <p className="text-xs text-destructive">{errors.email.message}</p>
+            ) : null}
           </div>
 
           <div className="space-y-1.5">
@@ -143,13 +145,6 @@ export const LoginForm = () => {
           </Button>
         </form>
       </div>
-
-      <p className="mt-5 text-center text-sm text-muted-foreground">
-        Chưa có tài khoản?{' '}
-        <Link href="/register" className="font-semibold text-foreground underline-offset-4 hover:underline">
-          Đăng ký
-        </Link>
-      </p>
       <p className="mt-2 text-center text-xs text-muted-foreground">
         Gặp vấn đề? Liên hệ quản trị viên để được hỗ trợ.
       </p>

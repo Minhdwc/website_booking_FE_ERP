@@ -1,21 +1,36 @@
 'use client';
 
-import type { QueryClient } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { paymentService, PaymentsResponse, PaymentDetailResponse } from '@/stores/service/payment.service';
+import { unwrapList } from '@/stores/api/response';
+import {
+  paymentService,
+  PaymentsResponse,
+  PaymentDetailResponse,
+} from '@/stores/service/payment.service';
+
+export type PaymentListParams = {
+  search?: string;
+  page?: string;
+  limit?: string;
+};
 
 export const paymentKeys = {
   all: ['payments'] as const,
   lists: () => [...paymentKeys.all, 'list'] as const,
-  list: () => [...paymentKeys.lists()] as const,
+  list: (params: PaymentListParams = {}) => [...paymentKeys.lists(), params] as const,
   details: () => [...paymentKeys.all, 'detail'] as const,
   detail: (id: string) => [...paymentKeys.details(), id] as const,
 };
 
-const fetchPayments = async () => {
-  const response = (await paymentService.getPayments()) as PaymentsResponse;
-  return response.data;
+const fetchPayments = async (params?: PaymentListParams) => {
+  const response = (await paymentService.getPayments({
+    limit: params?.limit ?? '100',
+    ...(params?.search ? { search: params.search } : {}),
+    ...(params?.page ? { page: params.page } : {}),
+  })) as PaymentsResponse;
+  return unwrapList(response.data);
 };
 
 const fetchPayment = async (id: string) => {
@@ -23,10 +38,10 @@ const fetchPayment = async (id: string) => {
   return response.data;
 };
 
-export const usePayments = () =>
+export const usePayments = (params?: PaymentListParams) =>
   useQuery({
-    queryKey: paymentKeys.list(),
-    queryFn: fetchPayments,
+    queryKey: paymentKeys.list(params),
+    queryFn: () => fetchPayments(params),
   });
 
 export const usePayment = (id: string) =>
@@ -52,8 +67,13 @@ export const useUpdatePayment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: Parameters<typeof paymentService.updatePayment>[1] }) =>
-      paymentService.updatePayment(id, body),
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string;
+      body: Parameters<typeof paymentService.updatePayment>[1];
+    }) => paymentService.updatePayment(id, body),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: paymentKeys.lists() });
       queryClient.invalidateQueries({ queryKey: paymentKeys.detail(variables.id) });

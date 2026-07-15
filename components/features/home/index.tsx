@@ -7,7 +7,7 @@ import {
   ChartColumnIcon,
   LandmarkIcon,
   MapPinnedIcon,
-  ReceiptIcon,
+  WalletCardsIcon,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,7 @@ const shortcuts = [
   { title: 'Đặt sân', href: '/bookings', icon: CalendarDaysIcon },
   { title: 'Sân', href: '/fields', icon: MapPinnedIcon },
   { title: 'Cơ sở', href: '/venues', icon: LandmarkIcon },
-  { title: 'Thanh toán', href: '/payments', icon: ReceiptIcon },
+  { title: 'Thanh toán', href: '/payment-method', icon: WalletCardsIcon },
 ];
 
 export const Home = () => {
