@@ -1,7 +1,7 @@
-import type { QueryClient } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { IVenue } from '@/stores/api/types';
+import { unwrapList } from '@/stores/api/response';
 import { venueService, VenuesResponse, VenueDetailResponse } from '@/stores/service/venue.service';
 
 export type VenueListParams = {
@@ -24,7 +24,7 @@ const fetchVenues = async (params?: VenueListParams) => {
     ...(params?.search ? { search: params.search } : {}),
     ...(params?.page ? { page: params.page } : {}),
   })) as VenuesResponse;
-  return response.data;
+  return unwrapList(response.data);
 };
 
 const fetchVenue = async (id: string) => {
@@ -61,8 +61,13 @@ export const useUpdateVenue = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: Parameters<typeof venueService.updateVenue>[1] }) =>
-      venueService.updateVenue(id, body),
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string;
+      body: Parameters<typeof venueService.updateVenue>[1];
+    }) => venueService.updateVenue(id, body),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: venueKeys.lists() });
       queryClient.invalidateQueries({ queryKey: venueKeys.detail(variables.id) });
@@ -76,9 +81,7 @@ export const useDeleteVenue = () => {
   return useMutation({
     mutationFn: (id: string) => venueService.deleteVenue(id),
     onSuccess: (_data, id) => {
-      queryClient.setQueriesData<IVenue[]>({ queryKey: venueKeys.lists() }, (old?: IVenue[]) =>
-        old?.filter((item) => item.id !== id),
-      );
+      queryClient.invalidateQueries({ queryKey: venueKeys.lists() });
       queryClient.removeQueries({ queryKey: venueKeys.detail(id) });
     },
   });

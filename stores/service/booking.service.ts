@@ -1,17 +1,11 @@
 import { apiRequest } from '@/stores/api/api-request';
+import { Response } from '@/stores/api/response';
 import { BookingStatus, IBooking } from '@/stores/api/types';
 
 export interface BookingResponse {
   status: number;
   message: string;
-  data: BookingPage;
-}
-
-export interface BookingPage {
-  page: number;
-  limit: number;
-  total: number;
-  data: IBooking[];
+  data: Response<IBooking>;
 }
 
 export interface BookingDetailResponse {
@@ -20,14 +14,9 @@ export interface BookingDetailResponse {
   data: IBooking;
 }
 
-export interface BookingsResponse {
-  status: number;
-  message: string;
-  data: IBooking[];
-}
-
 export const bookingService = {
-  getBookings: () => apiRequest<BookingResponse>('/bookings', { method: 'GET' }),
+  getBookings: (params?: { search?: string; page?: string; limit?: string }) =>
+    apiRequest<BookingResponse>('/bookings', { method: 'GET', params }),
 
   getBooking: (id: string) =>
     apiRequest<BookingDetailResponse>(`/bookings/${id}`, { method: 'GET' }),

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useState, ReactNode } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ClockIcon, InfoIcon, Loader2Icon, MapPinIcon, PlusIcon } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';

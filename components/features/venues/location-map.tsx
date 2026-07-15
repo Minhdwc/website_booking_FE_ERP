@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import maplibregl, { type Map, type Marker } from 'maplibre-gl';
+import maplibregl, { Map, Marker } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 type VenueLocationMapProps = {

@@ -2,25 +2,31 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { INotification } from '@/stores/api/types';
+import { unwrapList } from '@/stores/api/response';
+import { INotification } from '@/stores/api/types';
 import {
   notificationService,
-  type NotificationPage,
-  type NotificationResponse,
-  type NotificationUnreadCountResponse,
+  NotificationUnreadCountResponse,
 } from '@/stores/service/notification.service';
+
+export type NotificationListParams = {
+  page?: string;
+  limit?: string;
+};
 
 export const notificationKeys = {
   all: ['notifications'] as const,
   lists: () => [...notificationKeys.all, 'list'] as const,
-  list: () => [...notificationKeys.lists()] as const,
+  list: (params: NotificationListParams = {}) => [...notificationKeys.lists(), params] as const,
   unreadCount: () => [...notificationKeys.all, 'unread-count'] as const,
 };
 
-const fetchNotifications = async (): Promise<INotification[]> => {
-  const response = await notificationService.getNotifications();
-  const page = (response as NotificationResponse).data as NotificationPage;
-  return page?.data ?? [];
+const fetchNotifications = async (params?: NotificationListParams): Promise<INotification[]> => {
+  const response = await notificationService.getNotifications({
+    limit: params?.limit ?? '50',
+    ...(params?.page ? { page: params.page } : {}),
+  });
+  return unwrapList(response.data);
 };
 
 const fetchUnreadCount = async (): Promise<number> => {
@@ -28,10 +34,10 @@ const fetchUnreadCount = async (): Promise<number> => {
   return (response as NotificationUnreadCountResponse).data ?? 0;
 };
 
-export const useNotifications = () =>
+export const useNotifications = (params?: NotificationListParams) =>
   useQuery({
-    queryKey: notificationKeys.list(),
-    queryFn: fetchNotifications,
+    queryKey: notificationKeys.list(params),
+    queryFn: () => fetchNotifications(params),
     staleTime: 0,
   });
 

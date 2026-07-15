@@ -2,10 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { unwrapList } from '@/stores/api/response';
 import { sportService, SportsResponse, SportDetailResponse } from '@/stores/service/sport.service';
 
 export type SportListParams = {
   search?: string;
+  page?: string;
+  limit?: string;
 };
 
 export const sportKeys = {
@@ -17,13 +20,12 @@ export const sportKeys = {
 };
 
 const fetchSports = async (params?: SportListParams) => {
-  const response = (await sportService.getSports()) as SportsResponse;
-  const sports = response.data;
-  const keyword = params?.search?.trim().toLowerCase();
-
-  if (!keyword) return sports;
-
-  return sports.filter((sport) => sport.name.toLowerCase().includes(keyword));
+  const response = (await sportService.getSports({
+    limit: params?.limit ?? '100',
+    ...(params?.search ? { search: params.search } : {}),
+    ...(params?.page ? { page: params.page } : {}),
+  })) as SportsResponse;
+  return unwrapList(response.data);
 };
 
 const fetchSport = async (id: string) => {

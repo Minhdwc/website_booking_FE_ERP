@@ -2,19 +2,34 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { amenityService, AmenitiesResponse, AmenityDetailResponse } from '@/stores/service/amenity.service';
+import { unwrapList } from '@/stores/api/response';
+import {
+  amenityService,
+  AmenitiesResponse,
+  AmenityDetailResponse,
+} from '@/stores/service/amenity.service';
+
+export type AmenityListParams = {
+  search?: string;
+  page?: string;
+  limit?: string;
+};
 
 export const amenityKeys = {
   all: ['amenities'] as const,
   lists: () => [...amenityKeys.all, 'list'] as const,
-  list: () => [...amenityKeys.lists()] as const,
+  list: (params: AmenityListParams = {}) => [...amenityKeys.lists(), params] as const,
   details: () => [...amenityKeys.all, 'detail'] as const,
   detail: (id: string) => [...amenityKeys.details(), id] as const,
 };
 
-const fetchAmenities = async () => {
-  const response = (await amenityService.getAmenities()) as AmenitiesResponse;
-  return response.data;
+const fetchAmenities = async (params?: AmenityListParams) => {
+  const response = (await amenityService.getAmenities({
+    limit: params?.limit ?? '100',
+    ...(params?.search ? { search: params.search } : {}),
+    ...(params?.page ? { page: params.page } : {}),
+  })) as AmenitiesResponse;
+  return unwrapList(response.data);
 };
 
 const fetchAmenity = async (id: string) => {
@@ -22,10 +37,10 @@ const fetchAmenity = async (id: string) => {
   return response.data;
 };
 
-export const useAmenities = () =>
+export const useAmenities = (params?: AmenityListParams) =>
   useQuery({
-    queryKey: amenityKeys.list(),
-    queryFn: fetchAmenities,
+    queryKey: amenityKeys.list(params),
+    queryFn: () => fetchAmenities(params),
   });
 
 export const useAmenity = (id: string) =>
@@ -51,8 +66,13 @@ export const useUpdateAmenity = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: Parameters<typeof amenityService.updateAmenity>[1] }) =>
-      amenityService.updateAmenity(id, body),
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string;
+      body: Parameters<typeof amenityService.updateAmenity>[1];
+    }) => amenityService.updateAmenity(id, body),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: amenityKeys.lists() });
       queryClient.invalidateQueries({ queryKey: amenityKeys.detail(variables.id) });

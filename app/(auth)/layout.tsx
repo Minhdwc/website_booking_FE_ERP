@@ -1,5 +1,4 @@
 import Image from 'next/image';
-
 import logoWide from '@/assets/logo/logo-16-9.png';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -22,7 +21,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <Image
             src={logoWide}
             alt="Minh Đức Booking Sport"
-            className="h-16 w-auto brightness-0 invert"
+            className="h-16 w-auto rounded-sm"
             priority
           />
         </div>
@@ -39,16 +38,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <p className="max-w-md text-base leading-relaxed text-white/70">
             ERP nội bộ giúp quản lý cơ sở, sân, lịch đặt và thanh toán trên một bảng điều khiển.
           </p>
-          <ul className="grid gap-3 text-sm text-white/80 sm:grid-cols-3">
-            {['Cơ sở & sân', 'Đặt chỗ realtime', 'Thanh toán'].map((item) => (
-              <li
-                key={item}
-                className="rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 backdrop-blur-sm"
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
         </div>
 
         <p className="relative text-sm text-white/45">

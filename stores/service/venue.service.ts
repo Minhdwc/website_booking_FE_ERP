@@ -1,4 +1,5 @@
 import { apiRequest } from '@/stores/api/api-request';
+import { Response } from '@/stores/api/response';
 import { IVenue, IVenueImage } from '@/stores/api/types';
 
 export interface VenueDetailResponse {
@@ -10,7 +11,7 @@ export interface VenueDetailResponse {
 export interface VenuesResponse {
   status: string;
   message: string;
-  data: IVenue[];
+  data: Response<IVenue>;
 }
 
 export interface VenueImageResponse {
@@ -20,7 +21,7 @@ export interface VenueImageResponse {
 }
 
 export const venueService = {
-  getVenues: async (params?: any) => {
+  getVenues: async (params?: { search?: string; page?: string; limit?: string }) => {
     const response = await apiRequest('/venues', { method: 'GET', params });
     return response;
   },

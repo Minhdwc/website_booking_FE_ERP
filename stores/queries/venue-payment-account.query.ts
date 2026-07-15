@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { unwrapList } from '@/stores/api/response';
 import {
   venuePaymentAccountService,
   VenuePaymentAccountsResponse,
@@ -10,6 +11,8 @@ import {
 
 export type VenuePaymentAccountListParams = {
   venueId?: string;
+  page?: string;
+  limit?: string;
 };
 
 export const venuePaymentAccountKeys = {
@@ -22,12 +25,18 @@ export const venuePaymentAccountKeys = {
 };
 
 const fetchVenuePaymentAccounts = async (params?: VenuePaymentAccountListParams) => {
-  const response = (await venuePaymentAccountService.getVenuePaymentAccounts(params)) as VenuePaymentAccountsResponse;
-  return response.data;
+  const response = (await venuePaymentAccountService.getVenuePaymentAccounts({
+    limit: params?.limit ?? '100',
+    ...(params?.venueId ? { venueId: params.venueId } : {}),
+    ...(params?.page ? { page: params.page } : {}),
+  })) as VenuePaymentAccountsResponse;
+  return unwrapList(response.data);
 };
 
 const fetchVenuePaymentAccount = async (id: string) => {
-  const response = (await venuePaymentAccountService.getVenuePaymentAccount(id)) as VenuePaymentAccountDetailResponse;
+  const response = (await venuePaymentAccountService.getVenuePaymentAccount(
+    id,
+  )) as VenuePaymentAccountDetailResponse;
   return response.data;
 };
 
@@ -48,8 +57,9 @@ export const useCreateVenuePaymentAccount = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (body: Parameters<typeof venuePaymentAccountService.createVenuePaymentAccount>[0]) =>
-      venuePaymentAccountService.createVenuePaymentAccount(body),
+    mutationFn: (
+      body: Parameters<typeof venuePaymentAccountService.createVenuePaymentAccount>[0],
+    ) => venuePaymentAccountService.createVenuePaymentAccount(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: venuePaymentAccountKeys.lists() });
       queryClient.invalidateQueries({ queryKey: ['venues'] });

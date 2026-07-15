@@ -1,4 +1,5 @@
 import { apiRequest } from '@/stores/api/api-request';
+import { Response } from '@/stores/api/response';
 import { IUserPaymentMethod } from '@/stores/api/types';
 
 export interface UserPaymentMethodDetailResponse {
@@ -10,11 +11,11 @@ export interface UserPaymentMethodDetailResponse {
 export interface UserPaymentMethodsResponse {
   status: string;
   message: string;
-  data: IUserPaymentMethod[];
+  data: Response<IUserPaymentMethod>;
 }
 
 export const userPaymentMethodService = {
-  getUserPaymentMethods: async (params?: { userId?: string }) => {
+  getUserPaymentMethods: async (params?: { page?: string; limit?: string }) => {
     const response = await apiRequest('/user-payment-methods', {
       method: 'GET',
       params,

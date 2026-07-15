@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
-import { driver, type DriveStep } from 'driver.js';
+import { driver, DriveStep } from 'driver.js';
 import 'driver.js/dist/driver.css';
 
 const ONBOARDING_STORAGE_KEY = 'erp:venues-onboarding-done';

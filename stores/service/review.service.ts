@@ -1,17 +1,11 @@
 import { apiRequest } from '@/stores/api/api-request';
+import { Response } from '@/stores/api/response';
 import { IReview } from '@/stores/api/types';
 
 export interface ReviewResponse {
   status: string;
   message: string;
-  data: ReviewPage;
-}
-
-export interface ReviewPage {
-  page: number;
-  limit: number;
-  total: number;
-  data: IReview[];
+  data: Response<IReview>;
 }
 
 export interface ReviewDetailResponse {
@@ -20,15 +14,9 @@ export interface ReviewDetailResponse {
   data: IReview;
 }
 
-export interface ReviewsResponse {
-  status: string;
-  message: string;
-  data: IReview[];
-}
-
 export const reviewService = {
-  getReviews: async () => {
-    const response = await apiRequest('/reviews', { method: 'GET' });
+  getReviews: async (params?: { search?: string; page?: string; limit?: string }) => {
+    const response = await apiRequest('/reviews', { method: 'GET', params });
     return response;
   },
 

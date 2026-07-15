@@ -1,8 +1,9 @@
 'use client';
 
-import type { QueryClient } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { unwrapList } from '@/stores/api/response';
 import { fieldService, FieldsResponse, FieldDetailResponse } from '@/stores/service/field.service';
 
 export type FieldListParams = {
@@ -27,7 +28,7 @@ const fetchFields = async (params?: FieldListParams) => {
     ...(params?.venueId ? { venueId: params.venueId } : {}),
     ...(params?.page ? { page: params.page } : {}),
   })) as FieldsResponse;
-  return response.data;
+  return unwrapList(response.data);
 };
 
 const fetchField = async (id: string) => {
@@ -64,8 +65,13 @@ export const useUpdateField = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: Parameters<typeof fieldService.updateField>[1] }) =>
-      fieldService.updateField(id, body),
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string;
+      body: Parameters<typeof fieldService.updateField>[1];
+    }) => fieldService.updateField(id, body),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: fieldKeys.lists() });
       queryClient.invalidateQueries({ queryKey: fieldKeys.detail(variables.id) });

@@ -1,4 +1,5 @@
 import { apiRequest } from '@/stores/api/api-request';
+import { Response } from '@/stores/api/response';
 import { IVenuePaymentAccount } from '@/stores/api/types';
 
 export interface VenuePaymentAccountDetailResponse {
@@ -10,11 +11,11 @@ export interface VenuePaymentAccountDetailResponse {
 export interface VenuePaymentAccountsResponse {
   status: string;
   message: string;
-  data: IVenuePaymentAccount[];
+  data: Response<IVenuePaymentAccount>;
 }
 
 export const venuePaymentAccountService = {
-  getVenuePaymentAccounts: async (params?: { venueId?: string }) => {
+  getVenuePaymentAccounts: async (params?: { venueId?: string; page?: string; limit?: string }) => {
     const response = await apiRequest('/venue-payment-accounts', {
       method: 'GET',
       params,
@@ -31,7 +32,7 @@ export const venuePaymentAccountService = {
 
   createVenuePaymentAccount: async (body: {
     venueId: string;
-    type: IVenuePaymentAccount['type'];
+    paymentMethodId: string;
     provider?: string;
     accountNumber?: string;
     accountName?: string;

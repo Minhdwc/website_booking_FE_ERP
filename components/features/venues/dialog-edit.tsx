@@ -66,7 +66,7 @@ export const DialogEditVenue = ({ venueId }: { venueId: string }) => {
   const updateVenueMutation = useUpdateVenue();
   const isSaving = updateVenueMutation.isPending;
 
-  const isHasRestTime = restEnabled ?? Boolean(venue?.restStartTime && venue?.restEndTime);
+  const isHasRestTime = restEnabled || Boolean(venue?.restStartTime && venue?.restEndTime);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

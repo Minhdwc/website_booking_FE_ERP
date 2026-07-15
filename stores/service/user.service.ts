@@ -1,16 +1,11 @@
 import { apiRequest } from '@/stores/api/api-request';
+import { Response } from '@/stores/api/response';
 import { IUser } from '@/stores/api/types';
+
 export interface UserResponse {
   status: string;
   message: string;
-  data: UserPage;
-}
-
-export interface UserPage {
-  page: number;
-  limit: number;
-  total: number;
-  data: IUser[];
+  data: Response<IUser>;
 }
 
 export interface UserDetailResponse {
@@ -19,15 +14,9 @@ export interface UserDetailResponse {
   data: IUser;
 }
 
-export interface UsersResponse {
-  status: string;
-  message: string;
-  data: IUser[];
-}
-
 export const userService = {
-  getUsers: async () => {
-    const response = await apiRequest('/users', { method: 'GET' });
+  getUsers: async (params?: { search?: string; page?: string; limit?: string }) => {
+    const response = await apiRequest('/users', { method: 'GET', params });
     return response;
   },
 

@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { IVenueSport } from '@/stores/api/types';
+import { IVenueSport } from '@/stores/api/types';
 import {
   useDeleteVenueSport,
   useUpdateVenueSport,
@@ -64,7 +64,7 @@ export const StaffSportsView = () => {
   };
 
   const handleUnregister = async (item: IVenueSport) => {
-    if (!window.confirm(`Hủy đăng ký bộ môn "${item.sport?.name ?? ''}"?`)) return;
+    if (!window.confirm(`Hủy đăng ký bộ môn "${item.sport?.name || ''}"?`)) return;
 
     try {
       await deleteMutation.mutateAsync(item.id);
@@ -175,7 +175,7 @@ export const StaffSportsView = () => {
                       <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-muted-foreground">
                         <DumbbellIcon className="size-4" />
                       </div>
-                      <span className="font-semibold text-heading">{item.sport?.name ?? '—'}</span>
+                      <span className="font-semibold text-heading">{item.sport?.name || '—'}</span>
                     </div>
                   </TableCell>
                   <TableCell className="max-w-[360px] px-4 py-3.5">
@@ -244,7 +244,7 @@ export const StaffSportsView = () => {
             <DumbbellIcon className="size-5" />
           </div>
           <h2 className="mt-4 text-base font-semibold text-heading">
-            {selectedVenue?.name ?? 'Cơ sở'} chưa có bộ môn
+            {selectedVenue?.name || 'Cơ sở'} chưa có bộ môn
           </h2>
           <p className="mt-1 max-w-sm text-sm text-muted-foreground">
             Đăng ký bộ môn từ catalog để khách có thể tìm và đặt sân theo từng loại hình.

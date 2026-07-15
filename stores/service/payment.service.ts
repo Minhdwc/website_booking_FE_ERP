@@ -1,4 +1,5 @@
 import { apiRequest } from '@/stores/api/api-request';
+import { Response } from '@/stores/api/response';
 import { IPayment } from '@/stores/api/types';
 
 export interface PaymentDetailResponse {
@@ -10,7 +11,7 @@ export interface PaymentDetailResponse {
 export interface PaymentsResponse {
   status: string;
   message: string;
-  data: IPayment[];
+  data: Response<IPayment>;
 }
 
 export interface VnpayUrlResponse {
@@ -20,8 +21,8 @@ export interface VnpayUrlResponse {
 }
 
 export const paymentService = {
-  getPayments: async () => {
-    const response = await apiRequest('/payments', { method: 'GET' });
+  getPayments: async (params?: { search?: string; page?: string; limit?: string }) => {
+    const response = await apiRequest('/payments', { method: 'GET', params });
     return response;
   },
 
@@ -46,7 +47,10 @@ export const paymentService = {
   updatePayment: async (
     id: string,
     body: Partial<
-      Pick<IPayment, 'bookingId' | 'method' | 'status' | 'venuePaymentAccountId' | 'transactionCode'>
+      Pick<
+        IPayment,
+        'bookingId' | 'method' | 'status' | 'venuePaymentAccountId' | 'transactionCode'
+      >
     >,
   ) => {
     const response = await apiRequest(`/payments/${id}`, {

@@ -31,7 +31,7 @@ export function ComboboxFields({ value, onChange }: ComboboxFieldsProps) {
     search,
   });
 
-  const fields = data ?? [];
+  const fields = data || [];
 
   if (isLoading && fields.length === 0) {
     return <Skeleton className="h-8 w-full" />;
@@ -59,7 +59,7 @@ export function ComboboxFields({ value, onChange }: ComboboxFieldsProps) {
           />
         }
       >
-        <span className="truncate">{selectedLabel ?? 'Chọn sân...'}</span>
+        <span className="truncate">{selectedLabel || 'Chọn sân...'}</span>
 
         <ChevronsUpDownIcon className="size-4 shrink-0 opacity-50" />
       </PopoverTrigger>

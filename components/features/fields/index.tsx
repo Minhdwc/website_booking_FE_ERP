@@ -29,7 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { FieldStatus, IField, IVenue } from '@/stores/api/types';
+import { FieldStatus, IField, IVenue } from '@/stores/api/types';
 import { useErpUiStore } from '@/stores/index.store';
 import { useDeleteField, useFields } from '@/stores/queries/field.query';
 import { useVenues } from '@/stores/queries/venue.query';
@@ -99,9 +99,6 @@ export const FieldsPage = () => {
               </Badge>
             )}
           </div>
-          <p className="text-sm text-muted-foreground">
-            Quản lý sân theo cơ sở và bộ môn — gắn giá và trạng thái hoạt động.
-          </p>
         </div>
 
         {(isNotEmpty || isFiltering) && hasVenues && <DialogCreateField />}

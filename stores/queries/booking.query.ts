@@ -2,7 +2,8 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { BookingStatus, IBooking } from '@/stores/api/types';
+import { unwrapList } from '@/stores/api/response';
+import { BookingStatus, IBooking } from '@/stores/api/types';
 import { bookingService } from '@/stores/service/booking.service';
 
 export type BookingListParams = {
@@ -19,12 +20,13 @@ export const bookingKeys = {
   detail: (id: string) => [...bookingKeys.details(), id] as const,
 };
 
-const fetchBookings = async (): Promise<IBooking[]> => {
-  const response = await bookingService.getBookings();
-  const payload = response.data as IBooking[] | { data?: IBooking[] } | undefined;
-  if (Array.isArray(payload)) return payload;
-  if (payload && Array.isArray(payload.data)) return payload.data;
-  return [];
+const fetchBookings = async (params?: BookingListParams): Promise<IBooking[]> => {
+  const response = await bookingService.getBookings({
+    limit: params?.limit ?? '100',
+    ...(params?.search ? { search: params.search } : {}),
+    ...(params?.page ? { page: params.page } : {}),
+  });
+  return unwrapList(response.data);
 };
 
 const fetchBooking = async (id: string) => {
@@ -35,7 +37,7 @@ const fetchBooking = async (id: string) => {
 export const useBookings = (params?: BookingListParams) =>
   useQuery({
     queryKey: bookingKeys.list(params),
-    queryFn: fetchBookings,
+    queryFn: () => fetchBookings(params),
     refetchInterval: 60_000,
     staleTime: 30_000,
   });
@@ -96,7 +98,7 @@ const getPendingBookings = (bookings: IBooking[]) =>
 
 /** Derived view of pending bookings from the shared bookings query. */
 export const usePendingBookings = (limit = 5) => {
-  const { data: bookings = [], isLoading } = useBookings();
+  const { data: bookings = [], isLoading } = useBookings({ limit: '100' });
   const allPending = getPendingBookings(bookings);
 
   return {
