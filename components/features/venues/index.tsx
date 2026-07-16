@@ -1,11 +1,11 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Building2Icon,
   ClockIcon,
   EyeIcon,
-  TrashIcon,
   MapPinIcon,
   MoonIcon,
   MoreHorizontalIcon,
@@ -21,7 +21,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -50,16 +49,23 @@ export const VenuesPage = () => {
   const setVenueSearch = useErpUiStore((state) => state.setVenueSearch);
   const deleteVenueMutation = useDeleteVenue();
 
+  useEffect(() => {
+    setVenueSearch('');
+  }, [setVenueSearch]);
+
   const {
-    data: venues = [],
-    isLoading,
+    data: venuesData,
+    isSuccess,
     isError,
     error,
   } = useVenues(venueSearch ? { search: venueSearch } : undefined);
 
+  const venues = isSuccess ? (venuesData ?? []) : [];
   const isNotEmpty = venues.length > 0;
   const isSearching = venueSearch.trim().length > 0;
-  const { startTour } = useVenuesOnboarding({ enabled: !isLoading && !isNotEmpty });
+  const isEmpty = isSuccess && !isNotEmpty;
+  const isPending = !isSuccess && !isError;
+  const { startTour } = useVenuesOnboarding({ enabled: isEmpty });
 
   const handleDeleteVenue = async (venueId: string) => {
     try {
@@ -75,7 +81,7 @@ export const VenuesPage = () => {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-7 lg:px-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
@@ -91,7 +97,7 @@ export const VenuesPage = () => {
         {(isNotEmpty || isSearching) && <VenuesCreateDialog />}
       </header>
 
-      <InputGroup className="max-w-sm bg-surface">
+      <InputGroup className="max-w-sm rounded-2xl bg-card">
         <InputGroupAddon>
           <SearchIcon />
         </InputGroupAddon>
@@ -120,8 +126,8 @@ export const VenuesPage = () => {
         </div>
       )}
 
-      {isLoading && !isError && (
-        <div className="overflow-hidden rounded-xl border border-border/60 bg-surface shadow-sm">
+      {isPending && (
+        <div className="overflow-hidden rounded-[22px] border border-border/80 bg-card shadow-sm">
           <div className="border-b border-border/60 bg-muted/40 px-4 py-3.5">
             <Skeleton className="h-4 w-2/3 max-w-md" />
           </div>
@@ -141,7 +147,7 @@ export const VenuesPage = () => {
         </div>
       )}
 
-      {!isLoading && !isError && isNotEmpty && (
+      {isSuccess && isNotEmpty && (
         <div className="overflow-hidden rounded-xl border border-border/60 bg-surface shadow-sm">
           <Table>
             <TableHeader>
@@ -258,24 +264,12 @@ export const VenuesPage = () => {
         </div>
       )}
 
-      {!isLoading && !isError && !isNotEmpty && isSearching && (
-        <div className="flex flex-col items-center rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
-          <div className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
-            <SearchIcon className="size-5" />
-          </div>
-          <h2 className="mt-4 text-base font-semibold text-heading">Không tìm thấy cơ sở nào</h2>
-          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-            Không có cơ sở nào khớp với “{venueSearch}”. Thử từ khoá khác hoặc xoá bộ lọc.
-          </p>
-          <Button variant="outline" size="sm" className="mt-4" onClick={() => setVenueSearch('')}>
-            <XIcon className="size-3.5" />
-            Xoá tìm kiếm
-          </Button>
-        </div>
-      )}
-
-      {!isLoading && !isError && !isNotEmpty && !isSearching && (
-        <VenuesSetupPage onReplayTour={startTour} />
+      {isEmpty && (
+        <VenuesSetupPage
+          onReplayTour={startTour}
+          searchQuery={isSearching ? venueSearch : undefined}
+          onClearSearch={isSearching ? () => setVenueSearch('') : undefined}
+        />
       )}
     </div>
   );

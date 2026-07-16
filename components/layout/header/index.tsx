@@ -28,12 +28,17 @@ export function Header() {
   const title = navSections.flatMap((s) => s.items).find((item) => item.href === pathname)?.title;
 
   return (
-    <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface px-4">
-      <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-heading" />
-      <Separator orientation="vertical" className="mx-1 h-4" />
-      <h1 className="text-sm font-semibold text-heading">{title}</h1>
+    <header className="sticky top-0 z-10 flex h-20 shrink-0 items-center gap-3 border-b border-border/70 bg-white px-6">
+      <SidebarTrigger className="-ml-1 rounded-xl text-muted-foreground hover:bg-brand-secondary-50 hover:text-brand-secondary-700" />
+      <Separator orientation="vertical" className="mx-1 h-5" />
+      <div className="min-w-0">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          ERP nội bộ
+        </p>
+        <h1 className="truncate text-sm font-semibold text-heading">{title}</h1>
+      </div>
 
-      <div className="ml-auto flex items-center gap-1.5">
+      <div className="ml-auto flex items-center gap-2">
         <Search />
         <Notification />
 
@@ -42,17 +47,22 @@ export function Header() {
             render={
               <Button
                 variant="ghost"
-                size="icon-sm"
-                className="rounded-full"
+                size="sm"
+                className="h-11 rounded-2xl px-2.5"
                 aria-label="Tài khoản"
               />
             }
           >
-            <Avatar size="default">
-              <AvatarFallback className="bg-brand-secondary-500 text-xs font-semibold text-black">
-                {user?.name?.at(0)?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <div className="flex items-center gap-2">
+              <Avatar size="default">
+                <AvatarFallback className="bg-brand-secondary-50 text-xs font-semibold text-brand-secondary-700">
+                  {user?.name?.at(0)?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="hidden text-left sm:block">
+                <p className="max-w-28 truncate text-sm font-semibold text-heading">{user?.name}</p>
+              </div>
+            </div>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent className="w-56" align="end" side="bottom">

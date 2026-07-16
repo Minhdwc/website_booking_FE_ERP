@@ -115,15 +115,33 @@ export async function apiRequest<T>(
   path: string,
   { method, body, formData, params, headers }: ApiRequestParams,
 ): Promise<T> {
-  const res = await api.request<T>({
-    url: `${API_PREFIX}${path}`,
-    method,
-    params,
-    headers: {
-      ...(formData ? {} : { 'Content-Type': 'application/json' }),
-      ...headers,
-    },
-    data: formData ?? body,
-  });
-  return res.data;
+  const requestHeaders: Record<string, string> = {
+    ...(formData ? {} : { 'Content-Type': 'application/json' }),
+    ...headers,
+  };
+
+  // Let the browser set multipart boundary for FormData
+  if (formData) {
+    delete requestHeaders['Content-Type'];
+  }
+
+  try {
+    const res = await api.request<T>({
+      url: `${API_PREFIX}${path}`,
+      method,
+      params,
+      headers: requestHeaders,
+      data: formData ?? body,
+    });
+    return res.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const message =
+        (error.response?.data as { message?: string } | undefined)?.message ||
+        error.message ||
+        'Request failed';
+      throw new Error(typeof message === 'string' ? message : 'Request failed');
+    }
+    throw error;
+  }
 }

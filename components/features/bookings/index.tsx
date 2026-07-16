@@ -22,6 +22,7 @@ import {
 import { BookingStatus, IBooking } from '@/stores/api/types';
 import { useErpUiStore } from '@/stores/index.store';
 import { useBookings, useDeleteBooking } from '@/stores/queries/booking.query';
+import { formatDate, formatDateTime } from '@/lib/format';
 
 const statusLabel: Record<BookingStatus, string> = {
   pending: 'Chờ xác nhận',
@@ -182,10 +183,12 @@ export const BookingsPage = () => {
                   <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
                     {booking.field?.name || '—'}
                   </TableCell>
-                  <TableCell className="px-4 py-3.5 text-sm tabular-nums">{booking.date}</TableCell>
+                  <TableCell className="px-4 py-3.5 text-sm tabular-nums">
+                    {formatDate(booking.date)}
+                  </TableCell>
                   <TableCell className="hidden px-4 py-3.5 text-sm tabular-nums text-muted-foreground md:table-cell">
                     {booking.timeslot
-                      ? `${booking.timeslot.startTime} – ${booking.timeslot.endTime}`
+                      ? `${formatDateTime(booking.timeslot.startTime)} – ${formatDateTime(booking.timeslot.endTime)}`
                       : '—'}
                   </TableCell>
                   <TableCell className="px-4 py-3.5">

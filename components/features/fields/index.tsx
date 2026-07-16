@@ -1,7 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { LandPlotIcon, MoreHorizontalIcon, SearchIcon, Trash2Icon, XIcon } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  EyeIcon,
+  LandPlotIcon,
+  MoreHorizontalIcon,
+  SearchIcon,
+  Trash2Icon,
+  XIcon,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { formatCurrency } from '@/lib/format';
@@ -31,7 +40,7 @@ import {
 } from '@/components/ui/table';
 import { FieldStatus, IField, IVenue } from '@/stores/api/types';
 import { useErpUiStore } from '@/stores/index.store';
-import { useDeleteField, useFields } from '@/stores/queries/field.query';
+import { useDeleteField, prefetchField, useFields } from '@/stores/queries/field.query';
 import { useVenues } from '@/stores/queries/venue.query';
 
 const formatDurationMinutes = (minutes: number) => {
@@ -54,6 +63,8 @@ const statusVariant: Record<FieldStatus, 'default' | 'secondary' | 'outline' | '
 };
 
 export const FieldsPage = () => {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const fieldVenueFilter = useErpUiStore((state) => state.fieldVenueFilter);
   const setFieldVenueFilter = useErpUiStore((state) => state.setFieldVenueFilter);
@@ -88,7 +99,7 @@ export const FieldsPage = () => {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-7 lg:px-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
@@ -106,7 +117,7 @@ export const FieldsPage = () => {
 
       {(isNotEmpty || isFiltering) && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <InputGroup className="max-w-sm bg-card">
+          <InputGroup className="max-w-sm rounded-2xl bg-card">
             <InputGroupAddon>
               <SearchIcon />
             </InputGroupAddon>
@@ -161,7 +172,7 @@ export const FieldsPage = () => {
       )}
 
       {isLoading && !isError && (
-        <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+        <div className="overflow-hidden rounded-[22px] border border-border/80 bg-card shadow-sm">
           <div className="space-y-0 divide-y divide-border/40">
             {[0, 1, 2, 3].map((row) => (
               <div key={row} className="flex items-center gap-4 px-4 py-4">
@@ -178,7 +189,7 @@ export const FieldsPage = () => {
       )}
 
       {!isLoading && !isError && isNotEmpty && (
-        <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+        <div className="overflow-hidden rounded-[22px] border border-border/80 bg-card shadow-sm">
           <Table>
             <TableHeader>
               <TableRow className="border-b border-border/60 bg-muted/40">
@@ -199,7 +210,9 @@ export const FieldsPage = () => {
               {fields.map((field: IField) => (
                 <TableRow
                   key={field.id}
-                  className="group border-b border-border/40 last:border-b-0"
+                  className="group cursor-pointer border-b border-border/40 last:border-b-0 hover:bg-muted/30"
+                  onMouseEnter={() => prefetchField(queryClient, field.id)}
+                  onClick={() => router.push(`/fields/${field.id}`)}
                 >
                   <TableCell className="max-w-[220px] px-4 py-3.5">
                     <div className="flex items-center gap-3">
@@ -239,7 +252,10 @@ export const FieldsPage = () => {
                   <TableCell className="px-4 py-3.5">
                     <Badge variant={statusVariant[field.status]}>{statusLabel[field.status]}</Badge>
                   </TableCell>
-                  <TableCell className="px-3 py-3.5 text-right">
+                  <TableCell
+                    className="px-3 py-3.5 text-right"
+                    onClick={(event) => event.stopPropagation()}
+                  >
                     <Popover>
                       <PopoverTrigger
                         render={
@@ -254,6 +270,14 @@ export const FieldsPage = () => {
                         <MoreHorizontalIcon className="size-4" />
                       </PopoverTrigger>
                       <PopoverContent align="end" className="w-44 gap-0 p-1">
+                        <Button
+                          variant="ghost"
+                          className="h-9 w-full justify-start gap-2 px-3 text-blue-500 hover:text-blue-600"
+                          onClick={() => router.push(`/fields/${field.id}`)}
+                        >
+                          <EyeIcon className="size-3.5 text-blue-500" />
+                          Xem chi tiết
+                        </Button>
                         <DialogEditField fieldId={field.id} />
                         <Separator className="my-1" />
                         <Button
@@ -276,7 +300,7 @@ export const FieldsPage = () => {
       )}
 
       {!isLoading && !isError && !isNotEmpty && isFiltering && (
-        <div className="flex flex-col items-center rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
+        <div className="flex flex-col items-center rounded-[22px] border border-dashed border-border/80 bg-card px-6 py-12 text-center shadow-sm">
           <div className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
             <SearchIcon className="size-5" />
           </div>
