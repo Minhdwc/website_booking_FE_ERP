@@ -97,12 +97,13 @@ export const VenuesPage = () => {
         {(isNotEmpty || isSearching) && <VenuesCreateDialog />}
       </header>
 
-      <InputGroup className="max-w-sm rounded-2xl bg-card">
+      <InputGroup className="h-9 w-full max-w-[220px] rounded-xl border-border/70 bg-card shadow-sm">
         <InputGroupAddon>
-          <SearchIcon />
+          <SearchIcon className="size-3.5" />
         </InputGroupAddon>
         <InputGroupInput
-          placeholder="Tìm kiếm cơ sở theo tên, địa chỉ…"
+          placeholder="Tìm cơ sở…"
+          className="text-sm"
           value={venueSearch}
           onChange={(event) => setVenueSearch(event.target.value)}
         />
@@ -128,7 +129,7 @@ export const VenuesPage = () => {
 
       {isPending && (
         <div className="overflow-hidden rounded-[22px] border border-border/80 bg-card shadow-sm">
-          <div className="border-b border-border/60 bg-muted/40 px-4 py-3.5">
+          <div className="border-b border-border/60 bg-card px-4 py-3.5">
             <Skeleton className="h-4 w-2/3 max-w-md" />
           </div>
           <div className="space-y-0 divide-y divide-border/40">
@@ -148,13 +149,12 @@ export const VenuesPage = () => {
       )}
 
       {isSuccess && isNotEmpty && (
-        <div className="overflow-hidden rounded-xl border border-border/60 bg-surface shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow className="border-b border-border/60 bg-muted/40 hover:bg-muted/40">
+              <TableRow className="border-b border-border/60 bg-card hover:bg-transparent">
                 <TableHead className="px-4 py-3 text-xs">Cơ sở</TableHead>
                 <TableHead className="px-4 py-3 text-xs">Địa chỉ</TableHead>
-                <TableHead className="px-4 py-3 text-xs hidden lg:table-cell">Tọa độ</TableHead>
                 <TableHead className="px-4 py-3 text-xs">Giờ hoạt động</TableHead>
                 <TableHead className="px-4 py-3 text-xs hidden md:table-cell">Giờ nghỉ</TableHead>
                 <TableHead className="px-4 py-3 text-xs w-14 text-right">
@@ -169,7 +169,7 @@ export const VenuesPage = () => {
                 return (
                   <TableRow
                     key={venue.id}
-                    className="group cursor-pointer border-b border-border/40 last:border-b-0 hover:bg-muted/30"
+                    className="group cursor-pointer border-b border-border/40 last:border-b-0 hover:bg-foreground/3"
                     onMouseEnter={() => {
                       prefetchVenue(queryClient, venue.id);
                     }}
@@ -198,9 +198,6 @@ export const VenuesPage = () => {
                         <MapPinIcon className="mt-0.5 size-3.5 shrink-0" />
                         <span className="line-clamp-2 text-sm">{venue.location}</span>
                       </div>
-                    </TableCell>
-                    <TableCell className="hidden px-4 py-3.5 font-mono text-xs whitespace-nowrap text-muted-foreground lg:table-cell">
-                      {venue.latitude.toFixed(5)}, {venue.longitude.toFixed(5)}
                     </TableCell>
                     <TableCell className="px-4 py-3.5 whitespace-nowrap">
                       <Badge variant="outline" className="gap-1.5 font-normal tabular-nums">

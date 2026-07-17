@@ -186,6 +186,8 @@ export interface IReview {
   rating: number;
   comment: string;
   createdAt: string;
+  user?: Pick<IUser, 'id' | 'name' | 'email' | 'phone'>;
+  field?: IField;
 }
 
 export interface INotification {

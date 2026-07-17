@@ -81,4 +81,13 @@ export const venueService = {
     });
     return response;
   },
+
+  listVenueOwners: (venueId: string) =>
+    apiRequest(`/venues/${venueId}/owners`, { method: 'GET' }),
+
+  addVenueOwner: (venueId: string, userId: string) =>
+    apiRequest(`/venues/${venueId}/owners`, { method: 'POST', body: { userId } }),
+
+  removeVenueOwner: (venueId: string, userId: string) =>
+    apiRequest(`/venues/${venueId}/owners/${userId}`, { method: 'DELETE' }),
 };
