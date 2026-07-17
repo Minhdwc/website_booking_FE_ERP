@@ -154,6 +154,7 @@ export interface IBooking {
   date: string;
   status: BookingStatus;
   amount: number;
+  expiresAt?: string | null;
   createdAt: string;
   updatedAt: string;
   user?: Pick<IUser, 'id' | 'name' | 'email' | 'phone'>;
