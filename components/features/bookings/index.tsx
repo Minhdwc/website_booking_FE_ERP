@@ -143,12 +143,13 @@ export const BookingsPage = () => {
         <BookingsCreateDialog />
       </header>
 
-      <InputGroup className="max-w-sm bg-card">
+      <InputGroup className="h-9 w-full max-w-[220px] rounded-xl border-border/70 bg-card shadow-sm">
         <InputGroupAddon>
-          <SearchIcon />
+          <SearchIcon className="size-3.5" />
         </InputGroupAddon>
         <InputGroupInput
-          placeholder="Tìm theo khách, sân, ngày…"
+          placeholder="Tìm đặt sân…"
+          className="text-sm"
           value={bookingSearch}
           onChange={(event) => setBookingSearch(event.target.value)}
         />
@@ -192,7 +193,7 @@ export const BookingsPage = () => {
         <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow className="border-b border-border/60 bg-muted/40">
+              <TableRow className="border-b border-border/60 bg-card hover:bg-transparent">
                 <TableHead className="px-4 py-3 text-xs">Khách</TableHead>
                 <TableHead className="px-4 py-3 text-xs">Sân</TableHead>
                 <TableHead className="px-4 py-3 text-xs">Ngày</TableHead>
@@ -207,7 +208,7 @@ export const BookingsPage = () => {
               {filtered.map((booking: IBooking) => (
                 <TableRow
                   key={booking.id}
-                  className="group border-b border-border/40 last:border-b-0"
+                  className="group border-b border-border/40 last:border-b-0 hover:bg-foreground/3"
                 >
                   <TableCell className="max-w-[200px] px-4 py-3.5">
                     <div className="flex items-center gap-3">

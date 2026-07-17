@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { unwrapList } from '@/stores/api/response';
 import { ITimeslot } from '@/stores/api/types';
@@ -30,3 +30,35 @@ export const useTimeslots = (params?: TimeslotListParams) =>
     queryKey: timeslotKeys.list(params),
     queryFn: () => fetchTimeslots(params),
   });
+
+export const useCreateTimeslot = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { startTime: string; endTime: string }) =>
+      timeslotService.createTimeslot(body as Omit<ITimeslot, 'id' | 'createdAt' | 'updatedAt'>),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: timeslotKeys.lists() });
+    },
+  });
+};
+
+export const useUpdateTimeslot = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: { startTime?: string; endTime?: string } }) =>
+      timeslotService.updateTimeslot(id, body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: timeslotKeys.lists() });
+    },
+  });
+};
+
+export const useDeleteTimeslot = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => timeslotService.deleteTimeslot(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: timeslotKeys.lists() });
+    },
+  });
+};

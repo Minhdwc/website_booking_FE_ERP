@@ -7,6 +7,9 @@ import {
   Clock3,
   Dumbbell,
   WalletCards,
+  BarChart3,
+  Star,
+  Users,
 } from 'lucide-react';
 
 export type NavItem = {
@@ -24,7 +27,10 @@ export type NavSection = {
 export const navSections: NavSection[] = [
   {
     label: 'Chính',
-    items: [{ title: 'Trang chủ', href: '/dashboard', icon: LayoutDashboard }],
+    items: [
+      { title: 'Trang chủ', href: '/dashboard', icon: LayoutDashboard },
+      { title: 'Báo cáo', href: '/reports', icon: BarChart3 },
+    ],
   },
   {
     label: 'Vận hành',
@@ -32,6 +38,7 @@ export const navSections: NavSection[] = [
       { title: 'Đặt sân', href: '/bookings', icon: CalendarDays, roles: ['staff'] },
       { title: 'Sân', href: '/fields', icon: MapPinned },
       { title: 'Cơ sở', href: '/venues', icon: Landmark },
+      { title: 'Đánh giá', href: '/reviews', icon: Star },
     ],
   },
   {
@@ -40,6 +47,7 @@ export const navSections: NavSection[] = [
       { title: 'Bộ môn', href: '/sports', icon: Dumbbell },
       { title: 'Phương thức TT', href: '/payment-method', icon: WalletCards },
       { title: 'Khung giờ', href: '/timeslots', icon: Clock3 },
+      { title: 'Tài khoản', href: '/users', icon: Users, roles: ['admin'] },
     ],
   },
 ];

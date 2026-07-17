@@ -1,15 +1,16 @@
 import { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+import './theme.css';
 import { Providers } from '@/provider/provider';
 import { cn } from '@/lib/utils';
 
-const geistSans = Geist({
+const fontSans = Inter({
   subsets: ['latin'],
   variable: '--font-geist-sans',
 });
 
-const geistMono = Geist_Mono({
+const fontMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-geist-mono',
 });
@@ -27,12 +28,7 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
-      className={cn(
-        'h-full antialiased',
-        geistSans.variable,
-        geistMono.variable,
-        geistSans.className,
-      )}
+      className={cn('h-full antialiased', fontSans.variable, fontMono.variable, fontSans.className)}
       suppressHydrationWarning
     >
       <body className="min-h-full bg-background font-sans">

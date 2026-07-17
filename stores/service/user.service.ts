@@ -1,60 +1,50 @@
 import { apiRequest } from '@/stores/api/api-request';
 import { Response } from '@/stores/api/response';
-import { IUser } from '@/stores/api/types';
+import { IUser, UserRole } from '@/stores/api/types';
 
-export interface UserResponse {
-  status: string;
+export interface UsersResponse {
+  statusCode: number;
   message: string;
-  data: Response<IUser>;
+  data: Response<IUser> | IUser[];
 }
 
 export interface UserDetailResponse {
-  status: string;
+  statusCode: number;
   message: string;
   data: IUser;
 }
 
+export type CreateUserBody = {
+  name: string;
+  username: string;
+  email: string;
+  phone: string;
+  password: string;
+  role?: UserRole | string;
+  isActive?: boolean;
+};
+
+export type UpdateUserBody = {
+  name?: string;
+  username?: string;
+  email?: string;
+  phone?: string;
+  password?: string;
+  role?: UserRole | string;
+  isActive?: boolean;
+};
+
 export const userService = {
-  getUsers: async (params?: { search?: string; page?: string; limit?: string }) => {
-    const response = await apiRequest('/users', { method: 'GET', params });
-    return response;
-  },
+  getUsers: (params?: { search?: string; page?: string; limit?: string }) =>
+    apiRequest<UsersResponse>('/users', { method: 'GET', params }),
 
-  getUserById: async (id: string) => {
-    const response = await apiRequest(`/users/${id}`, {
-      method: 'GET',
-    });
-    return response;
-  },
+  getUserById: (id: string) => apiRequest<UserDetailResponse>(`/users/${id}`, { method: 'GET' }),
 
-  createUser: async (body: {
-    name: string;
-    username: string;
-    email: string;
-    phone: string;
-    password: string;
-    role?: string;
-    isActive?: boolean;
-  }) => {
-    const response = await apiRequest('/users', {
-      method: 'POST',
-      body,
-    });
-    return response;
-  },
+  createUser: (body: CreateUserBody) =>
+    apiRequest<UserDetailResponse>('/users', { method: 'POST', body }),
 
-  updateUser: async (id: string, body: { value: IUser }) => {
-    const response = await apiRequest(`/users/${id}`, {
-      method: 'PUT',
-      body,
-    });
-    return response;
-  },
+  updateUser: (id: string, body: UpdateUserBody) =>
+    apiRequest<UserDetailResponse>(`/users/${id}`, { method: 'PATCH', body }),
 
-  deleteUser: async (id: string) => {
-    const response = await apiRequest(`/users/${id}`, {
-      method: 'DELETE',
-    });
-    return response;
-  },
+  deleteUser: (id: string) => apiRequest(`/users/${id}`, { method: 'DELETE' }),
 };

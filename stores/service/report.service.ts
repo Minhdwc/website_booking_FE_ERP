@@ -16,6 +16,17 @@ export type ReportTopField = {
   } | null;
 };
 
+export type ReportRevenueByDay = {
+  date: string;
+  total: number;
+};
+
+export type ReportRevenueBySport = {
+  sportId: string;
+  sportName: string;
+  total: number;
+};
+
 export type ReportSummary = {
   bookingsByStatus: ReportBookingStatusRow[];
   revenue: {
@@ -25,6 +36,8 @@ export type ReportSummary = {
     to: string | null;
   };
   topFields: ReportTopField[];
+  revenueByDay: ReportRevenueByDay[];
+  revenueBySport: ReportRevenueBySport[];
 };
 
 export type ReportSummaryResponse = {
