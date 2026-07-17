@@ -19,6 +19,7 @@ import {
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 import { navSections } from '@/lib/utils/menu-config';
 import { useSession } from '@/provider/session-provider';
 import { usePendingBookings } from '@/stores/queries/booking.query';
@@ -43,37 +44,38 @@ export const AppSidebar = () => {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="border-b border-sidebar-border px-3 py-3">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-white shadow-sm">
+      <SidebarHeader className="px-4 py-4">
         <Link
           href="/dashboard"
-          className={`flex items-center gap-2.5 rounded-lg border border-transparent hover:border-brand-secondary-400 ${
-            collapsed ? 'justify-center' : ''
-          }`}
+          className={cn(
+            'flex items-center gap-3 rounded-xl border border-transparent',
+            collapsed && 'justify-center',
+          )}
         >
           <Image
             src={logoSquare}
             alt="Minh Đức Booking Sport"
-            className="size-8 shrink-0 rounded-lg object-cover"
+            className="size-12 shrink-0 rounded-xl object-cover"
             priority
           />
           {!collapsed && (
             <div className="min-w-0 flex-1 leading-tight">
-              <p className="truncate text-sm font-semibold text-heading">Minh Đức</p>
-              <p className="truncate text-xs text-muted-foreground">Booking Sport ERP</p>
+              <p className="truncate text-lg font-bold tracking-tight text-emerald-700">BOOK SÂN</p>
+              <p className="truncate text-xs text-muted-foreground">Điều phối sân thể thao</p>
             </div>
           )}
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="gap-1 px-2 py-3">
+      <SidebarContent className="gap-2 px-3 py-2">
         {sections.map((section) => (
           <SidebarGroup key={section.label} className="p-0">
-            <SidebarGroupLabel className="h-7 px-2 text-xs font-medium text-muted-foreground">
+            <SidebarGroupLabel className="h-7 px-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {section.label}
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu className="gap-0.5">
+              <SidebarMenu className="gap-1">
                 {section.items.map((item) => {
                   const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
                   const Icon = item.icon;
@@ -83,19 +85,21 @@ export const AppSidebar = () => {
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton
                         isActive={active}
+                        size="lg"
                         tooltip={item.title}
                         render={<Link href={item.href} />}
-                        className={`h-9 rounded-lg border border-transparent text-sm hover:border-brand-secondary-400 ${
+                        className={cn(
+                          'h-11 rounded-xl border border-transparent px-3 text-sm font-medium transition-colors',
                           active
-                            ? 'border-brand-secondary-400 bg-brand-secondary-50 font-semibold text-brand-secondary-700'
-                            : ''
-                        }`}
+                            ? 'data-active:border-emerald-600! data-active:bg-emerald-600! data-active:text-white! shadow-sm hover:bg-emerald-600/90 hover:text-white data-active:[&_svg]:text-white'
+                            : 'text-sidebar-foreground hover:bg-emerald-50 hover:text-emerald-700',
+                        )}
                       >
                         <Icon className="size-4 shrink-0" />
                         <span className="truncate">{item.title}</span>
                       </SidebarMenuButton>
                       {badge > 0 && (
-                        <SidebarMenuBadge className="rounded-md bg-brand-secondary-500 text-xs font-semibold text-white">
+                        <SidebarMenuBadge className="rounded-full bg-emerald-600 px-1.5 text-xs font-semibold text-white">
                           {badge > 99 ? '99+' : badge}
                         </SidebarMenuBadge>
                       )}

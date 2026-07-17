@@ -75,7 +75,12 @@ const statusOptions: { value: FieldStatus; label: string }[] = [
 
 const statusItems = Object.fromEntries(statusOptions.map((option) => [option.value, option.label]));
 
-export const DialogEditField = ({ fieldId }: { fieldId: string }) => {
+type DialogEditFieldProps = {
+  fieldId: string;
+  triggerVariant?: 'menu' | 'toolbar';
+};
+
+export const DialogEditField = ({ fieldId, triggerVariant = 'menu' }: DialogEditFieldProps) => {
   const [open, setOpen] = useState(false);
   const { data: field, isLoading, isError, error } = useField(fieldId);
   const updateFieldMutation = useUpdateField();
@@ -142,7 +147,13 @@ export const DialogEditField = ({ fieldId }: { fieldId: string }) => {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={
-          <Button variant="ghost" size="sm" className="w-full justify-start gap-2 font-normal" />
+          <Button
+            variant={triggerVariant === 'toolbar' ? 'outline' : 'ghost'}
+            size="sm"
+            className={
+              triggerVariant === 'toolbar' ? 'gap-2' : 'w-full justify-start gap-2 font-normal'
+            }
+          />
         }
       >
         <PencilIcon className="size-3.5 text-muted-foreground" />

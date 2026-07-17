@@ -33,7 +33,17 @@ const steps = [
   },
 ];
 
-export const VenuesSetupPage = ({ onReplayTour }: { onReplayTour: () => void }) => {
+export const VenuesSetupPage = ({
+  onReplayTour,
+  searchQuery,
+  onClearSearch,
+}: {
+  onReplayTour: () => void;
+  searchQuery?: string;
+  onClearSearch?: () => void;
+}) => {
+  const hasSearch = Boolean(searchQuery?.trim());
+
   return (
     <div
       id="venues-setup-empty"
@@ -43,14 +53,22 @@ export const VenuesSetupPage = ({ onReplayTour }: { onReplayTour: () => void }) 
         <LandmarkIcon className="size-7" />
       </div>
 
-      <h2 className="mt-5 text-xl font-semibold text-heading">Chưa liên kết cơ sở nào</h2>
+      <h2 className="mt-5 text-xl font-semibold text-heading">
+        {hasSearch ? 'Không tìm thấy cơ sở nào' : 'Chưa có cơ sở nào'}
+      </h2>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
-        Tài khoản của bạn chưa được gắn với cơ sở. Tạo cơ sở mới để bắt đầu quản lý sân và nhận
-        booking.
+        {hasSearch
+          ? `Không có cơ sở nào khớp với “${searchQuery}”. Thử từ khoá khác hoặc tạo cơ sở mới.`
+          : 'Tạo cơ sở mới để bắt đầu quản lý sân và nhận booking.'}
       </p>
 
       <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
         <VenuesCreateDialog />
+        {hasSearch && onClearSearch ? (
+          <Button size="sm" variant="outline" onClick={onClearSearch}>
+            Xoá tìm kiếm
+          </Button>
+        ) : null}
         <Button size="sm" variant="outline" onClick={onReplayTour}>
           <HelpCircleIcon className="size-3.5" />
           Xem hướng dẫn

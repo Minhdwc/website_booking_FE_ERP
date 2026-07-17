@@ -33,16 +33,20 @@ import { useVenues } from '@/stores/queries/venue.query';
 export const StaffSportsView = () => {
   const { data: venues = [], isLoading: venuesLoading } = useVenues();
   const [venueId, setVenueId] = useState('');
-
   const selectedVenueId = venueId || venues[0]?.id || '';
   const selectedVenue = venues.find((venue) => venue.id === selectedVenueId);
 
   const {
-    data: venueSports = [],
-    isLoading,
+    data: venueSportsData,
+    isSuccess,
+    isFetching,
     isError,
     error,
-  } = useVenueSports(selectedVenueId ? { venueId: selectedVenueId } : undefined);
+  } = useVenueSports(selectedVenueId ? { venueId: selectedVenueId } : undefined, {
+    enabled: Boolean(selectedVenueId),
+  });
+
+  const venueSports = isSuccess ? (venueSportsData ?? []) : [];
 
   const updateMutation = useUpdateVenueSport();
   const deleteMutation = useDeleteVenueSport();
@@ -102,7 +106,7 @@ export const StaffSportsView = () => {
       {hasVenues && (
         <div className="rounded-xl border border-border/60 bg-card p-4 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="w-full max-w-md space-y-2">
+            <div className="w-full max-w-xs space-y-1.5">
               <Label htmlFor="staff-sports-venue">Cơ sở</Label>
               <ComboboxVenue value={selectedVenueId} onChange={setVenueId} />
             </div>
@@ -144,7 +148,7 @@ export const StaffSportsView = () => {
         </div>
       )}
 
-      {isLoading && selectedVenueId && (
+      {isFetching && selectedVenueId && (
         <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
           <div className="space-y-0 divide-y divide-border/40 p-4">
             {[0, 1, 2].map((row) => (
@@ -154,7 +158,7 @@ export const StaffSportsView = () => {
         </div>
       )}
 
-      {!isLoading && selectedVenueId && hasRegistrations && (
+      {isSuccess && !isFetching && selectedVenueId && hasRegistrations && (
         <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
           <Table>
             <TableHeader>
@@ -238,7 +242,7 @@ export const StaffSportsView = () => {
         </div>
       )}
 
-      {!isLoading && selectedVenueId && !hasRegistrations && hasVenues && (
+      {isSuccess && !isFetching && selectedVenueId && !hasRegistrations && hasVenues && (
         <div className="flex flex-col items-center rounded-xl border border-dashed border-border bg-card px-6 py-14 text-center">
           <div className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
             <DumbbellIcon className="size-5" />
