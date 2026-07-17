@@ -19,10 +19,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useCountdown } from '@/hooks/use-countdown';
+import { formatDate, formatDateTime } from '@/lib/format';
+import { cn } from '@/lib/utils';
 import { BookingStatus, IBooking } from '@/stores/api/types';
 import { useErpUiStore } from '@/stores/index.store';
 import { useBookings, useDeleteBooking } from '@/stores/queries/booking.query';
-import { formatDate, formatDateTime } from '@/lib/format';
 
 const statusLabel: Record<BookingStatus, string> = {
   pending: 'Chờ xác nhận',
@@ -53,6 +55,48 @@ const matchesSearch = (booking: IBooking, q: string) => {
     .toLowerCase();
   return haystack.includes(q.toLowerCase());
 };
+
+function HoldBadge({ expiresAt }: { expiresAt: string }) {
+  const { formatted, remainingMs, isExpired } = useCountdown(expiresAt);
+
+  if (isExpired) {
+    return <Badge variant="outline">Hết hạn giữ chỗ</Badge>;
+  }
+
+  const underTwoMinutes = remainingMs < 2 * 60 * 1000;
+  const underFiveMinutes = remainingMs < 5 * 60 * 1000;
+
+  return (
+    <Badge
+      variant="secondary"
+      className={cn(
+        'font-medium tabular-nums',
+        underTwoMinutes && 'bg-red-100 text-red-800 hover:bg-red-100',
+        !underTwoMinutes && underFiveMinutes && 'bg-amber-100 text-amber-900 hover:bg-amber-100',
+        !underFiveMinutes && 'bg-amber-50 text-amber-800 hover:bg-amber-50',
+      )}
+    >
+      Đang giữ chỗ · còn {formatted}
+    </Badge>
+  );
+}
+
+function BookingStatusCell({ booking }: { booking: IBooking }) {
+  const holdActive =
+    booking.status === 'pending' &&
+    booking.expiresAt &&
+    new Date(booking.expiresAt).getTime() > Date.now();
+
+  if (holdActive && booking.expiresAt) {
+    return <HoldBadge expiresAt={booking.expiresAt} />;
+  }
+
+  return (
+    <Badge variant={statusVariant[booking.status as BookingStatus]}>
+      {statusLabel[booking.status as BookingStatus]}
+    </Badge>
+  );
+}
 
 export const BookingsPage = () => {
   const bookingSearch = useErpUiStore((state) => state.bookingSearch);
@@ -92,7 +136,7 @@ export const BookingsPage = () => {
             )}
           </div>
           <p className="text-sm text-muted-foreground">
-            Theo dõi và xác nhận lịch đặt sân của khách.
+            Theo dõi giữ chỗ và xác nhận lịch đặt sân của khách.
           </p>
         </div>
 
@@ -192,9 +236,7 @@ export const BookingsPage = () => {
                       : '—'}
                   </TableCell>
                   <TableCell className="px-4 py-3.5">
-                    <Badge variant={statusVariant[booking.status as BookingStatus]}>
-                      {statusLabel[booking.status as BookingStatus]}
-                    </Badge>
+                    <BookingStatusCell booking={booking} />
                   </TableCell>
                   <TableCell className="px-3 py-3.5 text-right">
                     <Popover>
