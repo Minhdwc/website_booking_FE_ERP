@@ -49,10 +49,8 @@ function isoToTimeInput(value: string) {
 }
 
 function timeInputToIso(time: string) {
-  const [hours, minutes] = time.split(':').map(Number);
-  const date = new Date();
-  date.setHours(hours, minutes, 0, 0);
-  return date.toISOString();
+  const today = new Date().toISOString().slice(0, 10);
+  return `${today}T${time}:00.000Z`;
 }
 
 export function TimeslotsEditDialog({ timeslot }: { timeslot: ITimeslot }) {
