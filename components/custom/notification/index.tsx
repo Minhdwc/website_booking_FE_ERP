@@ -42,15 +42,15 @@ export function Notification() {
         render={
           <Button
             variant="ghost"
-            size="icon-sm"
-            className="relative size-11 rounded-2xl"
+            size="icon"
+            className="relative h-9 w-9 rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground"
             aria-label="Thông báo"
           />
         }
       >
         <BellIcon className="size-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-brand-secondary-600 text-[10px] font-semibold text-white">
+          <span className="absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-brand-600 text-[10px] font-semibold text-white">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -119,14 +119,14 @@ export function Notification() {
                   onClick={() => handleItemClick(item.id, item.isRead)}
                   className="flex gap-3 border-b border-border px-4 py-3.5 text-left transition-colors hover:bg-muted/50"
                 >
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-secondary-50 text-brand-secondary-700">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
                     <BellIcon className="size-4" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-medium text-foreground">{item.title}</p>
                       {!item.isRead && (
-                        <span className="mt-1 size-2 shrink-0 rounded-full bg-brand-secondary-600" />
+                        <span className="mt-1 size-2 shrink-0 rounded-full bg-brand-600" />
                       )}
                     </div>
                     <p className="mt-0.5 text-[13px] text-muted-foreground">{item.message}</p>

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react';
 
@@ -12,7 +13,8 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ComboboxPopoverContent } from '@/components/custom/combobox/combobox-popover-content';
+import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useVietQrBanks } from '@/stores/queries/vietqr.query';
@@ -28,7 +30,7 @@ export function ComboboxBank({ value, onChange }: ComboboxBankProps) {
   const [search, setSearch] = useState('');
 
   const { data, isLoading } = useVietQrBanks();
-  const banks = data || [];
+  const banks = useMemo(() => data || [], [data]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -67,7 +69,14 @@ export function ComboboxBank({ value, onChange }: ComboboxBankProps) {
       >
         {selected ? (
           <span className="flex min-w-0 items-center gap-2">
-            <img src={selected.logo} alt="" className="size-5 shrink-0 rounded-sm object-contain" />
+            <Image
+              src={selected.logo}
+              alt=""
+              width={20}
+              height={20}
+              unoptimized
+              className="size-5 shrink-0 rounded-sm object-contain"
+            />
             <span className="truncate">{selected.shortName}</span>
           </span>
         ) : (
@@ -76,7 +85,7 @@ export function ComboboxBank({ value, onChange }: ComboboxBankProps) {
         <ChevronsUpDownIcon className="size-4 shrink-0 opacity-50" />
       </PopoverTrigger>
 
-      <PopoverContent className="w-(--anchor-width) p-0" align="start">
+      <ComboboxPopoverContent>
         <Command shouldFilter={false}>
           <Input
             className="flex h-9 w-full rounded-none border-x-0 border-t-0 border-b bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
@@ -97,9 +106,12 @@ export function ComboboxBank({ value, onChange }: ComboboxBankProps) {
                     setSearch('');
                   }}
                 >
-                  <img
+                  <Image
                     src={bank.logo}
                     alt=""
+                    width={20}
+                    height={20}
+                    unoptimized
                     className="size-5 shrink-0 rounded-sm object-contain"
                   />
                   <span className="min-w-0 flex-1 truncate">
@@ -117,7 +129,7 @@ export function ComboboxBank({ value, onChange }: ComboboxBankProps) {
             </CommandGroup>
           </CommandList>
         </Command>
-      </PopoverContent>
+      </ComboboxPopoverContent>
     </Popover>
   );
 }

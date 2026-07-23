@@ -54,6 +54,12 @@ function SelectTrigger({
   );
 }
 
+const defaultCollisionAvoidance = {
+  side: 'shift',
+  align: 'shift',
+  fallbackAxisSide: 'none',
+} as const;
+
 function SelectContent({
   className,
   children,
@@ -61,12 +67,13 @@ function SelectContent({
   sideOffset = 4,
   align = 'center',
   alignOffset = 0,
-  alignItemWithTrigger = true,
+  alignItemWithTrigger = false,
+  collisionAvoidance = defaultCollisionAvoidance,
   ...props
 }: SelectPrimitive.Popup.Props &
   Pick<
     SelectPrimitive.Positioner.Props,
-    'align' | 'alignOffset' | 'side' | 'sideOffset' | 'alignItemWithTrigger'
+    'align' | 'alignOffset' | 'side' | 'sideOffset' | 'alignItemWithTrigger' | 'collisionAvoidance'
   >) {
   return (
     <SelectPrimitive.Portal>
@@ -76,6 +83,7 @@ function SelectContent({
         align={align}
         alignOffset={alignOffset}
         alignItemWithTrigger={alignItemWithTrigger}
+        collisionAvoidance={collisionAvoidance}
         className="isolate z-50"
       >
         <SelectPrimitive.Popup

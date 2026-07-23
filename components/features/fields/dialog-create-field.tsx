@@ -23,7 +23,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -31,15 +30,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { FieldStatus } from '@/stores/api/types';
 import { useCreateField } from '@/stores/queries/field.query';
 
 const formatDurationMinutes = (minutes: number) => {
@@ -49,19 +40,6 @@ const formatDurationMinutes = (minutes: number) => {
   if (hours === 0) return `${mins} phút`;
   if (mins === 0) return hours === 1 ? '1 giờ' : `${hours} giờ`;
   return `${hours} giờ ${mins} phút`;
-};
-
-const buildValidDurations = (
-  minDurationMinutes: number,
-  durationStepMinutes: number,
-  maxMinutes = 480,
-) => {
-  if (minDurationMinutes < 1 || durationStepMinutes < 1) return [];
-  const values: number[] = [];
-  for (let value = minDurationMinutes; value <= maxMinutes; value += durationStepMinutes) {
-    values.push(value);
-  }
-  return values;
 };
 
 const formSchema = z.object({
@@ -80,13 +58,6 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
-
-const statusOptions: { value: FieldStatus; label: string }[] = [
-  { value: 'active', label: 'Hoạt động' },
-  { value: 'inactive', label: 'Ngưng' },
-];
-
-const statusItems = Object.fromEntries(statusOptions.map((option) => [option.value, option.label]));
 
 export const DialogCreateField = () => {
   const [open, setOpen] = useState(false);
@@ -109,12 +80,6 @@ export const DialogCreateField = () => {
 
   const venueId = useWatch({ control: form.control, name: 'venueId' });
   const minDurationMinutes = useWatch({ control: form.control, name: 'minDurationMinutes' });
-  const durationStepMinutes = useWatch({ control: form.control, name: 'durationStepMinutes' });
-
-  const exampleDurations =
-    minDurationMinutes && durationStepMinutes
-      ? buildValidDurations(minDurationMinutes, durationStepMinutes).slice(0, 5)
-      : [];
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);

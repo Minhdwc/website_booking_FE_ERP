@@ -101,11 +101,5 @@ export {
   useDeleteTimeslot,
 } from './timeslot.query';
 export { reviewKeys, useReviews, useDeleteReview } from './review.query';
-export {
-  userKeys,
-  useUsers,
-  useCreateUser,
-  useUpdateUser,
-  useDeleteUser,
-} from './user.query';
+export { userKeys, useUsers, useCreateUser, useUpdateUser, useDeleteUser } from './user.query';
 export { vietqrKeys, useVietQrBanks } from './vietqr.query';

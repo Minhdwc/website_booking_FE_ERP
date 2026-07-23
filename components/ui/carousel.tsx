@@ -93,11 +93,12 @@ function Carousel({
 
   React.useEffect(() => {
     if (!api) return;
-    onSelect(api);
+    const timeout = window.setTimeout(() => onSelect(api), 0);
     api.on('reInit', onSelect);
     api.on('select', onSelect);
 
     return () => {
+      window.clearTimeout(timeout);
       api?.off('select', onSelect);
     };
   }, [api, onSelect]);
@@ -220,12 +221,5 @@ function CarouselNext({
   );
 }
 
-export {
-  CarouselApi,
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-  useCarousel,
-};
+export type { CarouselApi };
+export { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, useCarousel };

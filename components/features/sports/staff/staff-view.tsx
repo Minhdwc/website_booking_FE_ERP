@@ -13,7 +13,6 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
 import {
   Table,
   TableBody,
@@ -23,11 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { IVenueSport } from '@/stores/api/types';
-import {
-  useDeleteVenueSport,
-  useUpdateVenueSport,
-  useVenueSports,
-} from '@/stores/queries/venue-sport.query';
+import { useDeleteVenueSport, useVenueSports } from '@/stores/queries/venue-sport.query';
 import { useVenues } from '@/stores/queries/venue.query';
 
 export const StaffSportsView = () => {
@@ -48,24 +43,11 @@ export const StaffSportsView = () => {
 
   const venueSports = isSuccess ? (venueSportsData ?? []) : [];
 
-  const updateMutation = useUpdateVenueSport();
   const deleteMutation = useDeleteVenueSport();
 
   const activeCount = venueSports.filter((item) => item.isActive).length;
   const hasVenues = venues.length > 0;
   const hasRegistrations = venueSports.length > 0;
-
-  const handleToggleActive = async (item: IVenueSport) => {
-    try {
-      await updateMutation.mutateAsync({
-        id: item.id,
-        body: { isActive: !item.isActive },
-      });
-      toast.success(item.isActive ? 'Đã tạm dừng bộ môn' : 'Đã kích hoạt bộ môn');
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || err.message || 'Không cập nhật được trạng thái');
-    }
-  };
 
   const handleUnregister = async (item: IVenueSport) => {
     if (!window.confirm(`Hủy đăng ký bộ môn "${item.sport?.name || ''}"?`)) return;

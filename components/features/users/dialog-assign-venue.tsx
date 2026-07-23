@@ -60,9 +60,11 @@ export function UsersAssignVenueDialog({ user }: { user: IUser }) {
   };
 
   useEffect(() => {
-    if (open && venueId) {
+    if (!open || !venueId) return;
+    const timeout = window.setTimeout(() => {
       void loadOwnersForSelected(venueId);
-    }
+    }, 0);
+    return () => window.clearTimeout(timeout);
   }, [open, venueId]);
 
   const isAssigned = owners.some((owner) => owner.userId === user.id);
@@ -155,7 +157,12 @@ export function UsersAssignVenueDialog({ user }: { user: IUser }) {
             Đóng
           </Button>
           {isAssigned ? (
-            <Button type="button" variant="destructive" disabled={saving || !venueId} onClick={handleRemove}>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={saving || !venueId}
+              onClick={handleRemove}
+            >
               {saving && <Loader2Icon className="size-3.5 animate-spin" />}
               Gỡ khỏi cơ sở
             </Button>

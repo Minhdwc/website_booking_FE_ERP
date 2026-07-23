@@ -82,8 +82,7 @@ export const venueService = {
     return response;
   },
 
-  listVenueOwners: (venueId: string) =>
-    apiRequest(`/venues/${venueId}/owners`, { method: 'GET' }),
+  listVenueOwners: (venueId: string) => apiRequest(`/venues/${venueId}/owners`, { method: 'GET' }),
 
   addVenueOwner: (venueId: string, userId: string) =>
     apiRequest(`/venues/${venueId}/owners`, { method: 'POST', body: { userId } }),

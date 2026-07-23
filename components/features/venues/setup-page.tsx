@@ -47,9 +47,9 @@ export const VenuesSetupPage = ({
   return (
     <div
       id="venues-setup-empty"
-      className="flex flex-col items-center rounded-2xl border border-dashed border-border bg-surface px-6 py-14 text-center"
+      className="flex flex-col items-center rounded-2xl border border-dashed border-border bg-card/50 px-6 py-14 text-center"
     >
-      <div className="flex size-14 items-center justify-center rounded-2xl bg-brand-secondary-50 text-brand-secondary-600 ring-8 ring-brand-secondary-50/50">
+      <div className="flex size-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 ring-8 ring-brand-50/50">
         <LandmarkIcon className="size-7" />
       </div>
 
@@ -81,24 +81,22 @@ export const VenuesSetupPage = ({
             key={step.title}
             className={
               step.active
-                ? 'rounded-xl border border-brand-secondary-600/25 bg-brand-secondary-50/40 p-4'
-                : 'rounded-xl border border-border/60 bg-muted/20 p-4'
+                ? 'rounded-xl border border-brand-600/25 bg-brand-50/40 p-4 transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-sm'
+                : 'rounded-xl border border-border/60 bg-muted/20 p-4 transition-all hover:-translate-y-0.5 hover:border-border hover:shadow-sm'
             }
           >
             <div className="flex items-center gap-2">
               <span
                 className={
                   step.active
-                    ? 'flex size-6 items-center justify-center rounded-full bg-brand-secondary-600 text-xs font-semibold text-white'
+                    ? 'flex size-6 items-center justify-center rounded-full bg-brand-600 text-xs font-semibold text-white'
                     : 'flex size-6 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground'
                 }
               >
                 {index + 1}
               </span>
               <step.icon
-                className={
-                  step.active ? 'size-4 text-brand-secondary-600' : 'size-4 text-muted-foreground'
-                }
+                className={step.active ? 'size-4 text-brand-600' : 'size-4 text-muted-foreground'}
               />
             </div>
             <p className="mt-2.5 text-sm font-semibold text-heading">{step.title}</p>

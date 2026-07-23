@@ -52,20 +52,20 @@ export function Search() {
         variant="outline"
         size="sm"
         onClick={() => setOpen(true)}
-        className="hidden h-11 min-w-72 justify-start gap-2 rounded-2xl border-border/80 bg-white px-4 text-[14px] text-muted-foreground shadow-none hover:border-brand-secondary-200 hover:bg-brand-secondary-50/60 hover:text-foreground md:inline-flex"
+        className="hidden h-9 min-w-72 justify-start gap-2 rounded-lg border-border/80 bg-muted/50 px-3 text-sm text-muted-foreground shadow-none hover:border-brand-200 hover:bg-brand-50/60 hover:text-foreground md:inline-flex"
       >
         <SearchIcon className="size-3.5" />
         Tìm kiếm...
-        <kbd className="pointer-events-none ml-auto rounded-lg border border-border/80 bg-muted px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
+        <kbd className="pointer-events-none ml-auto rounded-md border border-border/80 bg-card px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
           Ctrl K
         </kbd>
       </Button>
 
       <Button
         variant="ghost"
-        size="icon-sm"
+        size="icon"
         onClick={() => setOpen(true)}
-        className="md:hidden"
+        className="h-9 w-9 rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground md:hidden"
         aria-label="Tìm kiếm"
       >
         <SearchIcon className="size-4" />

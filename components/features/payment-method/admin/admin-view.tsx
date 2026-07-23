@@ -6,6 +6,9 @@ import { toast } from 'sonner';
 
 import { DialogCreatePaymentMethod } from '@/components/features/payment-method/admin/dialog-create';
 import { DialogEditPaymentMethod } from '@/components/features/payment-method/admin/dialog-edit';
+import { EmptyState } from '@/components/custom/empty-state';
+import { ErrorState } from '@/components/custom/error-state';
+import { PageHeader } from '@/components/custom/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
@@ -29,6 +32,7 @@ export const AdminPaymentMethodView = () => {
     isLoading,
     isError,
     error,
+    refetch,
   } = usePaymentMethods({
     search: search.trim() || undefined,
     limit: '100',
@@ -46,32 +50,30 @@ export const AdminPaymentMethodView = () => {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl font-bold tracking-tight text-heading">
-              Phương thức thanh toán
-            </h1>
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
+      <PageHeader
+        title="Phương thức thanh toán"
+        description="Catalog phương thức — staff đăng ký tài khoản nhận tiền theo từng cơ sở"
+        icon={WalletCardsIcon}
+        actions={
+          <>
             {methods.length > 0 && (
               <Badge variant="secondary" className="font-semibold tabular-nums">
                 {methods.length}
               </Badge>
             )}
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Catalog phương thức — staff đăng ký tài khoản nhận tiền theo từng cơ sở.
-          </p>
-        </div>
-        <DialogCreatePaymentMethod />
-      </header>
+            <DialogCreatePaymentMethod />
+          </>
+        }
+      />
 
-      <InputGroup className="max-w-sm bg-surface">
+      <InputGroup className="h-9 w-full max-w-sm rounded-lg border-border/70 bg-card shadow-sm">
         <InputGroupAddon>
-          <SearchIcon />
+          <SearchIcon className="size-3.5" />
         </InputGroupAddon>
         <InputGroupInput
           placeholder="Tìm theo tên hoặc code…"
+          className="text-sm"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -90,13 +92,17 @@ export const AdminPaymentMethodView = () => {
       </InputGroup>
 
       {isError && (
-        <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-          {error instanceof Error ? error.message : 'Không tải được danh sách'}
-        </div>
+        <ErrorState
+          title="Không tải được danh sách"
+          description={
+            error instanceof Error ? error.message : 'Không tải được danh sách phương thức'
+          }
+          onRetry={() => refetch()}
+        />
       )}
 
       {isLoading && (
-        <div className="space-y-3 rounded-xl border border-border/60 bg-surface p-4">
+        <div className="space-y-3 rounded-xl border border-border/60 bg-card p-4 shadow-sm">
           {[0, 1, 2].map((row) => (
             <Skeleton key={row} className="h-10 w-full" />
           ))}
@@ -104,7 +110,7 @@ export const AdminPaymentMethodView = () => {
       )}
 
       {!isLoading && !isError && methods.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-border/60 bg-surface shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
           <Table>
             <TableHeader>
               <TableRow className="border-b border-border/60 bg-muted/40 hover:bg-muted/40">
@@ -118,10 +124,13 @@ export const AdminPaymentMethodView = () => {
             </TableHeader>
             <TableBody>
               {methods.map((item) => (
-                <TableRow key={item.id} className="border-b border-border/40 last:border-b-0">
+                <TableRow
+                  key={item.id}
+                  className="border-b border-border/40 last:border-b-0 transition-colors hover:bg-muted/40"
+                >
                   <TableCell className="px-4 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-muted-foreground">
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-muted-foreground transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600">
                         <WalletCardsIcon className="size-4" />
                       </div>
                       <div>
@@ -163,7 +172,7 @@ export const AdminPaymentMethodView = () => {
                           className="h-9 w-full justify-start rounded-lg px-3 text-destructive hover:text-destructive"
                           onClick={() => handleDelete(item)}
                         >
-                          <Trash2Icon className="size-3.5" />
+                          <Trash2Icon className="mr-2 size-3.5" />
                           Xóa
                         </Button>
                       </PopoverContent>
@@ -177,15 +186,15 @@ export const AdminPaymentMethodView = () => {
       )}
 
       {!isLoading && !isError && methods.length === 0 && (
-        <div className="flex flex-col items-center rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
-          <div className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
-            <WalletCardsIcon className="size-5" />
-          </div>
-          <h2 className="mt-4 text-base font-semibold text-heading">Chưa có phương thức</h2>
-          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-            Thêm phương thức đầu tiên để staff có thể đăng ký tài khoản nhận tiền.
-          </p>
-        </div>
+        <EmptyState
+          icon={WalletCardsIcon}
+          title={search.trim() ? 'Không tìm thấy phương thức' : 'Chưa có phương thức'}
+          description={
+            search.trim()
+              ? `Không có phương thức khớp với "${search}".`
+              : 'Thêm phương thức đầu tiên để staff có thể đăng ký tài khoản nhận tiền.'
+          }
+        />
       )}
     </div>
   );

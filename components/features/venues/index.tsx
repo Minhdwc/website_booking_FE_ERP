@@ -6,17 +6,22 @@ import {
   Building2Icon,
   ClockIcon,
   EyeIcon,
+  LandmarkIcon,
   MapPinIcon,
   MoonIcon,
   MoreHorizontalIcon,
   SearchIcon,
-  XIcon,
   Trash2,
+  XIcon,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 import { VenuesCreateDialog } from '@/components/features/venues/dialog-create';
 import { DialogEditVenue } from '@/components/features/venues/dialog-edit';
 import { VenuesSetupPage } from '@/components/features/venues/setup-page';
+import { ErrorState } from '@/components/custom/error-state';
+import { PageHeader } from '@/components/custom/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
@@ -34,8 +39,6 @@ import { useVenuesOnboarding } from '@/hooks/use-venues-onboarding';
 import { IVenue } from '@/stores/api/types';
 import { useErpUiStore } from '@/stores/index.store';
 import { prefetchVenue, useDeleteVenue, useVenues } from '@/stores/queries/venue.query';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 
 const formatRestTime = (restStartTime?: string, restEndTime?: string) => {
   if (!restStartTime || !restEndTime) return null;
@@ -58,6 +61,7 @@ export const VenuesPage = () => {
     isSuccess,
     isError,
     error,
+    refetch,
   } = useVenues(venueSearch ? { search: venueSearch } : undefined);
 
   const venues = isSuccess ? (venuesData ?? []) : [];
@@ -81,23 +85,24 @@ export const VenuesPage = () => {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-7 lg:px-8">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl font-bold tracking-tight text-heading">Cơ sở</h1>
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
+      <PageHeader
+        title="Cơ sở"
+        description="Quản lý cơ sở, địa điểm và khung giờ hoạt động"
+        icon={LandmarkIcon}
+        actions={
+          <>
             {isNotEmpty && (
               <Badge variant="secondary" className="font-semibold tabular-nums">
                 {venues.length}
               </Badge>
             )}
-          </div>
-        </div>
+            {(isNotEmpty || isSearching) && <VenuesCreateDialog />}
+          </>
+        }
+      />
 
-        {(isNotEmpty || isSearching) && <VenuesCreateDialog />}
-      </header>
-
-      <InputGroup className="h-9 w-full max-w-[220px] rounded-xl border-border/70 bg-card shadow-sm">
+      <InputGroup className="h-9 w-full max-w-[260px] rounded-lg border-border/70 bg-card shadow-sm">
         <InputGroupAddon>
           <SearchIcon className="size-3.5" />
         </InputGroupAddon>
@@ -122,13 +127,15 @@ export const VenuesPage = () => {
       </InputGroup>
 
       {isError && (
-        <div className="rounded-xl border border-error/20 bg-error/5 px-4 py-3 text-sm text-error">
-          {error instanceof Error ? error.message : 'Không tải được danh sách cơ sở'}
-        </div>
+        <ErrorState
+          title="Không tải được danh sách"
+          description={error instanceof Error ? error.message : 'Không tải được danh sách cơ sở'}
+          onRetry={() => refetch()}
+        />
       )}
 
       {isPending && (
-        <div className="overflow-hidden rounded-[22px] border border-border/80 bg-card shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
           <div className="border-b border-border/60 bg-card px-4 py-3.5">
             <Skeleton className="h-4 w-2/3 max-w-md" />
           </div>
@@ -149,10 +156,10 @@ export const VenuesPage = () => {
       )}
 
       {isSuccess && isNotEmpty && (
-        <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow className="border-b border-border/60 bg-card hover:bg-transparent">
+              <TableRow className="border-b border-border/60 bg-muted/40 hover:bg-muted/40">
                 <TableHead className="px-4 py-3 text-xs">Cơ sở</TableHead>
                 <TableHead className="px-4 py-3 text-xs">Địa chỉ</TableHead>
                 <TableHead className="px-4 py-3 text-xs">Giờ hoạt động</TableHead>
@@ -169,7 +176,7 @@ export const VenuesPage = () => {
                 return (
                   <TableRow
                     key={venue.id}
-                    className="group cursor-pointer border-b border-border/40 last:border-b-0 hover:bg-foreground/3"
+                    className="group cursor-pointer border-b border-border/40 last:border-b-0 transition-colors hover:bg-muted/40"
                     onMouseEnter={() => {
                       prefetchVenue(queryClient, venue.id);
                     }}
@@ -177,7 +184,7 @@ export const VenuesPage = () => {
                   >
                     <TableCell className="max-w-[240px] px-4 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-muted-foreground transition-colors group-hover:border-brand-secondary-600/20 group-hover:bg-brand-secondary-50 group-hover:text-brand-secondary-600">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-muted-foreground transition-colors group-hover:border-brand-300 group-hover:bg-brand-50 group-hover:text-brand-600">
                           <Building2Icon className="size-4" />
                         </div>
                         <div className="min-w-0">
@@ -235,19 +242,19 @@ export const VenuesPage = () => {
                         <PopoverContent align="end" className="w-44 gap-0 p-1">
                           <Button
                             variant="ghost"
-                            className="h-9 px-3 sm:px-4 text-blue-500 hover:text-blue-600 rounded-lg justify-start"
+                            className="h-9 justify-start rounded-lg px-3 text-foreground hover:text-foreground"
                             onClick={() => router.push(`/venues/${venue.id}`)}
                           >
-                            <EyeIcon className="size-3.5 text-blue-500" />
+                            <EyeIcon className="mr-2 size-3.5 text-brand-600" />
                             Xem chi tiết
                           </Button>
                           <DialogEditVenue venueId={venue.id} />
                           <Button
                             variant="ghost"
-                            className="h-9 px-3 sm:px-4 text-red-500 hover:text-red-600 rounded-lg justify-start"
+                            className="h-9 justify-start rounded-lg px-3 text-destructive hover:text-destructive"
                             onClick={() => handleDeleteVenue(venue.id)}
                           >
-                            <Trash2 className="size-3.5 text-red-500" />
+                            <Trash2 className="mr-2 size-3.5" />
                             Xóa
                           </Button>
                         </PopoverContent>

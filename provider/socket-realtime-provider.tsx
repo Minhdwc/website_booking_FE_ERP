@@ -45,22 +45,19 @@ export function SocketRealtimeProvider({ children }: { children: React.ReactNode
       console.warn('[socket] connect_error', error.message);
     });
 
-    socket.on(
-      'notification',
-      (payload: { title?: string; message?: string; type?: string }) => {
-        const title = payload.title?.trim() || 'Thông báo mới';
-        const message = payload.message?.trim();
+    socket.on('notification', (payload: { title?: string; message?: string; type?: string }) => {
+      const title = payload.title?.trim() || 'Thông báo mới';
+      const message = payload.message?.trim();
 
-        if (message) {
-          toast.info(title, { description: message });
-        } else {
-          toast.info(title);
-        }
+      if (message) {
+        toast.info(title, { description: message });
+      } else {
+        toast.info(title);
+      }
 
-        void queryClient.invalidateQueries({ queryKey: notificationKeys.all });
-        void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
-      },
-    );
+      void queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+      void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
+    });
 
     socket.on('booking:updated', () => {
       void queryClient.invalidateQueries({ queryKey: bookingKeys.all });

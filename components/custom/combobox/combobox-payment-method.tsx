@@ -12,7 +12,8 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ComboboxPopoverContent } from '@/components/custom/combobox/combobox-popover-content';
+import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { usePaymentMethods } from '@/stores/queries/payment-method.query';
@@ -61,7 +62,7 @@ export function ComboboxPaymentMethod({ value, onChange, excludeIds }: ComboboxP
         <ChevronsUpDownIcon className="size-4 shrink-0 opacity-50" />
       </PopoverTrigger>
 
-      <PopoverContent className="w-(--anchor-width) p-0" align="start">
+      <ComboboxPopoverContent>
         <Command shouldFilter={false}>
           <Input
             className="flex h-9 w-full rounded-none border-x-0 border-t-0 border-b bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
@@ -94,7 +95,7 @@ export function ComboboxPaymentMethod({ value, onChange, excludeIds }: ComboboxP
             </CommandGroup>
           </CommandList>
         </Command>
-      </PopoverContent>
+      </ComboboxPopoverContent>
     </Popover>
   );
 }

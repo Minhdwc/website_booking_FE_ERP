@@ -114,7 +114,6 @@ export const DialogEditField = ({ fieldId, triggerVariant = 'menu' }: DialogEdit
 
   const venueId = useWatch({ control: form.control, name: 'venueId' });
   const minDurationMinutes = useWatch({ control: form.control, name: 'minDurationMinutes' });
-  const durationStepMinutes = useWatch({ control: form.control, name: 'durationStepMinutes' });
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);

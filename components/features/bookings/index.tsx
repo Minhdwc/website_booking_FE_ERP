@@ -82,13 +82,8 @@ function HoldBadge({ expiresAt }: { expiresAt: string }) {
 }
 
 function BookingStatusCell({ booking }: { booking: IBooking }) {
-  const holdActive =
-    booking.status === 'pending' &&
-    booking.expiresAt &&
-    new Date(booking.expiresAt).getTime() > Date.now();
-
-  if (holdActive && booking.expiresAt) {
-    return <HoldBadge expiresAt={booking.expiresAt} />;
+  if (booking.status === 'pending' && booking.expiresAt) {
+    return <PendingBookingStatus expiresAt={booking.expiresAt} />;
   }
 
   return (
@@ -96,6 +91,16 @@ function BookingStatusCell({ booking }: { booking: IBooking }) {
       {statusLabel[booking.status as BookingStatus]}
     </Badge>
   );
+}
+
+function PendingBookingStatus({ expiresAt }: { expiresAt: string }) {
+  const { isExpired } = useCountdown(expiresAt);
+
+  if (isExpired) {
+    return <Badge variant={statusVariant.pending}>{statusLabel.pending}</Badge>;
+  }
+
+  return <HoldBadge expiresAt={expiresAt} />;
 }
 
 export const BookingsPage = () => {

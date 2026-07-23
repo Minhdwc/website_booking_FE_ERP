@@ -41,13 +41,12 @@ const matchesSearch = (user: IUser, q: string) => {
 export function UsersPage() {
   const [search, setSearch] = useState('');
   const { data, isSuccess, isLoading, isError, error } = useUsers({ limit: '100' });
-  const users = isSuccess ? data : [];
   const deleteMutation = useDeleteUser();
 
-  const filtered = useMemo(
-    () => (search.trim() ? users.filter((user) => matchesSearch(user, search.trim())) : users),
-    [users, search],
-  );
+  const filtered = useMemo(() => {
+    const users = isSuccess ? data : [];
+    return search.trim() ? users.filter((user) => matchesSearch(user, search.trim())) : users;
+  }, [isSuccess, data, search]);
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('Xóa tài khoản này?')) return;

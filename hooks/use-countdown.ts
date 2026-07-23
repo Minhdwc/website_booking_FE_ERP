@@ -9,26 +9,14 @@ function formatMmSs(totalSeconds: number) {
 }
 
 export function useCountdown(expiresAt?: string | null) {
-  const [remainingMs, setRemainingMs] = useState(() => {
-    if (!expiresAt) return 0;
-    return Math.max(0, new Date(expiresAt).getTime() - Date.now());
-  });
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    if (!expiresAt) {
-      setRemainingMs(0);
-      return;
-    }
-
-    const tick = () => {
-      setRemainingMs(Math.max(0, new Date(expiresAt).getTime() - Date.now()));
-    };
-
-    tick();
-    const timer = window.setInterval(tick, 1000);
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
-  }, [expiresAt]);
+  }, []);
 
+  const remainingMs = expiresAt ? Math.max(0, new Date(expiresAt).getTime() - now) : 0;
   const remainingSeconds = Math.ceil(remainingMs / 1000);
   const isExpired = !expiresAt || remainingMs <= 0;
 

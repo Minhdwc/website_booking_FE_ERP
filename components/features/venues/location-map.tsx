@@ -32,9 +32,11 @@ export const VenueLocationMap = ({ longitude, latitude }: VenueLocationMapProps)
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const markerRef = useRef<Marker | null>(null);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (!containerRef.current || initializedRef.current) return;
+    initializedRef.current = true;
 
     const map = new maplibregl.Map({
       container: containerRef.current,
@@ -46,7 +48,7 @@ export const VenueLocationMap = ({ longitude, latitude }: VenueLocationMapProps)
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
-    const marker = new maplibregl.Marker({ color: '#e11d48' })
+    const marker = new maplibregl.Marker({ color: '#059669' })
       .setLngLat([longitude, latitude])
       .addTo(map);
 
@@ -68,8 +70,9 @@ export const VenueLocationMap = ({ longitude, latitude }: VenueLocationMapProps)
       map.remove();
       mapRef.current = null;
       markerRef.current = null;
+      initializedRef.current = false;
     };
-  }, []);
+  }, [latitude, longitude]);
 
   useEffect(() => {
     const map = mapRef.current;

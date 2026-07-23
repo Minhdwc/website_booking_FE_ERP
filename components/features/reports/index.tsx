@@ -191,7 +191,13 @@ export function ReportsPage() {
             >
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                <Pie data={sportChartData} dataKey="total" nameKey="name" innerRadius={50} paddingAngle={2}>
+                <Pie
+                  data={sportChartData}
+                  dataKey="total"
+                  nameKey="name"
+                  innerRadius={50}
+                  paddingAngle={2}
+                >
                   {sportChartData.map((_, index) => (
                     <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                   ))}
@@ -254,11 +260,15 @@ export function ReportsPage() {
             <TableBody>
               {(data?.topFields ?? []).map((row) => (
                 <TableRow key={row.fieldId} className="hover:bg-foreground/3">
-                  <TableCell className="px-4 py-3 font-medium">{row.field?.name ?? row.fieldId}</TableCell>
+                  <TableCell className="px-4 py-3 font-medium">
+                    {row.field?.name ?? row.fieldId}
+                  </TableCell>
                   <TableCell className="px-4 py-3 text-muted-foreground">
                     {row.field?.venue?.name ?? '—'}
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-right tabular-nums">{row.bookingCount}</TableCell>
+                  <TableCell className="px-4 py-3 text-right tabular-nums">
+                    {row.bookingCount}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -18,8 +18,7 @@ export const reviewService = {
   getReviews: (params?: { search?: string; page?: string; limit?: string }) =>
     apiRequest<ReviewsResponse>('/reviews', { method: 'GET', params }),
 
-  getReview: (id: string) =>
-    apiRequest<ReviewDetailResponse>(`/reviews/${id}`, { method: 'GET' }),
+  getReview: (id: string) => apiRequest<ReviewDetailResponse>(`/reviews/${id}`, { method: 'GET' }),
 
   deleteReview: (id: string) => apiRequest(`/reviews/${id}`, { method: 'DELETE' }),
 };

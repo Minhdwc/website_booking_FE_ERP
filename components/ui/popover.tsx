@@ -13,15 +13,25 @@ function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
 }
 
+const defaultCollisionAvoidance = {
+  side: 'shift',
+  align: 'shift',
+  fallbackAxisSide: 'none',
+} as const;
+
 function PopoverContent({
   className,
   align = 'center',
   alignOffset = 0,
   side = 'bottom',
   sideOffset = 4,
+  collisionAvoidance = defaultCollisionAvoidance,
   ...props
 }: PopoverPrimitive.Popup.Props &
-  Pick<PopoverPrimitive.Positioner.Props, 'align' | 'alignOffset' | 'side' | 'sideOffset'>) {
+  Pick<
+    PopoverPrimitive.Positioner.Props,
+    'align' | 'alignOffset' | 'side' | 'sideOffset' | 'collisionAvoidance'
+  >) {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Positioner
@@ -29,6 +39,7 @@ function PopoverContent({
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
+        collisionAvoidance={collisionAvoidance}
         className="isolate z-50"
       >
         <PopoverPrimitive.Popup

@@ -99,7 +99,9 @@ export function ReviewsPage() {
                 <TableRow key={review.id} className="group hover:bg-foreground/3">
                   <TableCell className="px-4 py-3.5">
                     <p className="font-medium">{review.user?.name ?? 'Khách'}</p>
-                    <p className="text-xs text-muted-foreground">{review.user?.email ?? review.userId}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {review.user?.email ?? review.userId}
+                    </p>
                   </TableCell>
                   <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
                     {review.field?.name ?? '—'}
@@ -149,7 +151,9 @@ export function ReviewsPage() {
       {!isLoading && !isError && reviews.length === 0 && (
         <div className="rounded-xl border border-dashed bg-card px-6 py-12 text-center">
           <h2 className="text-base font-semibold text-heading">Chưa có đánh giá</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Khi khách viết đánh giá, danh sách sẽ hiện ở đây.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Khi khách viết đánh giá, danh sách sẽ hiện ở đây.
+          </p>
         </div>
       )}
     </div>

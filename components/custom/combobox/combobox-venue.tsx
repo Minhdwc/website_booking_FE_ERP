@@ -12,7 +12,8 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ComboboxPopoverContent } from '@/components/custom/combobox/combobox-popover-content';
+import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useVenue, useVenues } from '@/stores/queries/venue.query';
@@ -72,10 +73,7 @@ export function ComboboxVenue({ value, onChange }: ComboboxVenueProps) {
         <ChevronsUpDownIcon className="size-3.5 shrink-0 text-muted-foreground" />
       </PopoverTrigger>
 
-      <PopoverContent
-        className="w-(--anchor-width) overflow-hidden rounded-lg border-border/80 p-0 shadow-md"
-        align="start"
-      >
+      <ComboboxPopoverContent className="overflow-hidden rounded-lg border-border/80 shadow-md">
         <Command shouldFilter={false} value={value} className="rounded-none bg-transparent p-0.5">
           <CommandInput placeholder="Tìm cơ sở..." value={search} onValueChange={setSearch} />
 
@@ -115,7 +113,7 @@ export function ComboboxVenue({ value, onChange }: ComboboxVenueProps) {
             </CommandGroup>
           </CommandList>
         </Command>
-      </PopoverContent>
+      </ComboboxPopoverContent>
     </Popover>
   );
 }

@@ -9,16 +9,24 @@ import {
   WalletCardsIcon,
 } from 'lucide-react';
 
-import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/custom/empty-state';
+import { PageHeader } from '@/components/custom/page-header';
+import { StatCard } from '@/components/custom/stat-card';
 import { usePendingBookings } from '@/stores/queries/booking.query';
 import { useReportSummary } from '@/stores/queries/report.query';
-import { formatDate, formatLongDate, formatRelativeTime } from '@/lib/format';
+import { formatDate, formatRelativeTime } from '@/lib/format';
+import { cn } from '@/lib/utils';
 
 const shortcuts = [
-  { title: 'Đặt sân', href: '/bookings', icon: CalendarDaysIcon },
-  { title: 'Sân', href: '/fields', icon: MapPinnedIcon },
-  { title: 'Cơ sở', href: '/venues', icon: LandmarkIcon },
-  { title: 'Thanh toán', href: '/payment-method', icon: WalletCardsIcon },
+  { title: 'Đặt sân', href: '/bookings', icon: CalendarDaysIcon, description: 'Quản lý lịch đặt' },
+  { title: 'Sân', href: '/fields', icon: MapPinnedIcon, description: 'Danh sách sân' },
+  { title: 'Cơ sở', href: '/venues', icon: LandmarkIcon, description: 'Quản lý cơ sở' },
+  {
+    title: 'Thanh toán',
+    href: '/payment-method',
+    icon: WalletCardsIcon,
+    description: 'PT thanh toán',
+  },
 ];
 
 export const Home = () => {
@@ -29,71 +37,46 @@ export const Home = () => {
   const totalBookings =
     reportSummary?.bookingsByStatus.reduce((sum, row) => sum + row.count, 0) ?? 0;
 
-  // API summary hiện chưa cung cấp count "sân đang hoạt động"
   const activeFields = 0;
-
   const weekDeltaPercent = 0;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-7 px-6 py-7 lg:px-8">
-      <section>
-        <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">{formatLongDate()}</p>
-          <h1 className="text-4xl font-extrabold tracking-tight text-heading sm:text-5xl">
-            Trang chủ
-          </h1>
-        </div>
-      </section>
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
+      <PageHeader
+        title="Trang chủ"
+        description="Tổng quan hoạt động đặt sân và doanh thu"
+        icon={ChartColumnIcon}
+      />
 
       <section className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm">
-          <div className="mt-2 flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-heading">Tổng Doanh Thu</p>
-              <p className="mt-4 text-3xl font-extrabold tracking-tight text-heading">
-                {isReportLoading ? 0 : revenueTotal.toLocaleString('vi-VN')} VNĐ
-              </p>
-              <p className="mt-1 text-sm text-brand-secondary-600">
-                +{weekDeltaPercent}% so với tuần trước
-              </p>
-            </div>
-            <WalletCardsIcon className="size-12 text-brand-secondary-600" />
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm">
-          <div className="mt-2 flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-heading">Tổng Số Lượt Đặt</p>
-              <p className="mt-4 text-3xl font-extrabold tracking-tight text-heading">
-                {isReportLoading ? 0 : totalBookings}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">Hôm nay: 0</p>
-            </div>
-            <CalendarDaysIcon className="size-12 text-brand-secondary-600" />
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm">
-          <div className="mt-2 flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-heading">Sân Đang Hoạt Động</p>
-              <p className="mt-4 text-3xl font-extrabold tracking-tight text-heading">
-                {activeFields}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">0</p>
-            </div>
-            <MapPinnedIcon className="size-12 text-brand-secondary-600" />
-          </div>
-        </div>
+        <StatCard
+          title="Tổng doanh thu"
+          value={isReportLoading ? '0' : `${revenueTotal.toLocaleString('vi-VN')} VNĐ`}
+          description={isReportLoading ? undefined : `+${weekDeltaPercent}% so với tuần trước`}
+          icon={WalletCardsIcon}
+          loading={isReportLoading}
+        />
+        <StatCard
+          title="Tổng lượt đặt"
+          value={isReportLoading ? '0' : totalBookings}
+          description="Hôm nay: 0"
+          icon={CalendarDaysIcon}
+          loading={isReportLoading}
+        />
+        <StatCard
+          title="Sân đang hoạt động"
+          value={activeFields}
+          description="0 đang bảo trì"
+          icon={MapPinnedIcon}
+        />
       </section>
 
-      <section className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm">
+      <section className="rounded-xl border border-border/70 bg-card p-5 shadow-sm">
         <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="text-sm font-semibold text-heading">Lịch đặt sân gần đây</h2>
+          <h2 className="text-sm font-semibold text-heading">Lối tắt nhanh</h2>
           <Link
             href="/reports"
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-4 hover:underline"
+            className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground underline-offset-4 hover:text-brand-600 hover:underline"
           >
             <ChartColumnIcon className="size-3.5" />
             Báo cáo
@@ -105,21 +88,28 @@ export const Home = () => {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-xl border border-border/70 bg-card p-4 shadow-sm transition-transform hover:-translate-y-0.5"
+              className={cn(
+                'group relative overflow-hidden rounded-lg border border-border/70 bg-card p-4',
+                'transition-all duration-200 ease-out',
+                'hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-sm',
+              )}
             >
-              <item.icon className="size-5 text-brand-secondary-600" />
+              <div className="flex size-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100 group-hover:text-brand-700">
+                <item.icon className="size-4" />
+              </div>
               <p className="mt-3 text-sm font-semibold text-heading">{item.title}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{item.description}</p>
             </Link>
           ))}
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
+      <section className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
         <div className="border-b border-border/70 px-5 py-4">
           <div className="flex items-baseline justify-between">
             <h2 className="text-sm font-semibold text-heading">Lịch đặt sân gần đây</h2>
             {pendingCount > 0 ? (
-              <span className="text-xs font-medium text-brand-secondary-600">
+              <span className="text-xs font-medium text-brand-600">
                 {pendingCount} chờ xác nhận
               </span>
             ) : null}
@@ -129,20 +119,22 @@ export const Home = () => {
         <div className="bg-card">
           {isLoading ? (
             <div className="flex items-center gap-3 border-b border-border px-5 py-4 last:border-0">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="ml-auto h-4 w-20" />
+              <div className="h-4 w-40 animate-pulse rounded bg-muted" />
+              <div className="ml-auto h-4 w-20 animate-pulse rounded bg-muted" />
             </div>
           ) : pendingBookings.length === 0 ? (
-            <div className="px-5 py-12 text-center">
-              <CalendarDaysIcon className="mx-auto size-5 text-brand-secondary-600" />
-              <p className="mt-3 text-sm font-semibold text-heading">Chưa có lịch đặt sân</p>
-            </div>
+            <EmptyState
+              icon={CalendarDaysIcon}
+              title="Chưa có lịch đặt sân"
+              description="Các đơn đặt sân gần đây sẽ hiển thị tại đây."
+              className="border-0 bg-transparent"
+            />
           ) : (
             pendingBookings.map((booking) => (
               <Link
                 key={booking.id}
                 href="/bookings"
-                className="flex items-center gap-3 border-b border-border px-5 py-4 last:border-0 hover:bg-muted/35"
+                className="flex items-center gap-3 border-b border-border px-5 py-4 transition-all hover:bg-muted/50"
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-heading">

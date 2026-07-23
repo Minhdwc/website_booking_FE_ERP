@@ -44,34 +44,41 @@ export const AppSidebar = () => {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-white shadow-sm">
+    <Sidebar
+      collapsible="icon"
+      className="border-r border-sidebar-border bg-sidebar shadow-[2px_0_12px_rgba(0,0,0,0.02)]"
+    >
       <SidebarHeader className="px-4 py-4">
         <Link
           href="/dashboard"
           className={cn(
-            'flex items-center gap-3 rounded-xl border border-transparent',
+            'group/logo flex items-center gap-3 rounded-xl border border-transparent p-1 transition-all',
+            'hover:border-border/80 hover:bg-muted/50',
             collapsed && 'justify-center',
           )}
         >
-          <Image
-            src={logoSquare}
-            alt="Minh Đức Booking Sport"
-            className="size-12 shrink-0 rounded-xl object-cover"
-            priority
-          />
+          <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-brand-600 shadow-sm ring-2 ring-brand-100 transition-all group-hover/logo:ring-brand-200">
+            <Image
+              src={logoSquare}
+              alt="Minh Đức Booking Sport"
+              className="size-7 object-cover"
+              priority
+            />
+          </div>
           {!collapsed && (
             <div className="min-w-0 flex-1 leading-tight">
-              <p className="truncate text-lg font-bold tracking-tight text-emerald-700">BOOK SÂN</p>
-              <p className="truncate text-xs text-muted-foreground">Điều phối sân thể thao</p>
+              <p className="truncate text-sm font-bold tracking-tight text-sidebar-foreground">
+                Minh Đức Booking Sport
+              </p>
             </div>
           )}
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="gap-2 px-3 py-2">
+      <SidebarContent className="gap-4 px-3 py-2">
         {sections.map((section) => (
           <SidebarGroup key={section.label} className="p-0">
-            <SidebarGroupLabel className="h-7 px-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <SidebarGroupLabel className="h-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
               {section.label}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -89,17 +96,24 @@ export const AppSidebar = () => {
                         tooltip={item.title}
                         render={<Link href={item.href} />}
                         className={cn(
-                          'h-11 rounded-xl border border-transparent px-3 text-sm font-medium transition-colors',
+                          'group relative h-10 rounded-lg border border-transparent px-3 text-sm font-medium transition-all duration-200',
                           active
-                            ? 'data-active:border-emerald-600! data-active:bg-emerald-600! data-active:text-white! shadow-sm hover:bg-emerald-600/90 hover:text-white data-active:[&_svg]:text-white'
-                            : 'text-sidebar-foreground hover:bg-emerald-50 hover:text-emerald-700',
+                            ? 'bg-brand-600 text-white shadow-sm hover:bg-brand-700 hover:text-white data-active:bg-brand-600 data-active:text-white data-active:hover:bg-brand-700 data-active:[&>svg]:text-white'
+                            : 'text-sidebar-foreground/80 hover:border-border hover:bg-muted hover:text-sidebar-foreground',
                         )}
                       >
-                        <Icon className="size-4 shrink-0" />
+                        <Icon
+                          className={cn(
+                            'size-4 shrink-0 transition-colors',
+                            active
+                              ? 'text-white data-active:text-white'
+                              : 'text-sidebar-foreground/60 group-hover:text-brand-600',
+                          )}
+                        />
                         <span className="truncate">{item.title}</span>
                       </SidebarMenuButton>
                       {badge > 0 && (
-                        <SidebarMenuBadge className="rounded-full bg-emerald-600 px-1.5 text-xs font-semibold text-white">
+                        <SidebarMenuBadge className="rounded-full bg-brand-500 px-1.5 text-[11px] font-semibold text-white shadow-sm">
                           {badge > 99 ? '99+' : badge}
                         </SidebarMenuBadge>
                       )}

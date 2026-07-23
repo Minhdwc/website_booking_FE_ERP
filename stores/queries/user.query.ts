@@ -4,11 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { unwrapList } from '@/stores/api/response';
 import { IUser } from '@/stores/api/types';
-import {
-  CreateUserBody,
-  UpdateUserBody,
-  userService,
-} from '@/stores/service/user.service';
+import { CreateUserBody, UpdateUserBody, userService } from '@/stores/service/user.service';
 
 export type UserListParams = {
   search?: string;
