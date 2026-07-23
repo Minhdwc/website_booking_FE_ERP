@@ -100,7 +100,7 @@ export const LoginForm = () => {
                 id="email"
                 type="email"
                 autoComplete="email"
-                placeholder="admin@minhduc.vn"
+                placeholder="admin@example.com"
                 className="h-10 border-border bg-background pl-9 shadow-none"
                 aria-invalid={Boolean(errors.email)}
                 {...register('email')}

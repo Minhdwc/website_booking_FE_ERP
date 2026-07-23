@@ -54,11 +54,13 @@ export const useCreateBooking = () => {
 
   return useMutation({
     mutationFn: (body: {
-      userId: string;
-      fieldId: string;
-      timeslotId: string;
-      date: string;
-      status?: BookingStatus;
+      items: Array<{
+        fieldId: string;
+        date: string;
+        startTime: string;
+        endTime: string;
+      }>;
+      note?: string;
     }) => bookingService.createBooking(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
@@ -70,7 +72,7 @@ export const useUpdateBooking = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: Partial<IBooking> }) =>
+    mutationFn: ({ id, body }: { id: string; body: { status: IBooking['status'] } }) =>
       bookingService.updateBooking(id, body),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
@@ -93,7 +95,7 @@ export const useDeleteBooking = () => {
 
 const getPendingBookings = (bookings: IBooking[]) =>
   bookings
-    .filter((booking) => booking.status === 'pending')
+    .filter((booking) => booking.status === 'waiting_payment')
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
 /** Derived view of pending bookings from the shared bookings query. */

@@ -4,7 +4,7 @@ import { clearSession, getAccessToken, getRefreshToken, setTokens } from '@/lib/
 const API_PREFIX = '/api/v1';
 
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001',
+  baseURL: process.env.BACKEND_URL,
 });
 
 type ApiRequestParams = {

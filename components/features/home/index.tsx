@@ -130,7 +130,9 @@ export const Home = () => {
               className="border-0 bg-transparent"
             />
           ) : (
-            pendingBookings.map((booking) => (
+            pendingBookings.map((booking) => {
+              const primaryItem = booking.items?.[0];
+              return (
               <Link
                 key={booking.id}
                 href="/bookings"
@@ -138,23 +140,24 @@ export const Home = () => {
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-heading">
-                    {booking.field?.name}
-                    {booking.field?.venue?.name ? (
+                    {primaryItem?.field?.name}
+                    {primaryItem?.field?.venue?.name ? (
                       <span className="font-normal text-muted-foreground">
                         {' '}
-                        · {booking.field.venue.name}
+                        · {primaryItem.field.venue.name}
                       </span>
                     ) : null}
                   </p>
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                    {booking.user?.name} · {formatDate(booking.date)}
+                    {booking.user?.name} · {primaryItem ? formatDate(primaryItem.date) : '—'}
                   </p>
                 </div>
                 <p className="shrink-0 text-xs text-muted-foreground">
                   {formatRelativeTime(booking.createdAt)}
                 </p>
               </Link>
-            ))
+              );
+            })
           )}
         </div>
       </section>

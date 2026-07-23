@@ -33,47 +33,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useSession } from '@/provider/session-provider';
-import { BookingStatus, IField, ITimeslot } from '@/stores/api/types';
+import { IField } from '@/stores/api/types';
 import { useCreateBooking } from '@/stores/queries/booking.query';
 import { useFields } from '@/stores/queries/field.query';
-import { useTimeslots } from '@/stores/queries/timeslot.query';
 
 const formSchema = z.object({
-  userId: z.string().min(1, { message: 'Nhập ID khách hàng' }),
   fieldId: z.string().min(1, { message: 'Chọn sân' }),
-  timeslotId: z.string().min(1, { message: 'Chọn khung giờ' }),
   date: z.string().min(1, { message: 'Chọn ngày' }),
-  status: z.enum(['pending', 'confirmed', 'cancelled', 'completed']),
+  startTime: z.string().regex(/^\d{2}:\d{2}$/, { message: 'Nhập giờ bắt đầu HH:mm' }),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/, { message: 'Nhập giờ kết thúc HH:mm' }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const statusOptions: { value: BookingStatus; label: string }[] = [
-  { value: 'pending', label: 'Chờ xác nhận' },
-  { value: 'confirmed', label: 'Đã xác nhận' },
-  { value: 'cancelled', label: 'Đã huỷ' },
-  { value: 'completed', label: 'Hoàn thành' },
-];
-
 export const BookingsCreateDialog = () => {
   const [open, setOpen] = useState(false);
-  const { user } = useSession();
   const createBookingMutation = useCreateBooking();
   const fieldsQuery = useFields();
-  const timeslotsQuery = useTimeslots();
   const fields = fieldsQuery.isSuccess ? fieldsQuery.data : [];
-  const timeslots = timeslotsQuery.isSuccess ? timeslotsQuery.data : [];
   const isSaving = createBookingMutation.isPending;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      userId: user?.id || '',
       fieldId: '',
-      timeslotId: '',
       date: '',
-      status: 'pending',
+      startTime: '',
+      endTime: '',
     },
   });
 
@@ -81,11 +67,10 @@ export const BookingsCreateDialog = () => {
     setOpen(next);
     if (!next) {
       form.reset({
-        userId: user?.id || '',
         fieldId: '',
-        timeslotId: '',
         date: '',
-        status: 'pending',
+        startTime: '',
+        endTime: '',
       });
     }
   };
@@ -93,11 +78,14 @@ export const BookingsCreateDialog = () => {
   const handleSubmit = async (values: FormValues) => {
     try {
       await createBookingMutation.mutateAsync({
-        userId: values.userId.trim(),
-        fieldId: values.fieldId,
-        timeslotId: values.timeslotId,
-        date: values.date,
-        status: values.status,
+        items: [
+          {
+            fieldId: values.fieldId,
+            date: values.date,
+            startTime: values.startTime,
+            endTime: values.endTime,
+          },
+        ],
       });
       toast.success('Tạo đặt sân thành công');
       handleOpenChange(false);
@@ -117,28 +105,12 @@ export const BookingsCreateDialog = () => {
         <DialogHeader>
           <DialogTitle>Tạo đặt sân</DialogTitle>
           <DialogDescription>
-            Chọn sân, khung giờ và ngày để tạo booking mới cho khách.
+            Chọn sân, ngày và khung giờ. Booking sẽ được tạo dưới tài khoản đang đăng nhập.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="userId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    ID khách hàng <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="UUID của khách" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <FormField
               control={form.control}
               name="fieldId"
@@ -167,17 +139,33 @@ export const BookingsCreateDialog = () => {
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Ngày <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <FormField
                 control={form.control}
-                name="date"
+                name="startTime"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Ngày <span className="text-destructive">*</span>
+                      Giờ bắt đầu <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input type="time" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -186,56 +174,20 @@ export const BookingsCreateDialog = () => {
 
               <FormField
                 control={form.control}
-                name="timeslotId"
+                name="endTime"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Khung giờ <span className="text-destructive">*</span>
+                      Giờ kết thúc <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Chọn giờ" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {timeslots.map((slot: ITimeslot) => (
-                          <SelectItem key={slot.id} value={slot.id}>
-                            {slot.startTime} – {slot.endTime}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Trạng thái</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {statusOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>

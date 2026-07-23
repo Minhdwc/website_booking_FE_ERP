@@ -77,7 +77,7 @@ export function UsersPage() {
         <UsersCreateDialog />
       </header>
 
-      <InputGroup className="h-9 w-full max-w-[220px] rounded-xl border-border/70 bg-card shadow-sm">
+      <InputGroup className="h-9 w-full max-w-55 rounded-xl border-border/70 bg-card shadow-sm">
         <InputGroupAddon>
           <SearchIcon className="size-3.5" />
         </InputGroupAddon>

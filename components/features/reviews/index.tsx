@@ -62,7 +62,7 @@ export function ReviewsPage() {
             </Badge>
           )}
         </div>
-        <p className="text-sm text-muted-foreground">Kiểm duyệt đánh giá của khách trên các sân.</p>
+        <p className="text-sm text-muted-foreground">Kiểm duyệt đánh giá của khách trên các cơ sở.</p>
       </header>
 
       {isError && (
@@ -85,7 +85,7 @@ export function ReviewsPage() {
             <TableHeader>
               <TableRow className="border-b border-border/60 bg-card hover:bg-transparent">
                 <TableHead className="px-4 text-xs">Khách</TableHead>
-                <TableHead className="px-4 text-xs">Sân</TableHead>
+                <TableHead className="px-4 text-xs">Cơ sở</TableHead>
                 <TableHead className="px-4 text-xs">Rating</TableHead>
                 <TableHead className="hidden px-4 text-xs md:table-cell">Nhận xét</TableHead>
                 <TableHead className="px-4 text-xs">Ngày</TableHead>
@@ -104,7 +104,7 @@ export function ReviewsPage() {
                     </p>
                   </TableCell>
                   <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                    {review.field?.name ?? '—'}
+                    {review.venue?.name ?? '—'}
                   </TableCell>
                   <TableCell className="px-4 py-3.5">
                     <Stars rating={review.rating} />

@@ -30,7 +30,7 @@ export function Header() {
   const title = navSections.flatMap((s) => s.items).find((item) => item.href === pathname)?.title;
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-3 border-b border-border/60 bg-card/80 px-4 backdrop-blur-xl supports-[backdrop-filter]:bg-card/60">
+    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-3 border-b border-border/60 bg-card/80 px-4 backdrop-blur-xl supports-backdrop-filter:bg-card/60">
       <SidebarTrigger className="h-9 w-9 rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground" />
       <Separator orientation="vertical" className="mx-1 h-5" />
       <div className="min-w-0 flex-1">

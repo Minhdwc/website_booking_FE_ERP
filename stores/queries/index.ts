@@ -93,13 +93,6 @@ export {
   useUpdateVenueSport,
   useDeleteVenueSport,
 } from './venue-sport.query';
-export {
-  timeslotKeys,
-  useTimeslots,
-  useCreateTimeslot,
-  useUpdateTimeslot,
-  useDeleteTimeslot,
-} from './timeslot.query';
 export { reviewKeys, useReviews, useDeleteReview } from './review.query';
 export { userKeys, useUsers, useCreateUser, useUpdateUser, useDeleteUser } from './user.query';
 export { vietqrKeys, useVietQrBanks } from './vietqr.query';

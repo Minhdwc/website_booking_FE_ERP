@@ -1,6 +1,12 @@
 export type UserRole = 'admin' | 'staff' | 'user';
 export type FieldStatus = 'active' | 'inactive';
-export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+export type BookingStatus =
+  | 'waiting_payment'
+  | 'confirmed'
+  | 'cancelled'
+  | 'completed'
+  | 'expired';
+export type BookingItemStatus = 'active' | 'cancelled';
 export type PaymentMethod = 'bank_transfer' | 'momo' | 'zalopay' | 'vnpay';
 export type PaymentStatus = 'pending' | 'success' | 'failed' | 'cancelled';
 export type UserPaymentType = 'card' | 'bank_account' | 'e_wallet';
@@ -139,27 +145,38 @@ export interface IField {
   venue?: IVenue;
 }
 
-export interface ITimeslot {
+export interface IBookingItem {
   id: string;
+  bookingId: string;
+  fieldId: string;
+  venueId: string;
+  date: string;
   startTime: string;
   endTime: string;
+  durationMinutes: number;
+  pricePerHour: number;
+  subtotal: number;
+  status: BookingItemStatus;
   createdAt: string;
+  updatedAt: string;
+  field?: IField;
+  venue?: IVenue;
 }
 
 export interface IBooking {
   id: string;
   userId: string;
-  fieldId: string;
-  timeslotId: string;
-  date: string;
+  bookingCode: string;
   status: BookingStatus;
-  amount: number;
+  totalAmount: number;
+  discountAmount: number;
+  finalAmount: number;
+  note?: string | null;
   expiresAt?: string | null;
   createdAt: string;
   updatedAt: string;
   user?: Pick<IUser, 'id' | 'name' | 'email' | 'phone'>;
-  field?: IField;
-  timeslot?: ITimeslot;
+  items?: IBookingItem[];
   payments?: IPayment[];
 }
 
@@ -182,19 +199,21 @@ export interface IPayment {
 export interface IReview {
   id: string;
   userId: string;
-  fieldId: string;
+  venueId: string;
   rating: number;
   comment: string;
   createdAt: string;
   user?: Pick<IUser, 'id' | 'name' | 'email' | 'phone'>;
-  field?: IField;
+  venue?: IVenue;
 }
 
 export interface INotification {
   id: string;
   userId: string;
+  type: string;
   title: string;
   message: string;
   isRead: boolean;
+  readAt?: string | null;
   createdAt: string;
 }

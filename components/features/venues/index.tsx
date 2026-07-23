@@ -102,7 +102,7 @@ export const VenuesPage = () => {
         }
       />
 
-      <InputGroup className="h-9 w-full max-w-[260px] rounded-lg border-border/70 bg-card shadow-sm">
+      <InputGroup className="h-9 w-full max-w-65 rounded-lg border-border/70 bg-card shadow-sm">
         <InputGroupAddon>
           <SearchIcon className="size-3.5" />
         </InputGroupAddon>
@@ -182,7 +182,7 @@ export const VenuesPage = () => {
                     }}
                     onClick={() => router.push(`/venues/${venue.id}`)}
                   >
-                    <TableCell className="max-w-[240px] px-4 py-3.5">
+                    <TableCell className="max-w-60 px-4 py-3.5">
                       <div className="flex items-center gap-3">
                         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-muted-foreground transition-colors group-hover:border-brand-300 group-hover:bg-brand-50 group-hover:text-brand-600">
                           <Building2Icon className="size-4" />
@@ -198,7 +198,7 @@ export const VenuesPage = () => {
                       </div>
                     </TableCell>
                     <TableCell
-                      className="max-w-[240px] px-4 py-3.5 whitespace-normal"
+                      className="max-w-60 px-4 py-3.5 whitespace-normal"
                       title={venue.location}
                     >
                       <div className="flex items-start gap-1.5 text-muted-foreground">

@@ -31,7 +31,7 @@ import {
 import { useReportSummary } from '@/stores/queries/report.query';
 
 const STATUS_LABEL: Record<string, string> = {
-  pending: 'Đang giữ chỗ',
+  waiting_payment: 'Đang giữ chỗ',
   confirmed: 'Đã xác nhận',
   cancelled: 'Đã huỷ',
   completed: 'Hoàn thành',

@@ -20,33 +20,44 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useCountdown } from '@/hooks/use-countdown';
-import { formatDate, formatDateTime } from '@/lib/format';
+import { formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { BookingStatus, IBooking } from '@/stores/api/types';
 import { useErpUiStore } from '@/stores/index.store';
 import { useBookings, useDeleteBooking } from '@/stores/queries/booking.query';
 
 const statusLabel: Record<BookingStatus, string> = {
-  pending: 'Chờ xác nhận',
+  waiting_payment: 'Chờ thanh toán',
   confirmed: 'Đã xác nhận',
   cancelled: 'Đã huỷ',
   completed: 'Hoàn thành',
+  expired: 'Hết hạn',
 };
 
 const statusVariant: Record<BookingStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  pending: 'secondary',
+  waiting_payment: 'secondary',
   confirmed: 'default',
   cancelled: 'destructive',
   completed: 'outline',
+  expired: 'outline',
 };
 
+function formatSlotTime(value: string) {
+  const match = value.match(/T(\d{2}:\d{2})/);
+  if (match) return match[1];
+  if (/^\d{2}:\d{2}/.test(value)) return value.slice(0, 5);
+  return value;
+}
+
 const matchesSearch = (booking: IBooking, q: string) => {
+  const primaryItem = booking.items?.[0];
   const haystack = [
     booking.user?.name,
     booking.user?.email,
     booking.user?.phone,
-    booking.field?.name,
-    booking.date,
+    primaryItem?.field?.name,
+    primaryItem?.date,
+    booking.bookingCode,
     booking.status,
     booking.id,
   ]
@@ -82,7 +93,7 @@ function HoldBadge({ expiresAt }: { expiresAt: string }) {
 }
 
 function BookingStatusCell({ booking }: { booking: IBooking }) {
-  if (booking.status === 'pending' && booking.expiresAt) {
+  if (booking.status === 'waiting_payment' && booking.expiresAt) {
     return <PendingBookingStatus expiresAt={booking.expiresAt} />;
   }
 
@@ -97,7 +108,7 @@ function PendingBookingStatus({ expiresAt }: { expiresAt: string }) {
   const { isExpired } = useCountdown(expiresAt);
 
   if (isExpired) {
-    return <Badge variant={statusVariant.pending}>{statusLabel.pending}</Badge>;
+    return <Badge variant={statusVariant.waiting_payment}>{statusLabel.waiting_payment}</Badge>;
   }
 
   return <HoldBadge expiresAt={expiresAt} />;
@@ -148,7 +159,7 @@ export const BookingsPage = () => {
         <BookingsCreateDialog />
       </header>
 
-      <InputGroup className="h-9 w-full max-w-[220px] rounded-xl border-border/70 bg-card shadow-sm">
+      <InputGroup className="h-9 w-full max-w-55 rounded-xl border-border/70 bg-card shadow-sm">
         <InputGroupAddon>
           <SearchIcon className="size-3.5" />
         </InputGroupAddon>
@@ -210,71 +221,74 @@ export const BookingsPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((booking: IBooking) => (
-                <TableRow
-                  key={booking.id}
-                  className="group border-b border-border/40 last:border-b-0 hover:bg-foreground/3"
-                >
-                  <TableCell className="max-w-[200px] px-4 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-muted-foreground">
-                        <CalendarDaysIcon className="size-4" />
+              {filtered.map((booking: IBooking) => {
+                const primaryItem = booking.items?.[0];
+                return (
+                  <TableRow
+                    key={booking.id}
+                    className="group border-b border-border/40 last:border-b-0 hover:bg-foreground/3"
+                  >
+                    <TableCell className="max-w-55 px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-muted-foreground">
+                          <CalendarDaysIcon className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-foreground">
+                            {booking.user?.name || 'Khách'}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {booking.user?.email || booking.userId}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="truncate font-semibold text-foreground">
-                          {booking.user?.name || 'Khách'}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {booking.user?.email || booking.userId}
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                    {booking.field?.name || '—'}
-                  </TableCell>
-                  <TableCell className="px-4 py-3.5 text-sm tabular-nums">
-                    {formatDate(booking.date)}
-                  </TableCell>
-                  <TableCell className="hidden px-4 py-3.5 text-sm tabular-nums text-muted-foreground md:table-cell">
-                    {booking.timeslot
-                      ? `${formatDateTime(booking.timeslot.startTime)} – ${formatDateTime(booking.timeslot.endTime)}`
-                      : '—'}
-                  </TableCell>
-                  <TableCell className="px-4 py-3.5">
-                    <BookingStatusCell booking={booking} />
-                  </TableCell>
-                  <TableCell className="px-3 py-3.5 text-right">
-                    <Popover>
-                      <PopoverTrigger
-                        render={
+                    </TableCell>
+                    <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
+                      {primaryItem?.field?.name || '—'}
+                    </TableCell>
+                    <TableCell className="px-4 py-3.5 text-sm tabular-nums">
+                      {primaryItem ? formatDate(primaryItem.date) : '—'}
+                    </TableCell>
+                    <TableCell className="hidden px-4 py-3.5 text-sm tabular-nums text-muted-foreground md:table-cell">
+                      {primaryItem
+                        ? `${formatSlotTime(primaryItem.startTime)} – ${formatSlotTime(primaryItem.endTime)}`
+                        : '—'}
+                    </TableCell>
+                    <TableCell className="px-4 py-3.5">
+                      <BookingStatusCell booking={booking} />
+                    </TableCell>
+                    <TableCell className="px-3 py-3.5 text-right">
+                      <Popover>
+                        <PopoverTrigger
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="Mở thao tác"
+                              className="text-muted-foreground opacity-60 transition-opacity group-hover:opacity-100 aria-expanded:opacity-100"
+                            />
+                          }
+                        >
+                          <MoreHorizontalIcon className="size-4" />
+                        </PopoverTrigger>
+                        <PopoverContent align="end" className="w-44 gap-0 p-1">
+                          <DialogEditBooking bookingId={booking.id} />
+                          <Separator className="my-1" />
                           <Button
                             variant="ghost"
-                            size="icon-sm"
-                            aria-label="Mở thao tác"
-                            className="text-muted-foreground opacity-60 transition-opacity group-hover:opacity-100 aria-expanded:opacity-100"
-                          />
-                        }
-                      >
-                        <MoreHorizontalIcon className="size-4" />
-                      </PopoverTrigger>
-                      <PopoverContent align="end" className="w-44 gap-0 p-1">
-                        <DialogEditBooking bookingId={booking.id} />
-                        <Separator className="my-1" />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start gap-2 font-normal text-destructive hover:text-destructive"
-                          onClick={() => handleDelete(booking.id)}
-                        >
-                          <Trash2Icon className="size-3.5" />
-                          Xóa
-                        </Button>
-                      </PopoverContent>
-                    </Popover>
-                  </TableCell>
-                </TableRow>
-              ))}
+                            size="sm"
+                            className="w-full justify-start gap-2 font-normal text-destructive hover:text-destructive"
+                            onClick={() => handleDelete(booking.id)}
+                          >
+                            <Trash2Icon className="size-3.5" />
+                            Xóa
+                          </Button>
+                        </PopoverContent>
+                      </Popover>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

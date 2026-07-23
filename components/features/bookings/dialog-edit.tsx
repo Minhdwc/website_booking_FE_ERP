@@ -33,32 +33,41 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BookingStatus } from '@/stores/api/types';
 import { useBooking, useUpdateBooking } from '@/stores/queries/booking.query';
 
 const formSchema = z.object({
-  status: z.enum(['pending', 'confirmed', 'cancelled', 'completed']),
+  status: z.enum(['confirmed', 'completed', 'cancelled']),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const statusOptions: { value: BookingStatus; label: string }[] = [
-  { value: 'pending', label: 'Chờ xác nhận' },
+const statusOptions: { value: FormValues['status']; label: string }[] = [
   { value: 'confirmed', label: 'Đã xác nhận' },
-  { value: 'cancelled', label: 'Đã huỷ' },
   { value: 'completed', label: 'Hoàn thành' },
+  { value: 'cancelled', label: 'Đã huỷ' },
 ];
+
+function formatSlotTime(value: string) {
+  const match = value.match(/T(\d{2}:\d{2})/);
+  if (match) return match[1];
+  if (/^\d{2}:\d{2}/.test(value)) return value.slice(0, 5);
+  return value;
+}
 
 export const DialogEditBooking = ({ bookingId }: { bookingId: string }) => {
   const [open, setOpen] = useState(false);
   const { data: booking, isLoading, isError, error } = useBooking(bookingId);
   const updateBookingMutation = useUpdateBooking();
   const isSaving = updateBookingMutation.isPending;
+  const primaryItem = booking?.items?.[0];
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { status: 'pending' },
-    values: booking ? { status: booking.status } : undefined,
+    defaultValues: { status: 'confirmed' },
+    values:
+      booking && ['confirmed', 'completed', 'cancelled'].includes(booking.status)
+        ? { status: booking.status as FormValues['status'] }
+        : undefined,
   });
 
   const handleOpenChange = (next: boolean) => {
@@ -116,14 +125,15 @@ export const DialogEditBooking = ({ bookingId }: { bookingId: string }) => {
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
               <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 text-sm">
                 <p className="font-medium text-foreground">
-                  {booking.field?.name || 'Sân'} · {booking.date}
+                  {primaryItem?.field?.name || 'Sân'} · {primaryItem?.date || '—'}
                 </p>
                 <p className="mt-1 text-muted-foreground">
                   {booking.user?.name || booking.userId}
-                  {booking.timeslot
-                    ? ` · ${booking.timeslot.startTime} – ${booking.timeslot.endTime}`
+                  {primaryItem
+                    ? ` · ${formatSlotTime(primaryItem.startTime)} – ${formatSlotTime(primaryItem.endTime)}`
                     : ''}
                 </p>
+                <p className="mt-1 text-xs text-muted-foreground">{booking.bookingCode}</p>
               </div>
 
               <FormField

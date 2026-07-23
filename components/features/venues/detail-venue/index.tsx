@@ -147,7 +147,7 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage className="max-w-[240px] truncate">{venue.name}</BreadcrumbPage>
+            <BreadcrumbPage className="max-w-60 truncate">{venue.name}</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -253,7 +253,7 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
           <div className="border-b border-border/60 px-4 py-3">
             <h2 className="text-sm font-semibold text-heading">Vị trí trên bản đồ</h2>
           </div>
-          <div className="h-[280px] w-full">
+          <div className="h-70 w-full">
             <VenueLocationMap longitude={venue.longitude} latitude={venue.latitude} />
           </div>
         </section>

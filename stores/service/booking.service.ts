@@ -1,6 +1,6 @@
 import { apiRequest } from '@/stores/api/api-request';
 import { Response } from '@/stores/api/response';
-import { BookingStatus, IBooking } from '@/stores/api/types';
+import { IBooking } from '@/stores/api/types';
 
 export interface BookingResponse {
   status: number;
@@ -22,14 +22,16 @@ export const bookingService = {
     apiRequest<BookingDetailResponse>(`/bookings/${id}`, { method: 'GET' }),
 
   createBooking: (body: {
-    userId: string;
-    fieldId: string;
-    timeslotId: string;
-    date: string;
-    status?: BookingStatus;
+    items: Array<{
+      fieldId: string;
+      date: string;
+      startTime: string;
+      endTime: string;
+    }>;
+    note?: string;
   }) => apiRequest<BookingDetailResponse>('/bookings', { method: 'POST', body }),
 
-  updateBooking: (id: string, body: Partial<IBooking>) =>
+  updateBooking: (id: string, body: { status: IBooking['status'] }) =>
     apiRequest<BookingDetailResponse>(`/bookings/${id}`, {
       method: 'PATCH',
       body,

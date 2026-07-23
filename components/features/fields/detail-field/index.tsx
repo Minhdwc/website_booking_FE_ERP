@@ -36,7 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatCurrency, formatDate, formatDateTime, formatRelativeTime } from '@/lib/format';
+import { formatCurrency, formatDate, formatRelativeTime } from '@/lib/format';
 import { BookingStatus, FieldStatus } from '@/stores/api/types';
 import { useBookings } from '@/stores/queries/booking.query';
 import { useDeleteField, useField } from '@/stores/queries/field.query';
@@ -61,21 +61,30 @@ const statusVariant: Record<FieldStatus, 'default' | 'secondary' | 'outline' | '
 };
 
 const bookingStatusLabel: Record<BookingStatus, string> = {
-  pending: 'Chờ xác nhận',
+  waiting_payment: 'Chờ thanh toán',
   confirmed: 'Đã xác nhận',
   cancelled: 'Đã huỷ',
   completed: 'Hoàn thành',
+  expired: 'Hết hạn',
 };
 
 const bookingStatusVariant: Record<
   BookingStatus,
   'default' | 'secondary' | 'outline' | 'destructive'
 > = {
-  pending: 'secondary',
+  waiting_payment: 'secondary',
   confirmed: 'default',
   cancelled: 'destructive',
   completed: 'outline',
+  expired: 'outline',
 };
+
+function formatSlotTime(value: string) {
+  const match = value.match(/T(\d{2}:\d{2})/);
+  if (match) return match[1];
+  if (/^\d{2}:\d{2}/.test(value)) return value.slice(0, 5);
+  return value;
+}
 
 type FieldDetailPageProps = {
   fieldId: string;
@@ -88,7 +97,9 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
   const { data: field, isLoading, isError, error } = useField(fieldId);
   const { data: bookings = [], isLoading: bookingsLoading } = useBookings({ limit: '100' });
 
-  const fieldBookings = bookings.filter((booking) => booking.fieldId === fieldId);
+  const fieldBookings = bookings.filter((booking) =>
+    booking.items?.some((item) => item.fieldId === fieldId),
+  );
   const images = field?.fieldImages ?? [];
 
   const handleDelete = async () => {
@@ -153,7 +164,7 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage className="max-w-[240px] truncate">{field.name}</BreadcrumbPage>
+            <BreadcrumbPage className="max-w-60 truncate">{field.name}</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -303,29 +314,34 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {fieldBookings.slice(0, 8).map((booking) => (
-                    <TableRow
-                      key={booking.id}
-                      className="border-b border-border/40 last:border-b-0"
-                    >
-                      <TableCell className="px-3 py-2.5 text-sm tabular-nums">
-                        {formatDate(booking.date)}
-                      </TableCell>
-                      <TableCell className="px-3 py-2.5 text-sm">
-                        {booking.user?.name ?? '—'}
-                      </TableCell>
-                      <TableCell className="px-3 py-2.5 text-sm tabular-nums text-muted-foreground">
-                        {booking.timeslot
-                          ? `${formatDateTime(booking.timeslot.startTime)} – ${formatDateTime(booking.timeslot.endTime)}`
-                          : '—'}
-                      </TableCell>
-                      <TableCell className="px-3 py-2.5">
-                        <Badge variant={bookingStatusVariant[booking.status]}>
-                          {bookingStatusLabel[booking.status]}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {fieldBookings.slice(0, 8).map((booking) => {
+                    const item =
+                      booking.items?.find((entry) => entry.fieldId === fieldId) ??
+                      booking.items?.[0];
+                    return (
+                      <TableRow
+                        key={booking.id}
+                        className="border-b border-border/40 last:border-b-0"
+                      >
+                        <TableCell className="px-3 py-2.5 text-sm tabular-nums">
+                          {item ? formatDate(item.date) : '—'}
+                        </TableCell>
+                        <TableCell className="px-3 py-2.5 text-sm">
+                          {booking.user?.name ?? '—'}
+                        </TableCell>
+                        <TableCell className="px-3 py-2.5 text-sm tabular-nums text-muted-foreground">
+                          {item
+                            ? `${formatSlotTime(item.startTime)} – ${formatSlotTime(item.endTime)}`
+                            : '—'}
+                        </TableCell>
+                        <TableCell className="px-3 py-2.5">
+                          <Badge variant={bookingStatusVariant[booking.status]}>
+                            {bookingStatusLabel[booking.status]}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>

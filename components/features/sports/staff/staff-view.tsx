@@ -164,7 +164,7 @@ export const StaffSportsView = () => {
                       <span className="font-semibold text-heading">{item.sport?.name || '—'}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="max-w-[360px] px-4 py-3.5">
+                  <TableCell className="max-w-90 px-4 py-3.5">
                     <p className="line-clamp-2 text-sm text-muted-foreground">
                       {item.description || 'Chưa có mô tả'}
                     </p>
