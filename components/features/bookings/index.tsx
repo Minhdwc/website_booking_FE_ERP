@@ -1,8 +1,11 @@
 'use client';
 
+import { useMemo } from 'react';
 import { CalendarDaysIcon, MoreHorizontalIcon, SearchIcon, Trash2Icon, XIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { EmptyState } from '@/components/custom/empty-state';
+import { PageHeader } from '@/components/custom/page-header';
 import { BookingsCreateDialog } from '@/components/features/bookings/dialog-create';
 import { DialogEditBooking } from '@/components/features/bookings/dialog-edit';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +23,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useCountdown } from '@/hooks/use-countdown';
-import { formatDate } from '@/lib/format';
+import { formatCurrency, formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { BookingStatus, IBooking } from '@/stores/api/types';
 import { useErpUiStore } from '@/stores/index.store';
@@ -124,20 +127,39 @@ function PendingBookingStatus({ expiresAt }: { expiresAt: string }) {
   return <HoldBadge expiresAt={expiresAt} />;
 }
 
+const statusFilters: { value: BookingStatus | 'all'; label: string }[] = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'waiting_payment', label: 'Chờ TT' },
+  { value: 'confirmed', label: 'Đã xác nhận' },
+  { value: 'completed', label: 'Hoàn thành' },
+  { value: 'cancelled', label: 'Đã huỷ' },
+  { value: 'expired', label: 'Hết hạn' },
+];
+
 export const BookingsPage = () => {
   const bookingSearch = useErpUiStore((state) => state.bookingSearch);
   const setBookingSearch = useErpUiStore((state) => state.setBookingSearch);
+  const bookingStatusFilter = useErpUiStore((state) => state.bookingStatusFilter);
+  const setBookingStatusFilter = useErpUiStore((state) => state.setBookingStatusFilter);
   const deleteBookingMutation = useDeleteBooking();
 
   const { data: bookingsData, isSuccess, isLoading, isError, error } = useBookings();
   const bookings = isSuccess ? bookingsData : [];
 
-  const filtered = bookingSearch.trim()
-    ? bookings.filter((booking: IBooking) => matchesSearch(booking, bookingSearch.trim()))
-    : bookings;
+  const filtered = useMemo(() => {
+    let result = bookings;
+    if (bookingStatusFilter !== 'all') {
+      result = result.filter((booking: IBooking) => booking.status === bookingStatusFilter);
+    }
+    if (bookingSearch.trim()) {
+      result = result.filter((booking: IBooking) => matchesSearch(booking, bookingSearch.trim()));
+    }
+    return result;
+  }, [bookings, bookingSearch, bookingStatusFilter]);
 
   const isNotEmpty = filtered.length > 0;
   const isSearching = bookingSearch.trim().length > 0;
+  const isFilteringByStatus = bookingStatusFilter !== 'all';
 
   const handleDelete = async (bookingId: string) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa đặt sân này không?')) return;
@@ -151,25 +173,23 @@ export const BookingsPage = () => {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Đặt sân</h1>
+      <PageHeader
+        title="Đặt sân"
+        description="Theo dõi giữ chỗ và xác nhận lịch đặt sân của khách."
+        icon={CalendarDaysIcon}
+        actions={
+          <>
             {bookings.length > 0 && (
               <Badge variant="secondary" className="font-semibold tabular-nums">
                 {filtered.length}
               </Badge>
             )}
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Theo dõi giữ chỗ và xác nhận lịch đặt sân của khách.
-          </p>
-        </div>
+            <BookingsCreateDialog />
+          </>
+        }
+      />
 
-        <BookingsCreateDialog />
-      </header>
-
-      <InputGroup className="h-9 w-full max-w-55 rounded-xl border-border/70 bg-card shadow-sm">
+      <InputGroup className="h-9 w-full max-w-md rounded-xl border-border/70 bg-card shadow-sm">
         <InputGroupAddon>
           <SearchIcon className="size-3.5" />
         </InputGroupAddon>
@@ -192,6 +212,21 @@ export const BookingsPage = () => {
           </InputGroupAddon>
         )}
       </InputGroup>
+
+      <div className="flex flex-wrap gap-2">
+        {statusFilters.map((filter) => (
+          <Button
+            key={filter.value}
+            type="button"
+            variant={bookingStatusFilter === filter.value ? 'default' : 'outline'}
+            size="sm"
+            className="h-8 rounded-full px-3 text-xs"
+            onClick={() => setBookingStatusFilter(filter.value)}
+          >
+            {filter.label}
+          </Button>
+        ))}
+      </div>
 
       {isError && (
         <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
@@ -219,13 +254,15 @@ export const BookingsPage = () => {
         <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow className="border-b border-border/60 bg-card hover:bg-transparent">
+              <TableRow className="border-b border-border/60 bg-muted/40 hover:bg-transparent">
+                <TableHead className="px-4 py-3 text-xs">Mã</TableHead>
                 <TableHead className="px-4 py-3 text-xs">Khách</TableHead>
                 <TableHead className="px-4 py-3 text-xs">Sân</TableHead>
-                <TableHead className="px-4 py-3 text-xs">Ngày</TableHead>
+                <TableHead className="hidden px-4 py-3 text-xs lg:table-cell">Ngày</TableHead>
                 <TableHead className="hidden px-4 py-3 text-xs md:table-cell">Khung giờ</TableHead>
+                <TableHead className="px-4 py-3 text-xs text-right">Số tiền</TableHead>
                 <TableHead className="px-4 py-3 text-xs">Trạng thái</TableHead>
-                <TableHead className="w-14 px-4 py-3 text-right text-xs">
+                <TableHead className="w-28 px-4 py-3 text-right text-xs">
                   <span className="sr-only">Thao tác</span>
                 </TableHead>
               </TableRow>
@@ -238,37 +275,46 @@ export const BookingsPage = () => {
                     key={booking.id}
                     className="group border-b border-border/40 last:border-b-0 hover:bg-foreground/3"
                   >
-                    <TableCell className="max-w-55 px-4 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-muted-foreground">
-                          <CalendarDaysIcon className="size-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="truncate font-semibold text-foreground">
-                            {getBookingCustomerName(booking)}
-                          </p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {getBookingCustomerContact(booking)}
-                          </p>
-                        </div>
+                    <TableCell className="px-4 py-2.5 font-mono text-xs text-muted-foreground">
+                      {booking.bookingCode}
+                    </TableCell>
+                    <TableCell className="max-w-45 px-4 py-2.5">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-foreground">
+                          {getBookingCustomerName(booking)}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {getBookingCustomerContact(booking)}
+                        </p>
                       </div>
                     </TableCell>
-                    <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
+                    <TableCell className="px-4 py-2.5 text-sm text-muted-foreground">
                       {primaryItem?.court?.name || '—'}
                     </TableCell>
-                    <TableCell className="px-4 py-3.5 text-sm tabular-nums">
+                    <TableCell className="hidden px-4 py-2.5 text-sm tabular-nums lg:table-cell">
                       {primaryItem ? formatDate(primaryItem.date) : '—'}
                     </TableCell>
-                    <TableCell className="hidden px-4 py-3.5 text-sm tabular-nums text-muted-foreground md:table-cell">
+                    <TableCell className="hidden px-4 py-2.5 text-sm tabular-nums text-muted-foreground md:table-cell">
                       {primaryItem
                         ? `${formatSlotTime(primaryItem.startTime)} – ${formatSlotTime(primaryItem.endTime)}`
                         : '—'}
                     </TableCell>
-                    <TableCell className="px-4 py-3.5">
+                    <TableCell className="px-4 py-2.5 text-right text-sm font-medium tabular-nums">
+                      {formatCurrency(booking.finalAmount)}
+                    </TableCell>
+                    <TableCell className="px-4 py-2.5">
                       <BookingStatusCell booking={booking} />
                     </TableCell>
-                    <TableCell className="px-3 py-3.5 text-right">
-                      <Popover>
+                    <TableCell className="px-3 py-2.5 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {booking.status === 'waiting_payment' ? (
+                          <DialogEditBooking
+                            bookingId={booking.id}
+                            triggerLabel="Xác nhận"
+                            triggerClassName="h-8 rounded-lg px-2.5 text-xs font-medium text-primary hover:bg-primary/10"
+                          />
+                        ) : null}
+                        <Popover>
                         <PopoverTrigger
                           render={
                             <Button
@@ -295,6 +341,7 @@ export const BookingsPage = () => {
                           </Button>
                         </PopoverContent>
                       </Popover>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -305,38 +352,28 @@ export const BookingsPage = () => {
       )}
 
       {!isLoading && !isError && !isNotEmpty && (
-        <div className="flex flex-col items-center rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
-          <div className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
-            {isSearching ? (
-              <SearchIcon className="size-5" />
-            ) : (
-              <CalendarDaysIcon className="size-5" />
-            )}
-          </div>
-          <h2 className="mt-4 text-base font-semibold text-foreground">
-            {isSearching ? 'Không tìm thấy đặt sân nào' : 'Chưa có đặt sân nào'}
-          </h2>
-          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-            {isSearching
+        <EmptyState
+          icon={isSearching || isFilteringByStatus ? SearchIcon : CalendarDaysIcon}
+          title={
+            isSearching || isFilteringByStatus
+              ? 'Không tìm thấy đặt sân nào'
+              : 'Chưa có đặt sân nào'
+          }
+          description={
+            isSearching
               ? `Không có kết quả khớp với “${bookingSearch}”.`
-              : 'Tạo đặt sân đầu tiên hoặc chờ khách đặt qua app.'}
-          </p>
-          {isSearching ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-4"
-              onClick={() => setBookingSearch('')}
-            >
-              <XIcon className="size-3.5" />
-              Xoá tìm kiếm
-            </Button>
-          ) : (
-            <div className="mt-4">
-              <BookingsCreateDialog />
-            </div>
-          )}
-        </div>
+              : isFilteringByStatus
+                ? `Không có đặt sân ở trạng thái “${statusFilters.find((f) => f.value === bookingStatusFilter)?.label}”.`
+                : 'Tạo đặt sân đầu tiên hoặc chờ khách đặt qua app.'
+          }
+          action={
+            isSearching
+              ? { label: 'Xóa tìm kiếm', onClick: () => setBookingSearch('') }
+              : isFilteringByStatus
+                ? { label: 'Xóa bộ lọc', onClick: () => setBookingStatusFilter('all') }
+                : undefined
+          }
+        />
       )}
     </div>
   );

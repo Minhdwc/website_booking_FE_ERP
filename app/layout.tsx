@@ -1,12 +1,13 @@
 import { Metadata } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Be_Vietnam_Pro, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import './theme.css';
 import { Providers } from '@/provider/provider';
 import { cn } from '@/lib/utils';
 
-const fontSans = Inter({
-  subsets: ['latin'],
+const fontSans = Be_Vietnam_Pro({
+  subsets: ['latin', 'vietnamese'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-geist-sans',
 });
 

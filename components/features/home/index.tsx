@@ -130,6 +130,53 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
         </div>
       </section>
 
+      {isAdmin ? (
+        <section className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
+          <div className="border-b border-border/70 px-5 py-4">
+            <div className="flex items-baseline justify-between">
+              <h2 className="text-sm font-semibold text-heading">Hàng đợi hỗ trợ</h2>
+              <Link
+                href="/admin/tickets"
+                className="text-xs font-medium text-brand-600 hover:underline"
+              >
+                Xem tất cả
+              </Link>
+            </div>
+          </div>
+          <div className="bg-card">
+            {openTickets.filter((ticket) => ticket.status !== 'resolved').length === 0 ? (
+              <EmptyState
+                icon={UsersIcon}
+                title="Không có ticket mở"
+                description="Các yêu cầu hỗ trợ mới sẽ hiển thị tại đây."
+                className="border-0 bg-transparent"
+              />
+            ) : (
+              openTickets
+                .filter((ticket) => ticket.status !== 'resolved')
+                .slice(0, 5)
+                .map((ticket) => (
+                  <Link
+                    key={ticket.id}
+                    href="/admin/tickets"
+                    className="flex items-center gap-3 border-b border-border px-5 py-4 transition-all hover:bg-muted/50 last:border-b-0"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-heading">{ticket.type}</p>
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        {ticket.creator?.name ?? 'Khách'} · {ticket.description}
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs capitalize text-muted-foreground">
+                      {ticket.status.replace('_', ' ')}
+                    </span>
+                  </Link>
+                ))
+            )}
+          </div>
+        </section>
+      ) : null}
+
       {!isAdmin && (
         <section className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
           <div className="border-b border-border/70 px-5 py-4">

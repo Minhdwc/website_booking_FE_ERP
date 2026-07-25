@@ -1,7 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
+import { UsersIcon } from 'lucide-react';
 
+import { EmptyState } from '@/components/custom/empty-state';
 import { PageHeader } from '@/components/custom/page-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -78,9 +80,11 @@ export function CustomersPage() {
         {isLoading ? (
           <Skeleton className="m-4 h-32 w-full" />
         ) : customers.length === 0 ? (
-          <p className="px-4 py-12 text-center text-sm text-muted-foreground">
-            Chưa có khách hàng từ booking.
-          </p>
+          <EmptyState
+            icon={UsersIcon}
+            title="Chưa có khách hàng"
+            description="Khách sẽ xuất hiện khi có booking walk-in hoặc đặt sân online."
+          />
         ) : (
           <Table>
             <TableHeader>

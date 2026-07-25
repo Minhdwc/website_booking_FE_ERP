@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { unwrapList } from '@/stores/api/response';
 import { IBooking } from '@/stores/api/types';
-import { bookingService } from '@/stores/service/booking.service';
+import { bookingService, type BookingResponse } from '@/stores/service/booking.service';
 
 export type BookingListParams = {
   search?: string;
@@ -21,12 +21,12 @@ export const bookingKeys = {
 };
 
 const fetchBookings = async (params?: BookingListParams): Promise<IBooking[]> => {
-  const response = await bookingService.getBookings({
+  const response = (await bookingService.getBookings({
     limit: params?.limit ?? '100',
     ...(params?.search ? { search: params.search } : {}),
     ...(params?.page ? { page: params.page } : {}),
-  });
-  return unwrapList(response as any);
+  })) as BookingResponse;
+  return unwrapList(response.data) as IBooking[];
 };
 
 const fetchBooking = async (id: string) => {
@@ -84,7 +84,7 @@ export const useUpdateBooking = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: { status: IBooking['status'] } }) =>
+    mutationFn: ({ id, body }: { id: string; body: { status: IBooking['status']; reason?: string } }) =>
       bookingService.updateBooking(id, body),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });

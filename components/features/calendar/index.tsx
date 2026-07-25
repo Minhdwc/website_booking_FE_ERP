@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatDate } from '@/lib/format';
+import { formatDate, normalizeDateKey, toLocalIsoDate } from '@/lib/format';
 import { BookingStatus, IBooking } from '@/stores/api/types';
 import { useBookings } from '@/stores/queries/booking.query';
 
@@ -44,15 +44,15 @@ function addDays(date: Date, days: number) {
   return copy;
 }
 
-function toIsoDate(date: Date) {
-  return date.toISOString().slice(0, 10);
-}
-
 function formatSlotTime(value: string) {
   const match = value.match(/T(\d{2}:\d{2})/);
   if (match) return match[1];
   if (/^\d{2}:\d{2}/.test(value)) return value.slice(0, 5);
   return value;
+}
+
+function getBookingCustomerName(booking: IBooking) {
+  return booking.customerName || booking.user?.name || 'Khách';
 }
 
 export function CalendarPage() {
@@ -64,26 +64,39 @@ export function CalendarPage() {
     [weekStart],
   );
 
+  const weekRange = useMemo(
+    () => ({
+      from: toLocalIsoDate(weekDays[0]),
+      to: toLocalIsoDate(weekDays[6]),
+    }),
+    [weekDays],
+  );
+
   const weekBookings = useMemo(() => {
-    const from = toIsoDate(weekDays[0]);
-    const to = toIsoDate(weekDays[6]);
+    const { from, to } = weekRange;
     return bookings.filter((booking) =>
-      booking.items?.some((item) => item.date >= from && item.date <= to),
+      booking.items?.some((item) => {
+        const day = normalizeDateKey(item.date);
+        return day >= from && day <= to;
+      }),
     );
-  }, [bookings, weekDays]);
+  }, [bookings, weekRange]);
 
   const rows = useMemo(() => {
     const map = new Map<string, IBooking[]>();
     weekBookings.forEach((booking) => {
       booking.items?.forEach((item) => {
-        const key = `${item.date}|${item.court?.name ?? item.courtId}`;
+        const day = normalizeDateKey(item.date);
+        if (day < weekRange.from || day > weekRange.to) return;
+        const courtName = item.court?.name ?? item.courtId;
+        const key = `${day}|${courtName}`;
         const list = map.get(key) ?? [];
         list.push(booking);
         map.set(key, list);
       });
     });
     return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
-  }, [weekBookings]);
+  }, [weekBookings, weekRange]);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
@@ -102,7 +115,7 @@ export function CalendarPage() {
           Tuần trước
         </Button>
         <p className="text-sm font-medium">
-          {formatDate(toIsoDate(weekDays[0]))} – {formatDate(toIsoDate(weekDays[6]))}
+          {formatDate(weekRange.from)} – {formatDate(weekRange.to)}
         </p>
         <Button
           size="sm"
@@ -117,11 +130,13 @@ export function CalendarPage() {
       <div className="grid grid-cols-7 gap-2">
         {weekDays.map((day) => (
           <div
-            key={day.toISOString()}
+            key={toLocalIsoDate(day)}
             className="rounded-lg border border-border/60 bg-card p-2 text-center text-xs"
           >
             <p className="font-semibold">{day.toLocaleDateString('vi-VN', { weekday: 'short' })}</p>
-            <p className="text-muted-foreground">{day.getDate()}/{day.getMonth() + 1}</p>
+            <p className="text-muted-foreground">
+              {day.getDate()}/{day.getMonth() + 1}
+            </p>
           </div>
         ))}
       </div>
@@ -152,7 +167,9 @@ export function CalendarPage() {
                 const [date, courtName] = key.split('|');
                 const booking = list[0];
                 const item = booking.items?.find(
-                  (entry) => entry.date === date && (entry.court?.name ?? entry.courtId) === courtName,
+                  (entry) =>
+                    normalizeDateKey(entry.date) === date &&
+                    (entry.court?.name ?? entry.courtId) === courtName,
                 );
                 return (
                   <TableRow key={key}>
@@ -161,7 +178,7 @@ export function CalendarPage() {
                     <TableCell>
                       {item ? `${formatSlotTime(item.startTime)} – ${formatSlotTime(item.endTime)}` : '—'}
                     </TableCell>
-                    <TableCell>{booking.user?.name ?? '—'}</TableCell>
+                    <TableCell>{getBookingCustomerName(booking)}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">{STATUS_LABEL[booking.status]}</Badge>
                     </TableCell>

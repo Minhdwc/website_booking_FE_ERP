@@ -27,7 +27,9 @@ import { cn } from '@/lib/utils';
 export function Header() {
   const pathname = usePathname();
   const { user, logout } = useSession();
-  const title = navSections.flatMap((s) => s.items).find((item) => item.href === pathname)?.title;
+  const navItem = navSections.flatMap((s) => s.items).find((item) => item.href === pathname);
+  const title = navItem?.title;
+  const description = navItem?.description;
 
   return (
     <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-3 border-b border-border/60 bg-card/80 px-4 backdrop-blur-xl supports-backdrop-filter:bg-card/60">
@@ -35,6 +37,9 @@ export function Header() {
       <Separator orientation="vertical" className="mx-1 h-5" />
       <div className="min-w-0 flex-1">
         <h1 className="truncate text-sm font-semibold text-heading">{title ?? 'Trang chủ'}</h1>
+        {description ? (
+          <p className="truncate text-xs text-muted-foreground">{description}</p>
+        ) : null}
       </div>
 
       <div className="ml-auto flex items-center gap-2">

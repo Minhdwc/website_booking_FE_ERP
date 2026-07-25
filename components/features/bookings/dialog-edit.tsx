@@ -66,7 +66,15 @@ function formatSlotTime(value: string) {
   return value;
 }
 
-export const DialogEditBooking = ({ bookingId }: { bookingId: string }) => {
+export const DialogEditBooking = ({
+  bookingId,
+  triggerLabel = 'Chỉnh sửa',
+  triggerClassName,
+}: {
+  bookingId: string;
+  triggerLabel?: string;
+  triggerClassName?: string;
+}) => {
   const [open, setOpen] = useState(false);
   const { data: booking, isLoading, isError, error } = useBooking(bookingId);
   const updateBookingMutation = useUpdateBooking();
@@ -92,15 +100,16 @@ export const DialogEditBooking = ({ bookingId }: { bookingId: string }) => {
   const handleSubmit = async (values: FormValues) => {
     if (!booking) return;
 
+    const payload = {
+      status: values.status,
+      ...(values.status === 'confirmed' && values.reason?.trim()
+        ? { reason: values.reason.trim() }
+        : {}),
+    };
     try {
       await updateBookingMutation.mutateAsync({
         id: booking.id,
-        body: {
-          status: values.status,
-          ...(values.status === 'confirmed' && values.reason?.trim()
-            ? { reason: values.reason.trim() }
-            : {}),
-        },
+        body: payload,
       });
       toast.success('Cập nhật đặt sân thành công');
       handleOpenChange(false);
@@ -113,11 +122,15 @@ export const DialogEditBooking = ({ bookingId }: { bookingId: string }) => {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={
-          <Button variant="ghost" size="sm" className="w-full justify-start gap-2 font-normal" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className={triggerClassName ?? 'w-full justify-start gap-2 font-normal'}
+          />
         }
       >
         <PencilIcon className="size-3.5 text-muted-foreground" />
-        Chỉnh sửa
+        {triggerLabel}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-md">
