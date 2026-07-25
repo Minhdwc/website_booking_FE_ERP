@@ -16,27 +16,39 @@ export interface BookingDetailResponse {
 
 export const bookingService = {
   getBookings: (params?: { search?: string; page?: string; limit?: string }) =>
-    apiRequest<BookingResponse>('/bookings', { method: 'GET', params }),
+    apiRequest('/bookings', { method: 'GET', params }),
 
   getBooking: (id: string) =>
-    apiRequest<BookingDetailResponse>(`/bookings/${id}`, { method: 'GET' }),
+    apiRequest(`/bookings/${id}`, { method: 'GET' }),
 
   createBooking: (body: {
-    items: Array<{
-      fieldId: string;
+    items: {
+      courtId: string;
       date: string;
       startTime: string;
       endTime: string;
-    }>;
+    }[];
     note?: string;
-  }) => apiRequest<BookingDetailResponse>('/bookings', { method: 'POST', body }),
+  }) => apiRequest('/bookings', { method: 'POST', body }),
+
+  createWalkIn: (body: {
+    customerName: string;
+    customerPhone: string;
+    items: {
+      courtId: string;
+      date: string;
+      startTime: string;
+      endTime: string;
+    }[];
+    note?: string;
+  }) => apiRequest('/bookings/walk-in', { method: 'POST', body }),
 
   updateBooking: (id: string, body: { status: IBooking['status'] }) =>
-    apiRequest<BookingDetailResponse>(`/bookings/${id}`, {
+    apiRequest(`/bookings/${id}`, {
       method: 'PATCH',
       body,
     }),
 
   deleteBooking: (id: string) =>
-    apiRequest<BookingDetailResponse>(`/bookings/${id}`, { method: 'DELETE' }),
+    apiRequest(`/bookings/${id}`, { method: 'DELETE' }),
 };

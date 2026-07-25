@@ -16,29 +16,29 @@ import { ComboboxPopoverContent } from '@/components/custom/combobox/combobox-po
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { useFields } from '@/stores/queries/field.query';
+import { useCourts } from '@/stores/queries/court.query';
 
-type ComboboxFieldsProps = {
+type ComboboxCourtsProps = {
   value?: string;
-  onChange: (fieldId: string) => void;
+  onChange: (courtId: string) => void;
 };
 
-export function ComboboxFields({ value, onChange }: ComboboxFieldsProps) {
+export function ComboboxCourts({ value, onChange }: ComboboxCourtsProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
-  const { data, isLoading } = useFields({
+  const { data, isLoading } = useCourts({
     limit: '200',
     search,
   });
 
-  const fields = data || [];
+  const courts = data || [];
 
-  if (isLoading && fields.length === 0) {
+  if (isLoading && courts.length === 0) {
     return <Skeleton className="h-8 w-full" />;
   }
 
-  const selectedLabel = value ? fields.find((field) => field.id === value)?.name : undefined;
+  const selectedLabel = value ? courts.find((court) => court.id === value)?.name : undefined;
 
   return (
     <Popover
@@ -78,22 +78,22 @@ export function ComboboxFields({ value, onChange }: ComboboxFieldsProps) {
             <CommandEmpty>Không tìm thấy sân.</CommandEmpty>
 
             <CommandGroup>
-              {fields.map((field) => (
+              {courts.map((court) => (
                 <CommandItem
-                  key={field.id}
-                  value={`${field.id} ${field.name}`}
+                  key={court.id}
+                  value={`${court.id} ${court.name}`}
                   onSelect={() => {
-                    onChange(field.id);
+                    onChange(court.id);
                     setOpen(false);
                     setSearch('');
                   }}
                 >
-                  <span className="truncate font-medium">{field.name}</span>
+                  <span className="truncate font-medium">{court.name}</span>
 
                   <CheckIcon
                     className={cn(
                       'ml-auto size-4 shrink-0',
-                      value === field.id ? 'opacity-100' : 'opacity-0',
+                      value === court.id ? 'opacity-100' : 'opacity-0',
                     )}
                   />
                 </CommandItem>

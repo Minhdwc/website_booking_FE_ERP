@@ -31,7 +31,10 @@ const fetchNotifications = async (params?: NotificationListParams): Promise<INot
 
 const fetchUnreadCount = async (): Promise<number> => {
   const response = await notificationService.getUnreadCount();
-  return (response as NotificationUnreadCountResponse).data ?? 0;
+  if (typeof response === 'number') return response;
+
+  const count = (response as NotificationUnreadCountResponse).data;
+  return typeof count === 'number' ? count : 0;
 };
 
 export const useNotifications = (params?: NotificationListParams) =>

@@ -39,8 +39,8 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
-import { FieldStatus, IField } from '@/stores/api/types';
-import { useField, useUpdateField } from '@/stores/queries/field.query';
+import { CourtStatus } from '@/stores/api/types';
+import { useCourt, useUpdateCourt } from '@/stores/queries/court.query';
 
 const formatDurationMinutes = (minutes: number) => {
   if (!minutes || minutes < 0) return '—';
@@ -62,29 +62,30 @@ const formSchema = z.object({
     .number({ message: 'Nhập bước tăng thời gian' })
     .min(15, { message: 'Bước tăng tối thiểu 15 phút' }),
   price: z.number({ message: 'Nhập giá thuê' }).min(1, { message: 'Giá phải lớn hơn 0' }),
-  status: z.enum(['active', 'inactive']),
+  status: z.enum(['active', 'inactive', 'maintenance']),
   description: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const statusOptions: { value: FieldStatus; label: string }[] = [
+const statusOptions: { value: CourtStatus; label: string }[] = [
   { value: 'active', label: 'Hoạt động' },
   { value: 'inactive', label: 'Ngưng' },
+  { value: 'maintenance', label: 'Bảo trì' },
 ];
 
 const statusItems = Object.fromEntries(statusOptions.map((option) => [option.value, option.label]));
 
 type DialogEditFieldProps = {
-  fieldId: string;
+  courtId: string;
   triggerVariant?: 'menu' | 'toolbar';
 };
 
-export const DialogEditField = ({ fieldId, triggerVariant = 'menu' }: DialogEditFieldProps) => {
+export const DialogEditField = ({ courtId, triggerVariant = 'menu' }: DialogEditFieldProps) => {
   const [open, setOpen] = useState(false);
-  const { data: field, isLoading, isError, error } = useField(fieldId);
-  const updateFieldMutation = useUpdateField();
-  const isSaving = updateFieldMutation.isPending;
+  const { data: court, isLoading, isError, error } = useCourt(courtId);
+  const updateCourtMutation = useUpdateCourt();
+  const isSaving = updateCourtMutation.isPending;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -98,16 +99,16 @@ export const DialogEditField = ({ fieldId, triggerVariant = 'menu' }: DialogEdit
       status: 'active',
       description: '',
     },
-    values: field
+    values: court
       ? {
-          name: field.name,
-          venueId: field.venueId,
-          sportId: field.sportId,
-          minDurationMinutes: field.minDurationMinutes,
-          durationStepMinutes: field.durationStepMinutes,
-          price: field.price,
-          status: field.status,
-          description: field.description || '',
+          name: court.name,
+          venueId: court.venueId,
+          sportId: court.sportId,
+          minDurationMinutes: court.minDurationMinutes,
+          durationStepMinutes: court.durationStepMinutes,
+          price: court.basePriceVnd,
+          status: court.status,
+          description: court.description || '',
         }
       : undefined,
   });
@@ -121,20 +122,21 @@ export const DialogEditField = ({ fieldId, triggerVariant = 'menu' }: DialogEdit
   };
 
   const handleSubmit = async (values: FormValues) => {
-    if (!field) return;
+    if (!court) return;
 
     try {
-      const body: Partial<IField> = {
+      const body = {
         name: values.name.trim(),
         venueId: values.venueId,
         sportId: values.sportId,
         minDurationMinutes: values.minDurationMinutes,
         durationStepMinutes: values.durationStepMinutes,
-        price: values.price,
+        basePriceVnd: values.price,
+        status: values.status,
         description: values.description?.trim() ? values.description.trim() : null,
       };
 
-      await updateFieldMutation.mutateAsync({ id: field.id, body });
+      await updateCourtMutation.mutateAsync({ id: court.id, body });
       toast.success('Cập nhật sân thành công');
       handleOpenChange(false);
     } catch (err) {
@@ -181,7 +183,7 @@ export const DialogEditField = ({ fieldId, triggerVariant = 'menu' }: DialogEdit
           </p>
         )}
 
-        {field && (
+        {court && (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
               <FormField

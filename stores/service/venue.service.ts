@@ -33,16 +33,14 @@ export const venueService = {
 
   createVenue: async (body: {
     name: string;
-    location: string;
+    address: string;
     longitude: number;
     latitude: number;
-    openTime: string;
-    closeTime: string;
-    restStartTime?: string;
-    restEndTime?: string;
     description?: string;
+    district?: string;
+    city?: string;
+    phone?: string;
     images?: string[];
-    ownerId?: string;
   }) => {
     const response = await apiRequest('/venues', {
       method: 'POST',
@@ -51,7 +49,20 @@ export const venueService = {
     return response;
   },
 
-  updateVenue: async (id: string, body: Partial<IVenue> & { images?: string[] }) => {
+  updateVenue: async (
+    id: string,
+    body: {
+      name?: string;
+      address?: string;
+      longitude?: number;
+      latitude?: number;
+      description?: string;
+      district?: string;
+      city?: string;
+      phone?: string;
+      images?: string[];
+    },
+  ) => {
     const response = await apiRequest(`/venues/${id}`, {
       method: 'PATCH',
       body,

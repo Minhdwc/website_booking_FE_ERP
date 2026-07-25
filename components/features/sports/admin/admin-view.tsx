@@ -9,7 +9,6 @@ import { SportsEditDialog } from '@/components/features/sports/admin/dialog-edit
 import { EmptyState } from '@/components/custom/empty-state';
 import { ErrorState } from '@/components/custom/error-state';
 import { PageHeader } from '@/components/custom/page-header';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -63,11 +62,6 @@ export const AdminSportsView = () => {
         icon={DumbbellIcon}
         actions={
           <>
-            {sports.length > 0 && (
-              <Badge variant="secondary" className="font-semibold tabular-nums">
-                {sports.length}
-              </Badge>
-            )}
             <SportsCreateDialog />
           </>
         }

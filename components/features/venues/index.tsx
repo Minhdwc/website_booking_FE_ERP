@@ -8,7 +8,6 @@ import {
   EyeIcon,
   LandmarkIcon,
   MapPinIcon,
-  MoonIcon,
   MoreHorizontalIcon,
   SearchIcon,
   Trash2,
@@ -35,15 +34,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { formatTimeRange } from '@/lib/format';
 import { useVenuesOnboarding } from '@/hooks/use-venues-onboarding';
 import { IVenue } from '@/stores/api/types';
 import { useErpUiStore } from '@/stores/index.store';
 import { prefetchVenue, useDeleteVenue, useVenues } from '@/stores/queries/venue.query';
-
-const formatRestTime = (restStartTime?: string, restEndTime?: string) => {
-  if (!restStartTime || !restEndTime) return null;
-  return `${restStartTime} – ${restEndTime}`;
-};
 
 export const VenuesPage = () => {
   const router = useRouter();
@@ -88,18 +83,8 @@ export const VenuesPage = () => {
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
       <PageHeader
         title="Cơ sở"
-        description="Quản lý cơ sở, địa điểm và khung giờ hoạt động"
         icon={LandmarkIcon}
-        actions={
-          <>
-            {isNotEmpty && (
-              <Badge variant="secondary" className="font-semibold tabular-nums">
-                {venues.length}
-              </Badge>
-            )}
-            {(isNotEmpty || isSearching) && <VenuesCreateDialog />}
-          </>
-        }
+        actions={<>{(isNotEmpty || isSearching) && <VenuesCreateDialog />}</>}
       />
 
       <InputGroup className="h-9 w-full max-w-65 rounded-lg border-border/70 bg-card shadow-sm">
@@ -171,7 +156,7 @@ export const VenuesPage = () => {
             </TableHeader>
             <TableBody>
               {venues.map((venue: IVenue) => {
-                const restTime = formatRestTime(venue.restStartTime, venue.restEndTime);
+                const operatingHour = venue.operatingHours?.[0];
 
                 return (
                   <TableRow
@@ -199,28 +184,25 @@ export const VenuesPage = () => {
                     </TableCell>
                     <TableCell
                       className="max-w-60 px-4 py-3.5 whitespace-normal"
-                      title={venue.location}
+                      title={venue.address}
                     >
                       <div className="flex items-start gap-1.5 text-muted-foreground">
                         <MapPinIcon className="mt-0.5 size-3.5 shrink-0" />
-                        <span className="line-clamp-2 text-sm">{venue.location}</span>
+                        <span className="line-clamp-2 text-sm">{venue.address || '—'}</span>
                       </div>
                     </TableCell>
                     <TableCell className="px-4 py-3.5 whitespace-nowrap">
-                      <Badge variant="outline" className="gap-1.5 font-normal tabular-nums">
-                        <ClockIcon className="size-3 text-muted-foreground" />
-                        {venue.openTime} – {venue.closeTime}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden px-4 py-3.5 whitespace-nowrap md:table-cell">
-                      {restTime ? (
-                        <Badge variant="ghost" className="gap-1.5 font-normal tabular-nums">
-                          <MoonIcon className="size-3 text-muted-foreground" />
-                          {restTime}
+                      {operatingHour ? (
+                        <Badge variant="outline" className="gap-1.5 font-normal tabular-nums">
+                          <ClockIcon className="size-3 text-muted-foreground" />
+                          {formatTimeRange(operatingHour.openTime, operatingHour.closeTime)}
                         </Badge>
                       ) : (
                         <span className="text-sm text-muted-foreground/60">—</span>
                       )}
+                    </TableCell>
+                    <TableCell className="hidden px-4 py-3.5 whitespace-nowrap md:table-cell">
+                      <span className="text-sm text-muted-foreground/60">—</span>
                     </TableCell>
                     <TableCell
                       className="px-3 py-3.5 text-right"

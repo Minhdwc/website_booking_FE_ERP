@@ -33,8 +33,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { geocodeAddress } from '@/lib/osm/geocode';
-import { IVenue } from '@/stores/api/types';
-import { useUpdateVenue, useVenue } from '@/stores/queries/venue.query';
+import { operatingHoursService } from '@/stores/service/operating-hours.service';
+import { useUpdateVenue, useVenue, venueKeys } from '@/stores/queries/venue.query';
+import { useQueryClient } from '@tanstack/react-query';
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -45,7 +46,7 @@ const toMinutes = (time: string) => {
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Tên cơ sở không được ít hơn 2 ký tự' }),
-  location: z.string().min(2, { message: 'Địa chỉ không được ít hơn 2 ký tự' }),
+  address: z.string().min(2, { message: 'Địa chỉ không được ít hơn 2 ký tự' }),
   longitude: z.number({ message: 'Kinh độ không hợp lệ' }),
   latitude: z.number({ message: 'Vĩ độ không hợp lệ' }),
   openTime: z.string().regex(timeRegex, { message: 'Giờ mở cửa không hợp lệ' }),
@@ -59,6 +60,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export const DialogEditVenue = ({ venueId }: { venueId: string }) => {
   const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
   const { data: venue, isLoading, isError, error } = useVenue(venueId);
 
   const [isGeocoding, setIsGeocoding] = useState(false);
@@ -66,13 +68,13 @@ export const DialogEditVenue = ({ venueId }: { venueId: string }) => {
   const updateVenueMutation = useUpdateVenue();
   const isSaving = updateVenueMutation.isPending;
 
-  const isHasRestTime = restEnabled || Boolean(venue?.restStartTime && venue?.restEndTime);
+  const isHasRestTime = restEnabled ?? false;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      location: '',
+      address: '',
       longitude: 0,
       latitude: 0,
       openTime: '06:00',
@@ -88,13 +90,13 @@ export const DialogEditVenue = ({ venueId }: { venueId: string }) => {
 
     form.reset({
       name: venue.name,
-      location: venue.location,
+      address: venue.address,
       longitude: venue.longitude,
       latitude: venue.latitude,
-      openTime: venue.openTime,
-      closeTime: venue.closeTime,
-      restStartTime: venue.restStartTime || '',
-      restEndTime: venue.restEndTime || '',
+      openTime: venue.operatingHours?.[0]?.openTime.slice(0, 5) ?? '06:00',
+      closeTime: venue.operatingHours?.[0]?.closeTime.slice(0, 5) ?? '22:00',
+      restStartTime: '',
+      restEndTime: '',
       description: venue.description || '',
     });
   }, [venue, open, form]);
@@ -117,7 +119,7 @@ export const DialogEditVenue = ({ venueId }: { venueId: string }) => {
     setIsGeocoding(true);
     try {
       const result = await geocodeAddress(address);
-      form.setValue('location', result.placeName, { shouldValidate: true });
+      form.setValue('address', result.placeName, { shouldValidate: true });
       form.setValue('longitude', result.longitude, { shouldValidate: true });
       form.setValue('latitude', result.latitude, { shouldValidate: true });
     } catch (error: any) {
@@ -169,22 +171,29 @@ export const DialogEditVenue = ({ venueId }: { venueId: string }) => {
     }
 
     try {
-      const body: Partial<IVenue> = {
-        name: values.name.trim(),
-        location: values.location.trim(),
-        longitude: values.longitude,
-        latitude: values.latitude,
-        openTime: values.openTime,
-        closeTime: values.closeTime,
-        description: values.description?.trim(),
-        restStartTime: values.restStartTime,
-        restEndTime: values.restEndTime,
-      };
-
       await updateVenueMutation.mutateAsync({
         id: venue.id,
-        body,
+        body: {
+          name: values.name.trim(),
+          address: values.address.trim(),
+          longitude: values.longitude,
+          latitude: values.latitude,
+          description: values.description?.trim(),
+        },
       });
+
+      await operatingHoursService.replaceAll(
+        venue.id,
+        [1, 2, 3, 4, 5, 6, 0].map((dayOfWeek) => ({
+          dayOfWeek,
+          openTime: values.openTime,
+          closeTime: values.closeTime,
+        })),
+      );
+
+      await queryClient.invalidateQueries({ queryKey: venueKeys.lists() });
+      await queryClient.invalidateQueries({ queryKey: venueKeys.detail(venue.id) });
+
       toast.success('Cập nhật cơ sở thành công');
       handleOpenChange(false);
     } catch (error: any) {
@@ -288,7 +297,7 @@ export const DialogEditVenue = ({ venueId }: { venueId: string }) => {
 
                 <FormField
                   control={form.control}
-                  name="location"
+                  name="address"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>

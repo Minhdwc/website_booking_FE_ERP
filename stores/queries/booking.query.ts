@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { unwrapList } from '@/stores/api/response';
-import { BookingStatus, IBooking } from '@/stores/api/types';
+import { IBooking } from '@/stores/api/types';
 import { bookingService } from '@/stores/service/booking.service';
 
 export type BookingListParams = {
@@ -26,12 +26,12 @@ const fetchBookings = async (params?: BookingListParams): Promise<IBooking[]> =>
     ...(params?.search ? { search: params.search } : {}),
     ...(params?.page ? { page: params.page } : {}),
   });
-  return unwrapList(response.data);
+  return unwrapList(response as any);
 };
 
 const fetchBooking = async (id: string) => {
   const response = await bookingService.getBooking(id);
-  return response.data;
+  return response as any;
 };
 
 export const useBookings = (params?: BookingListParams) =>
@@ -49,17 +49,29 @@ export const useBooking = (id: string) =>
     enabled: Boolean(id),
   });
 
+export const useCreateWalkInBooking = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: Parameters<typeof bookingService.createWalkIn>[0]) =>
+      bookingService.createWalkIn(body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
+    },
+  });
+};
+
 export const useCreateBooking = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (body: {
-      items: Array<{
-        fieldId: string;
+      items: {
+        courtId: string;
         date: string;
         startTime: string;
         endTime: string;
-      }>;
+      }[];
       note?: string;
     }) => bookingService.createBooking(body),
     onSuccess: () => {

@@ -38,9 +38,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { FieldStatus, IField, IVenue } from '@/stores/api/types';
+import { CourtStatus, ICourt, IVenue } from '@/stores/api/types';
 import { useErpUiStore } from '@/stores/index.store';
-import { useDeleteField, prefetchField, useFields } from '@/stores/queries/field.query';
+import { useDeleteCourt, prefetchCourt, useCourts } from '@/stores/queries/court.query';
 import { useVenues } from '@/stores/queries/venue.query';
 
 const formatDurationMinutes = (minutes: number) => {
@@ -52,14 +52,16 @@ const formatDurationMinutes = (minutes: number) => {
   return `${hours} giờ ${mins} phút`;
 };
 
-const statusLabel: Record<FieldStatus, string> = {
+const statusLabel: Record<CourtStatus, string> = {
   active: 'Hoạt động',
   inactive: 'Ngưng',
+  maintenance: 'Bảo trì',
 };
 
-const statusVariant: Record<FieldStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
+const statusVariant: Record<CourtStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
   active: 'default',
   inactive: 'outline',
+  maintenance: 'secondary',
 };
 
 export const FieldsPage = () => {
@@ -68,7 +70,7 @@ export const FieldsPage = () => {
   const [search, setSearch] = useState('');
   const fieldVenueFilter = useErpUiStore((state) => state.fieldVenueFilter);
   const setFieldVenueFilter = useErpUiStore((state) => state.setFieldVenueFilter);
-  const deleteFieldMutation = useDeleteField();
+  const deleteCourtMutation = useDeleteCourt();
 
   const { data: venuesData, isSuccess: venuesSuccess } = useVenues();
   const venues = venuesSuccess ? venuesData : [];
@@ -78,20 +80,20 @@ export const FieldsPage = () => {
     isLoading,
     isError,
     error,
-  } = useFields({
+  } = useCourts({
     ...(search.trim() ? { search: search.trim() } : {}),
     ...(fieldVenueFilter ? { venueId: fieldVenueFilter } : {}),
   });
-  const fields = fieldsSuccess ? fieldsData : [];
+  const courts = fieldsSuccess ? fieldsData : [];
 
-  const isNotEmpty = fields.length > 0;
+  const isNotEmpty = courts.length > 0;
   const isFiltering = search.trim().length > 0 || Boolean(fieldVenueFilter);
   const hasVenues = venues.length > 0;
 
-  const handleDelete = async (fieldId: string) => {
+  const handleDelete = async (courtId: string) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa sân này không?')) return;
     try {
-      await deleteFieldMutation.mutateAsync(fieldId);
+      await deleteCourtMutation.mutateAsync(courtId);
       toast.success('Xóa sân thành công');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Không xóa được sân');
@@ -106,7 +108,7 @@ export const FieldsPage = () => {
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Sân</h1>
             {isNotEmpty && (
               <Badge variant="secondary" className="font-semibold tabular-nums">
-                {fields.length}
+                {courts.length}
               </Badge>
             )}
           </div>
@@ -207,50 +209,50 @@ export const FieldsPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {fields.map((field: IField) => (
+              {courts.map((court: ICourt) => (
                 <TableRow
-                  key={field.id}
+                  key={court.id}
                   className="group cursor-pointer border-b border-border/40 last:border-b-0 hover:bg-muted/30"
-                  onMouseEnter={() => prefetchField(queryClient, field.id)}
-                  onClick={() => router.push(`/fields/${field.id}`)}
+                  onMouseEnter={() => prefetchCourt(queryClient, court.id)}
+                  onClick={() => router.push(`/courts/${court.id}`)}
                 >
-                  <TableCell className="max-w-[220px] px-4 py-3.5">
+                  <TableCell className="max-w-60 px-4 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-muted-foreground">
                         <LandPlotIcon className="size-4" />
                       </div>
                       <div className="min-w-0">
-                        <p className="truncate font-semibold text-foreground">{field.name}</p>
-                        {field.description ? (
+                        <p className="truncate font-semibold text-foreground">{court.name}</p>
+                        {court.description ? (
                           <p className="truncate text-xs text-muted-foreground">
-                            {field.description}
+                            {court.description}
                           </p>
                         ) : null}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                    {field.venue?.name || '—'}
+                    {court.venue?.name || '—'}
                   </TableCell>
                   <TableCell className="hidden px-4 py-3.5 text-sm text-muted-foreground md:table-cell">
-                    {field.sport?.name || '—'}
+                    {court.sport?.name || '—'}
                   </TableCell>
                   <TableCell className="hidden px-4 py-3.5 text-sm text-muted-foreground lg:table-cell">
                     <div>
-                      <p>{formatDurationMinutes(field.minDurationMinutes)}</p>
+                      <p>{formatDurationMinutes(court.minDurationMinutes)}</p>
                       <p className="text-xs">
-                        +{formatDurationMinutes(field.durationStepMinutes)}/lần
+                        +{formatDurationMinutes(court.durationStepMinutes)}/lần
                       </p>
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-3.5 text-sm font-medium tabular-nums">
-                    {formatCurrency(field.price)}
+                    {formatCurrency(court.basePriceVnd)}
                     <span className="ml-1 text-xs font-normal text-muted-foreground">
-                      /{formatDurationMinutes(field.minDurationMinutes)}
+                      /{formatDurationMinutes(court.minDurationMinutes)}
                     </span>
                   </TableCell>
                   <TableCell className="px-4 py-3.5">
-                    <Badge variant={statusVariant[field.status]}>{statusLabel[field.status]}</Badge>
+                    <Badge variant={statusVariant[court.status]}>{statusLabel[court.status]}</Badge>
                   </TableCell>
                   <TableCell
                     className="px-3 py-3.5 text-right"
@@ -273,18 +275,18 @@ export const FieldsPage = () => {
                         <Button
                           variant="ghost"
                           className="h-9 w-full justify-start gap-2 px-3 text-blue-500 hover:text-blue-600"
-                          onClick={() => router.push(`/fields/${field.id}`)}
+                          onClick={() => router.push(`/courts/${court.id}`)}
                         >
                           <EyeIcon className="size-3.5 text-blue-500" />
                           Xem chi tiết
                         </Button>
-                        <DialogEditField fieldId={field.id} />
+                        <DialogEditField courtId={court.id} />
                         <Separator className="my-1" />
                         <Button
                           variant="ghost"
                           size="sm"
                           className="w-full justify-start gap-2 font-normal text-destructive hover:text-destructive"
-                          onClick={() => handleDelete(field.id)}
+                          onClick={() => handleDelete(court.id)}
                         >
                           <Trash2Icon className="size-3.5" />
                           Xóa

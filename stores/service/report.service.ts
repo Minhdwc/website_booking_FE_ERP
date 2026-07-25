@@ -1,3 +1,4 @@
+
 import { apiRequest } from '@/stores/api/api-request';
 
 export type ReportBookingStatusRow = {
@@ -5,10 +6,10 @@ export type ReportBookingStatusRow = {
   count: number;
 };
 
-export type ReportTopField = {
-  fieldId: string;
+export type ReportTopCourt = {
+  courtId: string;
   bookingCount: number;
-  field: {
+  court: {
     id: string;
     name: string;
     venueId: string;
@@ -35,7 +36,7 @@ export type ReportSummary = {
     from: string | null;
     to: string | null;
   };
-  topFields: ReportTopField[];
+  topCourts: ReportTopCourt[];
   revenueByDay: ReportRevenueByDay[];
   revenueBySport: ReportRevenueBySport[];
 };
@@ -52,4 +53,17 @@ export const reportService = {
       method: 'GET',
       params,
     }),
+
+  downloadCsv: async (params?: { from?: string; to?: string }) => {
+    const searchParams = new URLSearchParams({ export: 'csv' });
+    if (params?.from) searchParams.set('from', params.from);
+    if (params?.to) searchParams.set('to', params.to);
+    
+    const response = await apiRequest(`/reports/summary?${searchParams}`, {
+      method: 'GET',
+      params,
+    });
+
+    return response as any;
+  },
 };

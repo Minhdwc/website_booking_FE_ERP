@@ -42,7 +42,7 @@ const formSchema = z.object({
   email: z.string().email(),
   phone: z.string().min(9),
   password: z.string().optional(),
-  role: z.enum(['admin', 'staff', 'user']),
+  role: z.enum(['admin', 'owner', 'user']),
   isActive: z.enum(['true', 'false']),
 });
 
@@ -201,7 +201,7 @@ export function UsersEditDialog({ user }: { user: IUser }) {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="staff">Staff</SelectItem>
+                        <SelectItem value="owner">Owner</SelectItem>
                         <SelectItem value="user">User</SelectItem>
                       </SelectContent>
                     </Select>

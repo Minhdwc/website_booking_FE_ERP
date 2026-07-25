@@ -1,6 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
+import { DownloadIcon } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Area,
   AreaChart,
@@ -29,6 +31,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useReportSummary } from '@/stores/queries/report.query';
+import { reportService } from '@/stores/service/report.service';
 
 const STATUS_LABEL: Record<string, string> = {
   waiting_payment: 'Đang giữ chỗ',
@@ -55,48 +58,61 @@ function daysAgoIso(days: number) {
   return date.toISOString().slice(0, 10);
 }
 
-export function ReportsPage() {
+type ReportsPageProps = {
+  title?: string;
+  description?: string;
+};
+
+export function ReportsPage({
+  title = 'Báo cáo',
+  description = 'Doanh thu, trạng thái đặt sân và top sân theo khoảng ngày.',
+}: ReportsPageProps) {
   const [from, setFrom] = useState(daysAgoIso(30));
   const [to, setTo] = useState(todayIso());
   const [applied, setApplied] = useState({ from: daysAgoIso(30), to: todayIso() });
+  const [isExporting, setIsExporting] = useState(false);
 
   const { data, isLoading, isError, error, isFetching } = useReportSummary(applied);
 
-  const statusChartData = useMemo(
-    () =>
-      (data?.bookingsByStatus ?? []).map((row) => ({
-        status: STATUS_LABEL[row.status] ?? row.status,
-        count: row.count,
-      })),
-    [data?.bookingsByStatus],
-  );
+  const statusChartData = (data?.bookingsByStatus ?? []).map((row) => ({
+    status: STATUS_LABEL[row.status] ?? row.status,
+    count: row.count,
+  }));
 
-  const dayChartData = useMemo(
-    () =>
-      (data?.revenueByDay ?? []).map((row) => ({
-        date: row.date.slice(5),
-        total: row.total,
-      })),
-    [data?.revenueByDay],
-  );
+  const dayChartData = (data?.revenueByDay ?? []).map((row) => ({
+    date: row.date.slice(5),
+    total: row.total,
+  }));
 
-  const sportChartData = useMemo(
-    () =>
-      (data?.revenueBySport ?? []).map((row) => ({
-        name: row.sportName,
-        total: row.total,
-      })),
-    [data?.revenueBySport],
-  );
+  const sportChartData = (data?.revenueBySport ?? []).map((row) => ({
+    name: row.sportName,
+    total: row.total,
+  }));
+
+  const handleExportCsv = async () => {
+    setIsExporting(true);
+    try {
+      const blob = await reportService.downloadCsv(applied);
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `bao-cao-${applied.from}-${applied.to}.csv`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      toast.success('Đã tải file CSV');
+    } catch (exportError) {
+      toast.error(exportError instanceof Error ? exportError.message : 'Không xuất được CSV');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-heading">Báo cáo</h1>
-          <p className="text-sm text-muted-foreground">
-            Doanh thu, trạng thái đặt sân và top sân theo khoảng ngày.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-heading">{title}</h1>
+          <p className="text-sm text-muted-foreground">{description}</p>
         </div>
 
         <div className="flex flex-wrap items-end gap-3">
@@ -122,6 +138,10 @@ export function ReportsPage() {
           </div>
           <Button size="sm" onClick={() => setApplied({ from, to })} disabled={isFetching}>
             Áp dụng
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleExportCsv} disabled={isExporting}>
+            <DownloadIcon className="size-3.5" />
+            {isExporting ? 'Đang xuất…' : 'Xuất CSV'}
           </Button>
         </div>
       </header>
@@ -246,7 +266,7 @@ export function ReportsPage() {
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
           </div>
-        ) : (data?.topFields ?? []).length === 0 ? (
+        ) : (data?.topCourts ?? []).length === 0 ? (
           <p className="px-4 py-10 text-center text-sm text-muted-foreground">Chưa có dữ liệu</p>
         ) : (
           <Table>
@@ -258,13 +278,13 @@ export function ReportsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(data?.topFields ?? []).map((row) => (
-                <TableRow key={row.fieldId} className="hover:bg-foreground/3">
+              {(data?.topCourts ?? []).map((row) => (
+                <TableRow key={row.courtId} className="hover:bg-foreground/3">
                   <TableCell className="px-4 py-3 font-medium">
-                    {row.field?.name ?? row.fieldId}
+                    {row.court?.name ?? row.courtId}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-muted-foreground">
-                    {row.field?.venue?.name ?? '—'}
+                    {row.court?.venue?.name ?? '—'}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-right tabular-nums">
                     {row.bookingCount}

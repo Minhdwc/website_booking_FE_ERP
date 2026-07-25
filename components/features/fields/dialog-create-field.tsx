@@ -31,7 +31,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Textarea } from '@/components/ui/textarea';
-import { useCreateField } from '@/stores/queries/field.query';
+import { useCreateCourt } from '@/stores/queries/court.query';
 
 const formatDurationMinutes = (minutes: number) => {
   if (!minutes || minutes < 0) return '—';
@@ -61,8 +61,8 @@ type FormValues = z.infer<typeof formSchema>;
 
 export const DialogCreateField = () => {
   const [open, setOpen] = useState(false);
-  const createFieldMutation = useCreateField();
-  const isSaving = createFieldMutation.isPending;
+  const createCourtMutation = useCreateCourt();
+  const isSaving = createCourtMutation.isPending;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -88,13 +88,13 @@ export const DialogCreateField = () => {
 
   const handleSubmit = async (values: FormValues) => {
     try {
-      await createFieldMutation.mutateAsync({
+      await createCourtMutation.mutateAsync({
         name: values.name.trim(),
         venueId: values.venueId,
         sportId: values.sportId,
         minDurationMinutes: values.minDurationMinutes,
         durationStepMinutes: values.durationStepMinutes,
-        price: values.price,
+        basePriceVnd: values.price,
         description: values.description?.trim() ? values.description.trim() : null,
       });
       toast.success('Tạo sân thành công');

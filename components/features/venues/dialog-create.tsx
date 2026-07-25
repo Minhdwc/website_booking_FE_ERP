@@ -31,7 +31,10 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { geocodeAddress } from '@/lib/osm/geocode';
-import { useCreateVenue } from '@/stores/queries/venue.query';
+import { operatingHoursService } from '@/stores/service/operating-hours.service';
+import { VenueDetailResponse } from '@/stores/service/venue.service';
+import { useCreateVenue, venueKeys } from '@/stores/queries/venue.query';
+import { useQueryClient } from '@tanstack/react-query';
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -42,7 +45,7 @@ const toMinutes = (time: string) => {
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Tên cơ sở không được ít hơn 2 ký tự' }),
-  location: z.string().min(2, { message: 'Địa chỉ không được ít hơn 2 ký tự' }),
+  address: z.string().min(2, { message: 'Địa chỉ không được ít hơn 2 ký tự' }),
   longitude: z.number({ message: 'Kinh độ không hợp lệ' }),
   latitude: z.number({ message: 'Vĩ độ không hợp lệ' }),
   openTime: z.string().regex(timeRegex, { message: 'Giờ mở cửa không hợp lệ' }),
@@ -76,6 +79,7 @@ const SectionHeading = ({
 
 export const VenuesCreateDialog = () => {
   const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [isHasRestTime, setIsHasRestTime] = useState(false);
   const createVenueMutation = useCreateVenue();
@@ -85,7 +89,7 @@ export const VenuesCreateDialog = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      location: '',
+      address: '',
       longitude: undefined,
       latitude: undefined,
       openTime: '06:00',
@@ -115,7 +119,7 @@ export const VenuesCreateDialog = () => {
     setIsGeocoding(true);
     try {
       const result = await geocodeAddress(trimmed);
-      form.setValue('location', result.placeName, { shouldValidate: true });
+      form.setValue('address', result.placeName, { shouldValidate: true });
       form.setValue('longitude', result.longitude, { shouldValidate: true });
       form.setValue('latitude', result.latitude, { shouldValidate: true });
     } catch (error) {
@@ -167,21 +171,27 @@ export const VenuesCreateDialog = () => {
     try {
       const payload = {
         name: values.name.trim(),
-        location: values.location.trim(),
+        address: values.address.trim(),
         longitude: values.longitude,
         latitude: values.latitude,
-        openTime: values.openTime,
-        closeTime: values.closeTime,
         description: values.description?.trim(),
-        ...(isHasRestTime
-          ? {
-              restStartTime: values.restStartTime,
-              restEndTime: values.restEndTime,
-            }
-          : {}),
       };
 
-      await createVenueMutation.mutateAsync(payload);
+      const response = (await createVenueMutation.mutateAsync(payload)) as VenueDetailResponse;
+      const venueId = response.data.id;
+
+      await operatingHoursService.replaceAll(
+        venueId,
+        [1, 2, 3, 4, 5, 6, 0].map((dayOfWeek) => ({
+          dayOfWeek,
+          openTime: values.openTime,
+          closeTime: values.closeTime,
+        })),
+      );
+
+      await queryClient.invalidateQueries({ queryKey: venueKeys.lists() });
+      await queryClient.invalidateQueries({ queryKey: venueKeys.detail(venueId) });
+
       toast.success('Tạo cơ sở thành công');
       handleOpenChange(false);
     } catch (error) {
@@ -248,7 +258,7 @@ export const VenuesCreateDialog = () => {
 
               <FormField
                 control={form.control}
-                name="location"
+                name="address"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
@@ -336,11 +346,11 @@ export const VenuesCreateDialog = () => {
               </div>
 
               {longitude && latitude ? (
-                <div className="h-[220px] overflow-hidden rounded-lg border border-border shadow-sm">
+                <div className="h-55 overflow-hidden rounded-lg border border-border shadow-sm">
                   <VenueLocationMap longitude={longitude} latitude={latitude} />
                 </div>
               ) : (
-                <div className="flex h-[120px] flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border bg-muted/30 px-4 text-center">
+                <div className="flex h-30 flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border bg-muted/30 px-4 text-center">
                   {isGeocoding ? (
                     <>
                       <Loader2Icon className="size-4 animate-spin text-muted-foreground" />

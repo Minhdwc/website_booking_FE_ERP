@@ -1,16 +1,18 @@
-export type UserRole = 'admin' | 'staff' | 'user';
-export type FieldStatus = 'active' | 'inactive';
+export type UserRole = 'admin' | 'owner' | 'user';
+export type CourtStatus = 'active' | 'inactive' | 'maintenance';
+export type SupportTicketStatus = 'open' | 'in_progress' | 'resolved';
 export type BookingStatus =
   | 'waiting_payment'
   | 'confirmed'
   | 'cancelled'
   | 'completed'
-  | 'expired';
+  | 'expired'
+  | 'paid_at_venue';
 export type BookingItemStatus = 'active' | 'cancelled';
 export type PaymentMethod = 'bank_transfer' | 'momo' | 'zalopay' | 'vnpay';
 export type PaymentStatus = 'pending' | 'success' | 'failed' | 'cancelled';
 export type UserPaymentType = 'card' | 'bank_account' | 'e_wallet';
-export type UploadFolder = 'avatars' | 'venues' | 'fields' | 'payments';
+export type UploadFolder = 'avatars' | 'venues' | 'courts' | 'payments';
 
 export interface IUser {
   id: string;
@@ -21,6 +23,26 @@ export interface IUser {
   role: UserRole;
   avatarUrl?: string;
   isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IVenue {
+  id: string;
+  userId?: string;
+  name: string;
+  address: string;
+  district?: string;
+  city?: string;
+  phone?: string;
+  longitude: number;
+  latitude: number;
+  description?: string;
+  user?: Pick<IUser, 'id' | 'name' | 'email' | 'role'>;
+  venueImages?: IVenueImage[];
+  paymentAccounts?: IVenuePaymentAccount[];
+  courts?: ICourt[];
+  operatingHours?: IOperatingHour[];
   createdAt: string;
   updatedAt: string;
 }
@@ -57,8 +79,50 @@ export interface IVenueImage extends IEntityImage {
   venueId: string;
 }
 
-export interface IFieldImage extends IEntityImage {
-  fieldId: string;
+export interface ICourtImage extends IEntityImage {
+  courtId: string;
+}
+
+export interface IOperatingHour {
+  id?: string;
+  venueId?: string;
+  dayOfWeek: number;
+  openTime: string;
+  closeTime: string;
+}
+
+export interface IPriceRule {
+  id: string;
+  courtId: string;
+  dayOfWeek: number[];
+  timeFrom: string;
+  timeTo: string;
+  isPeak: boolean;
+  priceVnd: number;
+  createdAt: string;
+}
+
+export interface ICourtBlock {
+  id: string;
+  courtId: string;
+  startAt: string;
+  endAt: string;
+  reason?: string | null;
+  createdAt: string;
+}
+
+export interface ISupportTicket {
+  id: string;
+  creatorId: string;
+  bookingId?: string | null;
+  type: string;
+  description: string;
+  status: SupportTicketStatus;
+  adminNote?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  creator?: Pick<IUser, 'id' | 'name' | 'email' | 'phone' | 'role'>;
+  booking?: Pick<IBooking, 'id' | 'bookingCode' | 'status'>;
 }
 
 export interface IPaymentMethod {
@@ -84,7 +148,7 @@ export interface IVenuePaymentAccount {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  venue?: Pick<IVenue, 'id' | 'name' | 'location'>;
+  venue?: Pick<IVenue, 'id' | 'name' | 'address'>;
   paymentMethod?: IPaymentMethod;
 }
 
@@ -110,33 +174,15 @@ export interface IAmenity {
   updatedAt: string;
 }
 
-export interface IVenue {
-  id: string;
-  name: string;
-  location: string;
-  longitude: number;
-  latitude: number;
-  openTime: string;
-  closeTime: string;
-  restStartTime?: string;
-  restEndTime?: string;
-  description?: string;
-  venueImages?: IVenueImage[];
-  paymentAccounts?: IVenuePaymentAccount[];
-  fields?: IField[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface IField {
+export interface ICourt {
   id: string;
   name: string;
   description: string;
-  price: number;
+  basePriceVnd: number;
   minDurationMinutes: number;
   durationStepMinutes: number;
-  status: FieldStatus;
-  fieldImages?: IFieldImage[];
+  status: CourtStatus;
+  courtImages?: ICourtImage[];
   sportId: string;
   venueId: string;
   createdAt: string;
@@ -148,7 +194,7 @@ export interface IField {
 export interface IBookingItem {
   id: string;
   bookingId: string;
-  fieldId: string;
+  courtId: string;
   venueId: string;
   date: string;
   startTime: string;
@@ -159,7 +205,7 @@ export interface IBookingItem {
   status: BookingItemStatus;
   createdAt: string;
   updatedAt: string;
-  field?: IField;
+  court?: ICourt;
   venue?: IVenue;
 }
 
@@ -168,6 +214,8 @@ export interface IBooking {
   userId: string;
   bookingCode: string;
   status: BookingStatus;
+  customerName?: string | null;
+  customerPhone?: string | null;
   totalAmount: number;
   discountAmount: number;
   finalAmount: number;

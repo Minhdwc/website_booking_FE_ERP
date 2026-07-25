@@ -32,6 +32,7 @@ const statusLabel: Record<BookingStatus, string> = {
   cancelled: 'Đã huỷ',
   completed: 'Hoàn thành',
   expired: 'Hết hạn',
+  paid_at_venue: 'Thanh toán tại quầy',
 };
 
 const statusVariant: Record<BookingStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -40,7 +41,14 @@ const statusVariant: Record<BookingStatus, 'default' | 'secondary' | 'outline' |
   cancelled: 'destructive',
   completed: 'outline',
   expired: 'outline',
+  paid_at_venue: 'default',
 };
+
+const getBookingCustomerName = (booking: IBooking) =>
+  booking.customerName || booking.user?.name || 'Khách';
+
+const getBookingCustomerContact = (booking: IBooking) =>
+  booking.customerPhone || booking.user?.phone || booking.user?.email || booking.userId;
 
 function formatSlotTime(value: string) {
   const match = value.match(/T(\d{2}:\d{2})/);
@@ -52,10 +60,12 @@ function formatSlotTime(value: string) {
 const matchesSearch = (booking: IBooking, q: string) => {
   const primaryItem = booking.items?.[0];
   const haystack = [
+    booking.customerName,
+    booking.customerPhone,
     booking.user?.name,
     booking.user?.email,
     booking.user?.phone,
-    primaryItem?.field?.name,
+    primaryItem?.court?.name,
     primaryItem?.date,
     booking.bookingCode,
     booking.status,
@@ -235,16 +245,16 @@ export const BookingsPage = () => {
                         </div>
                         <div className="min-w-0">
                           <p className="truncate font-semibold text-foreground">
-                            {booking.user?.name || 'Khách'}
+                            {getBookingCustomerName(booking)}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {booking.user?.email || booking.userId}
+                            {getBookingCustomerContact(booking)}
                           </p>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                      {primaryItem?.field?.name || '—'}
+                      {primaryItem?.court?.name || '—'}
                     </TableCell>
                     <TableCell className="px-4 py-3.5 text-sm tabular-nums">
                       {primaryItem ? formatDate(primaryItem.date) : '—'}

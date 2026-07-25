@@ -6,18 +6,18 @@ import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { IFieldImage } from '@/stores/api/types';
-import { useDeleteFieldImage, useUploadFieldImage } from '@/stores/queries/field.query';
+import { ICourtImage } from '@/stores/api/types';
+import { useDeleteCourtImage, useUploadCourtImage } from '@/stores/queries/court.query';
 
 type FieldImagesSectionProps = {
-  fieldId: string;
-  images: IFieldImage[];
+  courtId: string;
+  images: ICourtImage[];
 };
 
-export const FieldImagesSection = ({ fieldId, images }: FieldImagesSectionProps) => {
+export const FieldImagesSection = ({ courtId, images }: FieldImagesSectionProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const uploadMutation = useUploadFieldImage();
-  const deleteMutation = useDeleteFieldImage();
+  const uploadMutation = useUploadCourtImage();
+  const deleteMutation = useDeleteCourtImage();
   const isUploading = uploadMutation.isPending;
 
   const handleUpload = async (fileList: FileList | null) => {
@@ -30,7 +30,7 @@ export const FieldImagesSection = ({ fieldId, images }: FieldImagesSectionProps)
     }
 
     try {
-      await uploadMutation.mutateAsync({ fieldId, file });
+      await uploadMutation.mutateAsync({ courtId, file });
       toast.success('Đã thêm ảnh');
     } catch (error: any) {
       toast.error(error?.message || 'Không tải được ảnh lên');
@@ -39,10 +39,10 @@ export const FieldImagesSection = ({ fieldId, images }: FieldImagesSectionProps)
     }
   };
 
-  const handleDelete = async (image: IFieldImage) => {
+  const handleDelete = async (image: ICourtImage) => {
     if (!window.confirm('Xóa ảnh này khỏi sân?')) return;
     try {
-      await deleteMutation.mutateAsync({ fieldId, imageId: image.id });
+      await deleteMutation.mutateAsync({ courtId, imageId: image.id });
       toast.success('Đã xóa ảnh');
     } catch (error: any) {
       toast.error(error?.message || 'Không xóa được ảnh');
@@ -100,7 +100,7 @@ export const FieldImagesSection = ({ fieldId, images }: FieldImagesSectionProps)
           {images.map((image) => (
             <li
               key={image.id}
-              className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-border/60 bg-muted"
+              className="group relative aspect-4/3 overflow-hidden rounded-xl border border-border/60 bg-muted"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={image.url} alt="" className="size-full object-cover" />

@@ -23,8 +23,6 @@ type SessionContextValue = {
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
-const ERP_ROLES = ['admin', 'staff'];
-
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
@@ -58,7 +56,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         }
 
         const me = (await accountService.me()) as AccountMeResponse;
-        if (!me?.data?.id || !ERP_ROLES.includes(me.data.role)) {
+        if (!me?.data?.id && me?.data?.role !== 'owner' && me?.data?.role !== 'admin') {
           clearSession();
           setUser(null);
           return;
@@ -91,7 +89,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       throw new Error('Không lấy được thông tin tài khoản');
     }
 
-    if (!ERP_ROLES.includes(me.data.role)) {
+    if (me.data.role !== 'owner' && me.data.role !== 'admin') {
       clearSession();
       throw new Error('Tài khoản không có quyền truy cập hệ thống ERP');
     }

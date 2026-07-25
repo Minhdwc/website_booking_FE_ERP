@@ -27,6 +27,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
+import { formatTimeRange } from '@/lib/format';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -38,15 +39,16 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatCurrency } from '@/lib/format';
-import { FieldStatus, IField } from '@/stores/api/types';
+import { CourtStatus, ICourt } from '@/stores/api/types';
 import { useErpUiStore } from '@/stores/index.store';
 import { useVenuePaymentAccounts } from '@/stores/queries/venue-payment-account.query';
 import { useVenueSports } from '@/stores/queries/venue-sport.query';
 import { useDeleteVenue, useVenue } from '@/stores/queries/venue.query';
 
-const statusLabel: Record<FieldStatus, string> = {
+const statusLabel: Record<CourtStatus, string> = {
   active: 'Hoạt động',
   inactive: 'Ngưng',
+  maintenance: 'Bảo trì',
 };
 
 type VenueDetailPageProps = {
@@ -67,7 +69,7 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
     venueId ? { venueId, limit: '100' } : undefined,
   );
 
-  const fields = venue?.fields ?? [];
+  const courts = venue?.courts ?? [];
   const images = venue?.venueImages ?? [];
   const activeSports = venueSports.filter((item) => item.isActive);
   const activePayments = paymentAccounts.filter((item) => item.isActive);
@@ -87,7 +89,7 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
 
   const goToFields = () => {
     setFieldVenueFilter(venueId);
-    router.push('/fields');
+    router.push('/courts');
   };
 
   if (isLoading) {
@@ -133,10 +135,7 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
     );
   }
 
-  const restTime =
-    venue.restStartTime && venue.restEndTime
-      ? `${venue.restStartTime} – ${venue.restEndTime}`
-      : null;
+  const operatingHour = venue.operatingHours?.[0];
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-7 lg:px-8">
@@ -164,7 +163,7 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
           </div>
           <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
             <MapPinIcon className="mt-0.5 size-3.5 shrink-0" />
-            <span>{venue.location}</span>
+            <span>{venue.address || 'Chưa có địa chỉ'}</span>
           </p>
         </div>
 
@@ -201,7 +200,9 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
               <div>
                 <p className="text-xs font-medium text-muted-foreground">Giờ hoạt động</p>
                 <p className="mt-0.5 text-sm font-medium tabular-nums text-heading">
-                  {venue.openTime} – {venue.closeTime}
+                  {operatingHour
+                    ? formatTimeRange(operatingHour.openTime, operatingHour.closeTime)
+                    : 'Chưa thiết lập'}
                 </p>
               </div>
             </div>
@@ -210,9 +211,7 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
               <MoonIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
               <div>
                 <p className="text-xs font-medium text-muted-foreground">Giờ nghỉ</p>
-                <p className="mt-0.5 text-sm font-medium tabular-nums text-heading">
-                  {restTime ?? 'Không có'}
-                </p>
+                <p className="mt-0.5 text-sm font-medium tabular-nums text-heading">Không có</p>
               </div>
             </div>
 
@@ -231,7 +230,7 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
 
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-lg bg-muted/40 px-3 py-2.5 text-center">
-              <p className="text-lg font-semibold tabular-nums text-heading">{fields.length}</p>
+              <p className="text-lg font-semibold tabular-nums text-heading">{courts.length}</p>
               <p className="text-[11px] text-muted-foreground">Sân</p>
             </div>
             <div className="rounded-lg bg-muted/40 px-3 py-2.5 text-center">
@@ -267,9 +266,9 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <h2 className="text-base font-semibold text-heading">Sân thuộc cơ sở</h2>
-            {fields.length > 0 && (
+            {courts.length > 0 && (
               <Badge variant="secondary" className="font-semibold tabular-nums">
-                {fields.length}
+                {courts.length}
               </Badge>
             )}
           </div>
@@ -279,7 +278,7 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
           </Button>
         </div>
 
-        {fields.length === 0 ? (
+        {courts.length === 0 ? (
           <div className="flex flex-col items-center rounded-[22px] border border-dashed border-border/80 bg-muted/20 px-6 py-10 text-center shadow-sm">
             <LandPlotIcon className="size-5 text-muted-foreground" />
             <p className="mt-3 text-sm font-medium text-heading">Chưa có sân</p>
@@ -302,29 +301,29 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {fields.map((field: IField) => (
+                {courts.map((court: ICourt) => (
                   <TableRow
-                    key={field.id}
+                    key={court.id}
                     className="group cursor-pointer border-b border-border/40 last:border-b-0 hover:bg-muted/30"
-                    onClick={() => router.push(`/fields/${field.id}`)}
+                    onClick={() => router.push(`/courts/${court.id}`)}
                   >
                     <TableCell className="px-4 py-3.5">
-                      <p className="font-medium text-heading">{field.name}</p>
-                      {field.description ? (
+                      <p className="font-medium text-heading">{court.name}</p>
+                      {court.description ? (
                         <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
-                          {field.description}
+                          {court.description}
                         </p>
                       ) : null}
                     </TableCell>
                     <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                      {field.sport?.name ?? '—'}
+                      {court.sport?.name ?? '—'}
                     </TableCell>
                     <TableCell className="px-4 py-3.5 text-sm tabular-nums">
-                      {formatCurrency(field.price)}
+                      {formatCurrency(court.basePriceVnd)}
                     </TableCell>
                     <TableCell className="px-4 py-3.5">
-                      <Badge variant={field.status === 'active' ? 'default' : 'outline'}>
-                        {statusLabel[field.status]}
+                      <Badge variant={court.status === 'active' ? 'default' : 'outline'}>
+                        {statusLabel[court.status]}
                       </Badge>
                     </TableCell>
                   </TableRow>

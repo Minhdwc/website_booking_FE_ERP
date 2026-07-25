@@ -80,7 +80,7 @@ export const StaffSportsView = () => {
           </div>
           <h2 className="mt-4 text-base font-semibold text-heading">Chưa được gán cơ sở</h2>
           <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
-            Liên hệ admin để được thêm vào VenueOwner trước khi đăng ký bộ môn.
+            Cần setup cơ sở trước khi đăng ký bộ môn.
           </p>
         </div>
       )}

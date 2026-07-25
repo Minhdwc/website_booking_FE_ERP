@@ -107,7 +107,7 @@ export const VenuesSetupPage = ({
 
       <div id="venues-setup-next" className="mt-8 text-xs text-muted-foreground">
         <Link
-          href="/fields"
+          href="/courts"
           className="inline-flex items-center gap-1 underline-offset-4 hover:text-foreground hover:underline"
         >
           Tiếp theo: tạo sân

@@ -125,10 +125,13 @@ export const DialogEditBooking = ({ bookingId }: { bookingId: string }) => {
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
               <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 text-sm">
                 <p className="font-medium text-foreground">
-                  {primaryItem?.field?.name || 'Sân'} · {primaryItem?.date || '—'}
+                  {primaryItem?.court?.name || 'Sân'} · {primaryItem?.date || '—'}
                 </p>
                 <p className="mt-1 text-muted-foreground">
-                  {booking.user?.name || booking.userId}
+                  {booking.customerName || booking.user?.name || booking.userId}
+                  {booking.customerPhone || booking.user?.phone
+                    ? ` · ${booking.customerPhone || booking.user?.phone}`
+                    : ''}
                   {primaryItem
                     ? ` · ${formatSlotTime(primaryItem.startTime)} – ${formatSlotTime(primaryItem.endTime)}`
                     : ''}

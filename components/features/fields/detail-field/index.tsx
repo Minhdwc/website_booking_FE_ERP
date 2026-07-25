@@ -37,9 +37,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatCurrency, formatDate, formatRelativeTime } from '@/lib/format';
-import { BookingStatus, FieldStatus } from '@/stores/api/types';
+import { BookingStatus, CourtStatus } from '@/stores/api/types';
 import { useBookings } from '@/stores/queries/booking.query';
-import { useDeleteField, useField } from '@/stores/queries/field.query';
+import { useDeleteCourt, useCourt } from '@/stores/queries/court.query';
 
 const formatDurationMinutes = (minutes: number) => {
   if (!minutes || minutes < 0) return '—';
@@ -50,14 +50,16 @@ const formatDurationMinutes = (minutes: number) => {
   return `${hours} giờ ${mins} phút`;
 };
 
-const statusLabel: Record<FieldStatus, string> = {
+const statusLabel: Record<CourtStatus, string> = {
   active: 'Hoạt động',
   inactive: 'Ngưng',
+  maintenance: 'Bảo trì',
 };
 
-const statusVariant: Record<FieldStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
+const statusVariant: Record<CourtStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
   active: 'default',
   inactive: 'outline',
+  maintenance: 'secondary',
 };
 
 const bookingStatusLabel: Record<BookingStatus, string> = {
@@ -66,6 +68,7 @@ const bookingStatusLabel: Record<BookingStatus, string> = {
   cancelled: 'Đã huỷ',
   completed: 'Hoàn thành',
   expired: 'Hết hạn',
+  paid_at_venue: 'Thanh toán tại quầy',
 };
 
 const bookingStatusVariant: Record<
@@ -77,6 +80,7 @@ const bookingStatusVariant: Record<
   cancelled: 'destructive',
   completed: 'outline',
   expired: 'outline',
+  paid_at_venue: 'default',
 };
 
 function formatSlotTime(value: string) {
@@ -87,29 +91,29 @@ function formatSlotTime(value: string) {
 }
 
 type FieldDetailPageProps = {
-  fieldId: string;
+  courtId: string;
 };
 
-export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
+export const FieldDetailPage = ({ courtId }: FieldDetailPageProps) => {
   const router = useRouter();
-  const deleteFieldMutation = useDeleteField();
+  const deleteCourtMutation = useDeleteCourt();
 
-  const { data: field, isLoading, isError, error } = useField(fieldId);
+  const { data: court, isLoading, isError, error } = useCourt(courtId);
   const { data: bookings = [], isLoading: bookingsLoading } = useBookings({ limit: '100' });
 
-  const fieldBookings = bookings.filter((booking) =>
-    booking.items?.some((item) => item.fieldId === fieldId),
+  const courtBookings = bookings.filter((booking) =>
+    booking.items?.some((item) => item.courtId === courtId),
   );
-  const images = field?.fieldImages ?? [];
+  const images = court?.courtImages ?? [];
 
   const handleDelete = async () => {
-    if (!field) return;
-    if (!window.confirm(`Xóa sân “${field.name}”? Thao tác không thể hoàn tác.`)) return;
+    if (!court) return;
+    if (!window.confirm(`Xóa sân “${court.name}”? Thao tác không thể hoàn tác.`)) return;
 
     try {
-      await deleteFieldMutation.mutateAsync(field.id);
+      await deleteCourtMutation.mutateAsync(court.id);
       toast.success('Đã xóa sân');
-      router.replace('/fields');
+      router.replace('/courts');
     } catch (err: any) {
       toast.error(err?.message || 'Không xóa được sân');
     }
@@ -135,7 +139,7 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
     );
   }
 
-  if (isError || !field) {
+  if (isError || !court) {
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-7 lg:px-8">
         <Button
@@ -143,7 +147,7 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
           size="sm"
           className="w-fit gap-2"
           nativeButton={false}
-          render={<Link href="/fields" />}
+          render={<Link href="/courts" />}
         >
           <ArrowLeftIcon className="size-3.5" />
           Quay lại danh sách
@@ -160,11 +164,11 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink render={<Link href="/fields" />}>Sân</BreadcrumbLink>
+            <BreadcrumbLink render={<Link href="/courts" />}>Sân</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage className="max-w-60 truncate">{field.name}</BreadcrumbPage>
+            <BreadcrumbPage className="max-w-60 truncate">{court.name}</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -176,27 +180,27 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
               <LandPlotIcon className="size-5" />
             </div>
             <h1 className="truncate text-2xl font-bold tracking-tight text-heading">
-              {field.name}
+              {court.name}
             </h1>
-            <Badge variant={statusVariant[field.status]}>{statusLabel[field.status]}</Badge>
+            <Badge variant={statusVariant[court.status]}>{statusLabel[court.status]}</Badge>
           </div>
-          {field.description ? (
-            <p className="max-w-2xl text-sm text-muted-foreground">{field.description}</p>
+          {court.description ? (
+            <p className="max-w-2xl text-sm text-muted-foreground">{court.description}</p>
           ) : (
             <p className="text-sm text-muted-foreground/70">Chưa có mô tả.</p>
           )}
           <p className="text-xs text-muted-foreground">
-            Cập nhật {formatRelativeTime(field.updatedAt)} · tạo {formatDate(field.createdAt)}
+            Cập nhật {formatRelativeTime(court.updatedAt)} · tạo {formatDate(court.createdAt)}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <DialogEditField fieldId={field.id} triggerVariant="toolbar" />
+          <DialogEditField courtId={court.id} triggerVariant="toolbar" />
           <Button
             variant="outline"
             size="sm"
             className="gap-2 text-destructive hover:text-destructive"
-            disabled={deleteFieldMutation.isPending}
+            disabled={deleteCourtMutation.isPending}
             onClick={handleDelete}
           >
             <Trash2Icon className="size-3.5" />
@@ -214,23 +218,23 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
               <Building2Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-muted-foreground">Cơ sở</p>
-                {field.venue ? (
+                {court.venue ? (
                   <Button
                     variant="link"
                     size="sm"
                     className="h-auto px-0 text-sm font-medium text-heading"
                     nativeButton={false}
-                    render={<Link href={`/venues/${field.venueId}`} />}
+                    render={<Link href={`/venues/${court.venueId}`} />}
                   >
-                    {field.venue.name}
+                    {court.venue.name}
                   </Button>
                 ) : (
                   <p className="mt-0.5 text-sm text-heading">—</p>
                 )}
-                {field.venue?.location ? (
+                {court.venue?.address ? (
                   <p className="flex items-start gap-1 text-xs text-muted-foreground">
                     <MapPinIcon className="mt-0.5 size-3 shrink-0" />
-                    <span>{field.venue.location}</span>
+                    <span>{court.venue.address}</span>
                   </p>
                 ) : null}
               </div>
@@ -241,7 +245,7 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
               <div>
                 <p className="text-xs font-medium text-muted-foreground">Bộ môn</p>
                 <p className="mt-0.5 text-sm font-medium text-heading">
-                  {field.sport?.name ?? '—'}
+                  {court.sport?.name ?? '—'}
                 </p>
               </div>
             </div>
@@ -251,10 +255,10 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
               <div>
                 <p className="text-xs font-medium text-muted-foreground">Thời gian thuê</p>
                 <p className="mt-0.5 text-sm font-medium text-heading">
-                  Tối thiểu {formatDurationMinutes(field.minDurationMinutes)}
+                  Tối thiểu {formatDurationMinutes(court.minDurationMinutes)}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Bước tăng {formatDurationMinutes(field.durationStepMinutes)}
+                  Bước tăng {formatDurationMinutes(court.durationStepMinutes)}
                 </p>
               </div>
             </div>
@@ -265,9 +269,9 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
           <div className="rounded-lg bg-muted/40 px-4 py-3">
             <p className="text-xs font-medium text-muted-foreground">Giá thuê</p>
             <p className="mt-1 text-2xl font-bold tabular-nums text-heading">
-              {formatCurrency(field.price)}
+              {formatCurrency(court.basePriceVnd)}
               <span className="ml-1 text-sm font-normal text-muted-foreground">
-                /{formatDurationMinutes(field.minDurationMinutes)}
+                /{formatDurationMinutes(court.minDurationMinutes)}
               </span>
             </p>
           </div>
@@ -278,9 +282,9 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
             <div className="flex items-center gap-2">
               <CalendarDaysIcon className="size-4 text-muted-foreground" />
               <h2 className="text-sm font-semibold text-heading">Booking gần đây</h2>
-              {fieldBookings.length > 0 && (
+              {courtBookings.length > 0 && (
                 <Badge variant="secondary" className="font-semibold tabular-nums">
-                  {fieldBookings.length}
+                  {courtBookings.length}
                 </Badge>
               )}
             </div>
@@ -300,7 +304,7 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
               <Skeleton className="h-10 w-full" />
               <Skeleton className="h-10 w-full" />
             </div>
-          ) : fieldBookings.length === 0 ? (
+          ) : courtBookings.length === 0 ? (
             <p className="mt-4 text-sm text-muted-foreground">Chưa có booking cho sân này.</p>
           ) : (
             <div className="mt-4 overflow-hidden rounded-lg border border-border/60">
@@ -314,9 +318,9 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {fieldBookings.slice(0, 8).map((booking) => {
+                  {courtBookings.slice(0, 8).map((booking) => {
                     const item =
-                      booking.items?.find((entry) => entry.fieldId === fieldId) ??
+                      booking.items?.find((entry) => entry.courtId === courtId) ??
                       booking.items?.[0];
                     return (
                       <TableRow
@@ -350,7 +354,7 @@ export const FieldDetailPage = ({ fieldId }: FieldDetailPageProps) => {
       </div>
 
       <div className="rounded-[22px] border border-border/80 bg-card p-4 shadow-sm md:p-5">
-        <FieldImagesSection fieldId={field.id} images={images} />
+        <FieldImagesSection courtId={court.id} images={images} />
       </div>
     </div>
   );

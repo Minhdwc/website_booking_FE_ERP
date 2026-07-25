@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { ComboboxCourt } from '@/components/features/bookings/combobox-court';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -26,68 +27,67 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { IField } from '@/stores/api/types';
-import { useCreateBooking } from '@/stores/queries/booking.query';
-import { useFields } from '@/stores/queries/field.query';
+import { Textarea } from '@/components/ui/textarea';
+import { useCreateWalkInBooking } from '@/stores/queries/booking.query';
 
 const formSchema = z.object({
-  fieldId: z.string().min(1, { message: 'Chọn sân' }),
+  customerName: z.string().min(2, { message: 'Nhập tên khách' }),
+  customerPhone: z
+    .string()
+    .min(9, { message: 'Nhập số điện thoại hợp lệ' })
+    .max(15, { message: 'Số điện thoại quá dài' }),
+  courtId: z.string().min(1, { message: 'Chọn sân' }),
   date: z.string().min(1, { message: 'Chọn ngày' }),
   startTime: z.string().regex(/^\d{2}:\d{2}$/, { message: 'Nhập giờ bắt đầu HH:mm' }),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, { message: 'Nhập giờ kết thúc HH:mm' }),
+  note: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
+const defaultValues: FormValues = {
+  customerName: '',
+  customerPhone: '',
+  courtId: '',
+  date: '',
+  startTime: '',
+  endTime: '',
+  note: '',
+};
+
 export const BookingsCreateDialog = () => {
   const [open, setOpen] = useState(false);
-  const createBookingMutation = useCreateBooking();
-  const fieldsQuery = useFields();
-  const fields = fieldsQuery.isSuccess ? fieldsQuery.data : [];
-  const isSaving = createBookingMutation.isPending;
+  const createWalkInMutation = useCreateWalkInBooking();
+  const isSaving = createWalkInMutation.isPending;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      fieldId: '',
-      date: '',
-      startTime: '',
-      endTime: '',
-    },
+    defaultValues,
   });
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
     if (!next) {
-      form.reset({
-        fieldId: '',
-        date: '',
-        startTime: '',
-        endTime: '',
-      });
+      form.reset(defaultValues);
     }
   };
 
   const handleSubmit = async (values: FormValues) => {
     try {
-      await createBookingMutation.mutateAsync({
+      await createWalkInMutation.mutateAsync({
+        customerName: values.customerName.trim(),
+        customerPhone: values.customerPhone.trim(),
         items: [
           {
-            fieldId: values.fieldId,
+            courtId: values.courtId,
             date: values.date,
             startTime: values.startTime,
             endTime: values.endTime,
           },
         ],
+        note: values.note?.trim() || undefined,
       });
-      toast.success('Tạo đặt sân thành công');
+      toast.success('Tạo đặt sân walk-in thành công');
       handleOpenChange(false);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Không tạo được đặt sân. Thử lại.');
@@ -103,37 +103,59 @@ export const BookingsCreateDialog = () => {
 
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Tạo đặt sân</DialogTitle>
+          <DialogTitle>Tạo đặt sân walk-in</DialogTitle>
           <DialogDescription>
-            Chọn sân, ngày và khung giờ. Booking sẽ được tạo dưới tài khoản đang đăng nhập.
+            Tạo booking cho khách tại quầy. Chỉ cần tên và số điện thoại, không cần email.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="customerName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Tên khách <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="VD: Nguyễn Văn A" autoFocus {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="customerPhone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Số điện thoại <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="VD: 0901234567" inputMode="tel" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
-              name="fieldId"
+              name="courtId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
                     Sân <span className="text-destructive">*</span>
                   </FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Chọn sân" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {fields.map((item: IField) => (
-                        <SelectItem key={item.id} value={item.id}>
-                          {item.name}
-                          {item.venue?.name ? ` · ${item.venue.name}` : ''}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <ComboboxCourt value={field.value} onChange={field.onChange} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -188,6 +210,20 @@ export const BookingsCreateDialog = () => {
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="note"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ghi chú</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Ghi chú thêm (tuỳ chọn)" className="min-h-14" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>

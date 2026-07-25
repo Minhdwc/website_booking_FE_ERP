@@ -26,7 +26,7 @@ import { useDeleteUser, useUsers } from '@/stores/queries/user.query';
 
 const roleLabel: Record<UserRole, string> = {
   admin: 'Admin',
-  staff: 'Staff',
+  owner: 'Owner',
   user: 'User',
 };
 
@@ -71,7 +71,7 @@ export function UsersPage() {
             )}
           </div>
           <p className="text-sm text-muted-foreground">
-            Quản lý user/admin/staff và gán staff vào cơ sở (VenueOwner).
+            Quản lý user/admin/owner và gán owner vào cơ sở (VenueOwner).
           </p>
         </div>
         <UsersCreateDialog />
@@ -162,7 +162,7 @@ export function UsersPage() {
                       </PopoverTrigger>
                       <PopoverContent align="end" className="w-44 gap-0 p-1">
                         <UsersEditDialog user={user} />
-                        {(user.role === 'staff' || user.role === 'admin') && (
+                        {(user.role === 'owner' || user.role === 'admin') && (
                           <UsersAssignVenueDialog user={user} />
                         )}
                         <Separator className="my-1" />

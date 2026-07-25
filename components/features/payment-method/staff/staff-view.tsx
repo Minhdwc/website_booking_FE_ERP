@@ -137,8 +137,8 @@ export const StaffPaymentMethodView = () => {
             <div className="w-full max-w-md space-y-2">
               <Label htmlFor="staff-payment-venue">Cơ sở</Label>
               <ComboboxVenue value={selectedVenueId} onChange={setVenueId} />
-              {selectedVenue?.location && (
-                <p className="text-xs text-muted-foreground">{selectedVenue.location}</p>
+              {selectedVenue?.address && (
+                <p className="text-xs text-muted-foreground">{selectedVenue.address}</p>
               )}
             </div>
 

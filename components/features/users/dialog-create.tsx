@@ -41,7 +41,7 @@ const formSchema = z.object({
   email: z.string().email({ message: 'Email không hợp lệ' }),
   phone: z.string().min(9, { message: 'Số điện thoại không hợp lệ' }),
   password: z.string().min(8, { message: 'Mật khẩu tối thiểu 8 ký tự' }),
-  role: z.enum(['admin', 'staff', 'user']),
+  role: z.enum(['admin', 'owner', 'user']),
   isActive: z.enum(['true', 'false']),
 });
 
@@ -60,7 +60,7 @@ export function UsersCreateDialog() {
       email: '',
       phone: '',
       password: '',
-      role: 'staff',
+      role: 'owner',
       isActive: 'true',
     },
   });
@@ -74,7 +74,7 @@ export function UsersCreateDialog() {
         email: '',
         phone: '',
         password: '',
-        role: 'staff',
+        role: 'owner',
         isActive: 'true',
       });
     }
@@ -193,7 +193,7 @@ export function UsersCreateDialog() {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="staff">Staff</SelectItem>
+                        <SelectItem value="owner">Owner</SelectItem>
                         <SelectItem value="user">User</SelectItem>
                       </SelectContent>
                     </Select>
