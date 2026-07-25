@@ -43,7 +43,7 @@ export const bookingService = {
     note?: string;
   }) => apiRequest('/bookings/walk-in', { method: 'POST', body }),
 
-  updateBooking: (id: string, body: { status: IBooking['status'] }) =>
+  updateBooking: (id: string, body: { status: IBooking['status']; reason?: string }) =>
     apiRequest(`/bookings/${id}`, {
       method: 'PATCH',
       body,

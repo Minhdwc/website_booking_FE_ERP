@@ -25,6 +25,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -35,9 +36,20 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useBooking, useUpdateBooking } from '@/stores/queries/booking.query';
 
-const formSchema = z.object({
-  status: z.enum(['confirmed', 'completed', 'cancelled']),
-});
+const formSchema = z
+  .object({
+    status: z.enum(['confirmed', 'completed', 'cancelled']),
+    reason: z.string().optional(),
+  })
+  .superRefine((values, ctx) => {
+    if (values.status === 'confirmed' && !values.reason?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Cần ghi lý do khi xác nhận thủ công',
+        path: ['reason'],
+      });
+    }
+  });
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -63,12 +75,14 @@ export const DialogEditBooking = ({ bookingId }: { bookingId: string }) => {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { status: 'confirmed' },
+    defaultValues: { status: 'confirmed', reason: '' },
     values:
       booking && ['confirmed', 'completed', 'cancelled'].includes(booking.status)
-        ? { status: booking.status as FormValues['status'] }
+        ? { status: booking.status as FormValues['status'], reason: '' }
         : undefined,
   });
+
+  const selectedStatus = form.watch('status');
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
@@ -81,7 +95,12 @@ export const DialogEditBooking = ({ bookingId }: { bookingId: string }) => {
     try {
       await updateBookingMutation.mutateAsync({
         id: booking.id,
-        body: { status: values.status },
+        body: {
+          status: values.status,
+          ...(values.status === 'confirmed' && values.reason?.trim()
+            ? { reason: values.reason.trim() }
+            : {}),
+        },
       });
       toast.success('Cập nhật đặt sân thành công');
       handleOpenChange(false);
@@ -165,6 +184,27 @@ export const DialogEditBooking = ({ bookingId }: { bookingId: string }) => {
                   </FormItem>
                 )}
               />
+
+              {selectedStatus === 'confirmed' && (
+                <FormField
+                  control={form.control}
+                  name="reason"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Lý do xác nhận <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="VD: Khách chuyển khoản ngoài hệ thống"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
