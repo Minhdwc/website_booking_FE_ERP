@@ -17,15 +17,11 @@ export const courtBlockService = {
   getByCourt: (courtId: string, params: { from: string; to: string }) =>
     apiRequest(`/courts/${courtId}/blocks`, { method: 'GET', params }),
 
-  create: (
-    courtId: string,
-    body: { startAt: string; endAt: string; reason?: string },
-  ) =>
+  create: (courtId: string, body: { startAt: string; endAt: string; reason?: string }) =>
     apiRequest(`/courts/${courtId}/blocks`, {
       method: 'POST',
       body,
     }),
 
-  remove: (id: string) =>
-    apiRequest(`/court-blocks/${id}`, { method: 'DELETE' }),
+  remove: (id: string) => apiRequest(`/court-blocks/${id}`, { method: 'DELETE' }),
 };

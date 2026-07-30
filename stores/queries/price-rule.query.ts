@@ -40,14 +40,8 @@ export const useUpdatePriceRule = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      id,
-      body,
-    }: {
-      id: string;
-      courtId: string;
-      body: any;
-    }) => priceRuleService.update(id, body),
+    mutationFn: ({ id, body }: { id: string; courtId: string; body: any }) =>
+      priceRuleService.update(id, body),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: priceRuleKeys.byCourt(variables.courtId) });
     },

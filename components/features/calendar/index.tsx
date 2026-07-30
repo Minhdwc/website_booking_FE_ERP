@@ -176,7 +176,9 @@ export function CalendarPage() {
                     <TableCell>{formatDate(date)}</TableCell>
                     <TableCell>{courtName}</TableCell>
                     <TableCell>
-                      {item ? `${formatSlotTime(item.startTime)} – ${formatSlotTime(item.endTime)}` : '—'}
+                      {item
+                        ? `${formatSlotTime(item.startTime)} – ${formatSlotTime(item.endTime)}`
+                        : '—'}
                     </TableCell>
                     <TableCell>{getBookingCustomerName(booking)}</TableCell>
                     <TableCell>

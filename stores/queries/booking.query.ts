@@ -84,8 +84,13 @@ export const useUpdateBooking = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: { status: IBooking['status']; reason?: string } }) =>
-      bookingService.updateBooking(id, body),
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string;
+      body: { status: IBooking['status']; reason?: string };
+    }) => bookingService.updateBooking(id, body),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
       queryClient.invalidateQueries({ queryKey: bookingKeys.detail(variables.id) });

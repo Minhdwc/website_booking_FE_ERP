@@ -1,4 +1,3 @@
-
 import { apiRequest } from '@/stores/api/api-request';
 
 export type ReportBookingStatusRow = {
@@ -58,7 +57,7 @@ export const reportService = {
     const searchParams = new URLSearchParams({ export: 'csv' });
     if (params?.from) searchParams.set('from', params.from);
     if (params?.to) searchParams.set('to', params.to);
-    
+
     const response = await apiRequest(`/reports/summary?${searchParams}`, {
       method: 'GET',
       params,

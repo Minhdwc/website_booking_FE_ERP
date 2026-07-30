@@ -208,10 +208,7 @@ export const DialogEditBooking = ({
                         Lý do xác nhận <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="VD: Khách chuyển khoản ngoài hệ thống"
-                          {...field}
-                        />
+                        <Input placeholder="VD: Khách chuyển khoản ngoài hệ thống" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

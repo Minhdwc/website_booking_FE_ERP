@@ -18,8 +18,7 @@ export const bookingService = {
   getBookings: (params?: { search?: string; page?: string; limit?: string }) =>
     apiRequest('/bookings', { method: 'GET', params }),
 
-  getBooking: (id: string) =>
-    apiRequest(`/bookings/${id}`, { method: 'GET' }),
+  getBooking: (id: string) => apiRequest(`/bookings/${id}`, { method: 'GET' }),
 
   createBooking: (body: {
     items: {
@@ -49,6 +48,5 @@ export const bookingService = {
       body,
     }),
 
-  deleteBooking: (id: string) =>
-    apiRequest(`/bookings/${id}`, { method: 'DELETE' }),
+  deleteBooking: (id: string) => apiRequest(`/bookings/${id}`, { method: 'DELETE' }),
 };

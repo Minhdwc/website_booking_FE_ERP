@@ -62,7 +62,9 @@ export function ReviewsPage() {
             </Badge>
           )}
         </div>
-        <p className="text-sm text-muted-foreground">Kiểm duyệt đánh giá của khách trên các cơ sở.</p>
+        <p className="text-sm text-muted-foreground">
+          Kiểm duyệt đánh giá của khách trên các cơ sở.
+        </p>
       </header>
 
       {isError && (

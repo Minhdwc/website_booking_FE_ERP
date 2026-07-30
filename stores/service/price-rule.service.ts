@@ -14,8 +14,7 @@ export type PriceRuleResponse = {
 };
 
 export const priceRuleService = {
-  getByCourt: (courtId: string) =>
-    apiRequest(`/courts/${courtId}/price-rules`, { method: 'GET' }),
+  getByCourt: (courtId: string) => apiRequest(`/courts/${courtId}/price-rules`, { method: 'GET' }),
 
   create: (
     courtId: string,
@@ -47,6 +46,5 @@ export const priceRuleService = {
       body,
     }),
 
-  remove: (id: string) =>
-    apiRequest(`/price-rules/${id}`, { method: 'DELETE' }),
+  remove: (id: string) => apiRequest(`/price-rules/${id}`, { method: 'DELETE' }),
 };

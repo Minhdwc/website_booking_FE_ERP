@@ -63,11 +63,21 @@ export function AnalyticsPage() {
       <section className="grid gap-3 rounded-xl border border-border/70 bg-card p-4 shadow-sm md:grid-cols-[1fr_1fr_auto] md:items-end">
         <div className="space-y-2">
           <Label htmlFor="analytics-from">Từ ngày</Label>
-          <Input id="analytics-from" type="date" value={from} onChange={(event) => setFrom(event.target.value)} />
+          <Input
+            id="analytics-from"
+            type="date"
+            value={from}
+            onChange={(event) => setFrom(event.target.value)}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="analytics-to">Đến ngày</Label>
-          <Input id="analytics-to" type="date" value={to} onChange={(event) => setTo(event.target.value)} />
+          <Input
+            id="analytics-to"
+            type="date"
+            value={to}
+            onChange={(event) => setTo(event.target.value)}
+          />
         </div>
         <Button onClick={() => setApplied({ from, to })} disabled={isFetching}>
           Áp dụng
@@ -92,9 +102,7 @@ export function AnalyticsPage() {
         />
         <StatCard
           title="Doanh thu"
-          value={
-            isLoading ? '0' : `${(data?.revenue.total ?? 0).toLocaleString('vi-VN')} VNĐ`
-          }
+          value={isLoading ? '0' : `${(data?.revenue.total ?? 0).toLocaleString('vi-VN')} VNĐ`}
           loading={isLoading}
         />
       </section>

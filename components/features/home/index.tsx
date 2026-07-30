@@ -236,7 +236,6 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
           </div>
         </section>
       )}
-
     </div>
   );
 };

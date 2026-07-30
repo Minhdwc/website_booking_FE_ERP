@@ -18,8 +18,7 @@ export const supportTicketService = {
   getTickets: (params?: { page?: string; limit?: string }) =>
     apiRequest('/support-tickets', { method: 'GET', params }),
 
-  getTicket: (id: string) =>
-    apiRequest(`/support-tickets/${id}`, { method: 'GET' }),
+  getTicket: (id: string) => apiRequest(`/support-tickets/${id}`, { method: 'GET' }),
 
   create: (body: { type: string; description: string; bookingId?: string }) =>
     apiRequest('/support-tickets', { method: 'POST', body }),

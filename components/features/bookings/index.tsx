@@ -315,32 +315,32 @@ export const BookingsPage = () => {
                           />
                         ) : null}
                         <Popover>
-                        <PopoverTrigger
-                          render={
+                          <PopoverTrigger
+                            render={
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label="Mở thao tác"
+                                className="text-muted-foreground opacity-60 transition-opacity group-hover:opacity-100 aria-expanded:opacity-100"
+                              />
+                            }
+                          >
+                            <MoreHorizontalIcon className="size-4" />
+                          </PopoverTrigger>
+                          <PopoverContent align="end" className="w-44 gap-0 p-1">
+                            <DialogEditBooking bookingId={booking.id} />
+                            <Separator className="my-1" />
                             <Button
                               variant="ghost"
-                              size="icon-sm"
-                              aria-label="Mở thao tác"
-                              className="text-muted-foreground opacity-60 transition-opacity group-hover:opacity-100 aria-expanded:opacity-100"
-                            />
-                          }
-                        >
-                          <MoreHorizontalIcon className="size-4" />
-                        </PopoverTrigger>
-                        <PopoverContent align="end" className="w-44 gap-0 p-1">
-                          <DialogEditBooking bookingId={booking.id} />
-                          <Separator className="my-1" />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full justify-start gap-2 font-normal text-destructive hover:text-destructive"
-                            onClick={() => handleDelete(booking.id)}
-                          >
-                            <Trash2Icon className="size-3.5" />
-                            Xóa
-                          </Button>
-                        </PopoverContent>
-                      </Popover>
+                              size="sm"
+                              className="w-full justify-start gap-2 font-normal text-destructive hover:text-destructive"
+                              onClick={() => handleDelete(booking.id)}
+                            >
+                              <Trash2Icon className="size-3.5" />
+                              Xóa
+                            </Button>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </TableCell>
                   </TableRow>

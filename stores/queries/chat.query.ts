@@ -2,7 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { chatService, type ChatConversation, type ChatMessage } from '@/stores/service/chat.service';
+import {
+  chatService,
+  type ChatConversation,
+  type ChatMessage,
+} from '@/stores/service/chat.service';
 
 export const chatKeys = {
   all: ['chat'] as const,

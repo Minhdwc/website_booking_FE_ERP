@@ -218,7 +218,11 @@ export const BookingsCreateDialog = () => {
                 <FormItem>
                   <FormLabel>Ghi chú</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Ghi chú thêm (tuỳ chọn)" className="min-h-14" {...field} />
+                    <Textarea
+                      placeholder="Ghi chú thêm (tuỳ chọn)"
+                      className="min-h-14"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
