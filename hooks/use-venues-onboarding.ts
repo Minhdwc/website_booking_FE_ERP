@@ -8,12 +8,12 @@ const ONBOARDING_STORAGE_KEY = 'erp:venues-onboarding-done';
 
 export const isVenuesOnboardingDone = () => {
   if (typeof window === 'undefined') return true;
-  return window.localStorage.getItem(ONBOARDING_STORAGE_KEY) === '1';
+  return window.sessionStorage.getItem(ONBOARDING_STORAGE_KEY) === '1';
 };
 
 export const markVenuesOnboardingDone = () => {
   if (typeof window === 'undefined') return;
-  window.localStorage.setItem(ONBOARDING_STORAGE_KEY, '1');
+  window.sessionStorage.setItem(ONBOARDING_STORAGE_KEY, '1');
 };
 
 const buildOnboardingSteps = (): DriveStep[] => [
