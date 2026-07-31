@@ -4,7 +4,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { unwrapList } from '@/stores/api/response';
 import { IBooking } from '@/stores/api/types';
-import { bookingService, type BookingResponse } from '@/stores/service/booking.service';
+import {
+  bookingService,
+  type BookingDetailResponse,
+  type BookingResponse,
+} from '@/stores/service/booking.service';
 
 export type BookingListParams = {
   search?: string;
@@ -29,9 +33,9 @@ const fetchBookings = async (params?: BookingListParams): Promise<IBooking[]> =>
   return unwrapList(response.data) as IBooking[];
 };
 
-const fetchBooking = async (id: string) => {
-  const response = await bookingService.getBooking(id);
-  return response as any;
+const fetchBooking = async (id: string): Promise<IBooking> => {
+  const response = (await bookingService.getBooking(id)) as BookingDetailResponse;
+  return response.data;
 };
 
 export const useBookings = (params?: BookingListParams) =>
