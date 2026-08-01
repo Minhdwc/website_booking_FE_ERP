@@ -71,10 +71,7 @@ export function CustomersPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
-      <PageHeader
-        title="Khách hàng"
-        description="Danh sách khách suy ra từ lịch sử booking của owner."
-      />
+      <PageHeader title="Khách hàng" />
 
       <div className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
         {isLoading ? (

@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2Icon, PlusIcon } from 'lucide-react';
+import { Loader2Icon } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -16,7 +17,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -28,137 +28,94 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useCreateWalkInBooking } from '@/stores/queries/booking.query';
+import { courtBlockService } from '@/stores/service/court-block.service';
 
 const formSchema = z.object({
-  customerName: z.string().min(2, { message: 'Nhập tên khách' }),
-  customerPhone: z
-    .string()
-    .min(9, { message: 'Nhập số điện thoại hợp lệ' })
-    .max(15, { message: 'Số điện thoại quá dài' }),
   courtId: z.string().min(1, { message: 'Chọn sân' }),
   date: z.string().min(1, { message: 'Chọn ngày' }),
   startTime: z.string().regex(/^\d{2}:\d{2}$/, { message: 'Nhập giờ bắt đầu HH:mm' }),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, { message: 'Nhập giờ kết thúc HH:mm' }),
-  note: z.string().optional(),
+  reason: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 const defaultValues: FormValues = {
-  customerName: '',
-  customerPhone: '',
   courtId: '',
   date: '',
   startTime: '',
   endTime: '',
-  note: '',
+  reason: '',
 };
 
-type BookingsCreateDialogProps = {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  hideTrigger?: boolean;
+type CourtBlockDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 };
 
-export const BookingsCreateDialog = ({
-  open: controlledOpen,
-  onOpenChange: controlledOnOpenChange,
-  hideTrigger = false,
-}: BookingsCreateDialogProps = {}) => {
-  const [internalOpen, setInternalOpen] = useState(false);
-  const open = controlledOpen ?? internalOpen;
-  const setOpen = controlledOnOpenChange ?? setInternalOpen;
-  const createWalkInMutation = useCreateWalkInBooking();
-  const isSaving = createWalkInMutation.isPending;
+function toIsoDateTime(date: string, time: string) {
+  return `${date}T${time}:00.000Z`;
+}
+
+export function CourtBlockDialog({ open, onOpenChange }: CourtBlockDialogProps) {
+  const queryClient = useQueryClient();
+  const [saving, setSaving] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
 
+  const createMutation = useMutation({
+    mutationFn: async (values: FormValues) => {
+      const startAt = toIsoDateTime(values.date, values.startTime);
+      const endAt = toIsoDateTime(values.date, values.endTime);
+      return courtBlockService.create(values.courtId, {
+        startAt,
+        endAt,
+        reason: values.reason?.trim() || undefined,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['courts'] });
+    },
+  });
+
   const handleOpenChange = (next: boolean) => {
-    setOpen(next);
+    onOpenChange(next);
     if (!next) {
       form.reset(defaultValues);
     }
   };
 
   const handleSubmit = async (values: FormValues) => {
+    setSaving(true);
     try {
-      await createWalkInMutation.mutateAsync({
-        customerName: values.customerName.trim(),
-        customerPhone: values.customerPhone.trim(),
-        items: [
-          {
-            courtId: values.courtId,
-            date: values.date,
-            startTime: values.startTime,
-            endTime: values.endTime,
-          },
-        ],
-        note: values.note?.trim() || undefined,
-      });
-      toast.success('Tạo đặt sân walk-in thành công');
+      await createMutation.mutateAsync(values);
+      toast.success('Khóa sân thành công');
       handleOpenChange(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không tạo được đặt sân. Thử lại.');
+      toast.error(error instanceof Error ? error.message : 'Không khóa được sân. Thử lại.');
+    } finally {
+      setSaving(false);
     }
   };
 
+  const isSaving = saving || createMutation.isPending;
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      {!hideTrigger ? (
-        <DialogTrigger render={<Button size="sm" />}>
-          <PlusIcon className="size-3.5" />
-          Thêm đặt sân
-        </DialogTrigger>
-      ) : null}
-
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Tạo đặt sân walk-in</DialogTitle>
+          <DialogTitle>Khóa sân</DialogTitle>
           <DialogDescription>
-            Tạo booking cho khách tại quầy. Chỉ cần tên và số điện thoại, không cần email.
+            Chặn khung giờ để không nhận đặt sân online hoặc walk-in.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="customerName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Tên khách <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="VD: Nguyễn Văn A" autoFocus {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="customerPhone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Số điện thoại <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="VD: 0901234567" inputMode="tel" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             <FormField
               control={form.control}
               name="courtId"
@@ -227,16 +184,12 @@ export const BookingsCreateDialog = ({
 
             <FormField
               control={form.control}
-              name="note"
+              name="reason"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ghi chú</FormLabel>
+                  <FormLabel>Lý do</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Ghi chú thêm (tuỳ chọn)"
-                      className="min-h-14"
-                      {...field}
-                    />
+                    <Textarea placeholder="VD: Bảo trì sân" className="min-h-14" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -249,7 +202,7 @@ export const BookingsCreateDialog = ({
               </Button>
               <Button type="submit" disabled={isSaving}>
                 {isSaving && <Loader2Icon className="size-3.5 animate-spin" />}
-                {isSaving ? 'Đang lưu…' : 'Lưu đặt sân'}
+                {isSaving ? 'Đang lưu…' : 'Khóa sân'}
               </Button>
             </DialogFooter>
           </form>
@@ -257,4 +210,4 @@ export const BookingsCreateDialog = ({
       </DialogContent>
     </Dialog>
   );
-};
+}

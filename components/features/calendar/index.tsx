@@ -2,9 +2,10 @@
 
 import { useMemo, useState } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { PageHeader } from '@/components/custom/page-header';
+import { BookingsCreateDialog } from '@/components/features/bookings/dialog-create';
+import { CourtBlockDialog } from '@/components/features/calendar/dialog-court-block';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -57,6 +58,8 @@ function getBookingCustomerName(booking: IBooking) {
 
 export function CalendarPage() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
+  const [walkInOpen, setWalkInOpen] = useState(false);
+  const [blockOpen, setBlockOpen] = useState(false);
   const { data: bookings = [], isLoading } = useBookings({ limit: '200' });
 
   const weekDays = useMemo(
@@ -102,7 +105,7 @@ export function CalendarPage() {
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
       <PageHeader
         title="Lịch sân"
-        description="Xem lịch đặt theo tuần — walk-in và block sân sẽ bổ sung ở sprint tiếp theo."
+        description="Xem lịch đặt theo tuần và tạo walk-in hoặc khóa sân."
       />
 
       <div className="flex items-center justify-between rounded-xl border border-border/70 bg-card px-4 py-3">
@@ -193,21 +196,20 @@ export function CalendarPage() {
       </div>
 
       <div className="flex gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => toast.message('Walk-in modal — dùng POST /bookings/walk-in')}
-        >
+        <Button size="sm" variant="outline" onClick={() => setWalkInOpen(true)}>
           Walk-in
         </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => toast.message('Block sân — dùng POST /courts/:id/blocks')}
-        >
+        <Button size="sm" variant="outline" onClick={() => setBlockOpen(true)}>
           Block sân
         </Button>
       </div>
+
+      <BookingsCreateDialog
+        open={walkInOpen}
+        onOpenChange={setWalkInOpen}
+        hideTrigger
+      />
+      <CourtBlockDialog open={blockOpen} onOpenChange={setBlockOpen} />
     </div>
   );
 }
