@@ -26,11 +26,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatCurrencyInput, parseCurrencyInput } from '@/lib/format';
-import {
-  useCreatePriceRule,
-  useDeletePriceRule,
-  usePriceRules,
-} from '@/stores/queries/price-rule';
+import { useCreatePriceRule, useDeletePriceRule, usePriceRules } from '@/stores/queries/price-rule';
 import { useCourts } from '@/stores/queries/court';
 
 const DAY_OPTIONS = [

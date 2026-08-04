@@ -143,11 +143,7 @@ export function useClientDataTable<T>({
   };
 }
 
-export function exportRowsToCsv<T>(
-  rows: T[],
-  columns: DataTableColumn<T>[],
-  filename: string,
-) {
+export function exportRowsToCsv<T>(rows: T[], columns: DataTableColumn<T>[], filename: string) {
   const headers = columns.map((column) => column.header);
   const lines = rows.map((row) =>
     columns

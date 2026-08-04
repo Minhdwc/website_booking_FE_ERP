@@ -50,7 +50,10 @@ import { IVenue } from '@/stores/api/types';
 import { prefetchVenue, useDeleteVenue, useVenues } from '@/stores/queries/venue';
 
 const matchesSearch = (venue: IVenue, q: string) => {
-  const haystack = [venue.name, venue.description, venue.address].filter(Boolean).join(' ').toLowerCase();
+  const haystack = [venue.name, venue.description, venue.address]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
   return haystack.includes(q.toLowerCase());
 };
 
@@ -66,9 +69,18 @@ function SortLabel({
   onClick: () => void;
 }) {
   return (
-    <button type="button" className="inline-flex cursor-pointer items-center gap-1 hover:text-foreground" onClick={onClick}>
+    <button
+      type="button"
+      className="inline-flex cursor-pointer items-center gap-1 hover:text-foreground"
+      onClick={onClick}
+    >
       {label}
-      {active && (direction === 'asc' ? <ArrowUpIcon className="size-3" /> : <ArrowDownIcon className="size-3" />)}
+      {active &&
+        (direction === 'asc' ? (
+          <ArrowUpIcon className="size-3" />
+        ) : (
+          <ArrowDownIcon className="size-3" />
+        ))}
     </button>
   );
 }
@@ -78,7 +90,14 @@ export const VenuesPage = () => {
   const queryClient = useQueryClient();
   const deleteVenueMutation = useDeleteVenue();
 
-  const { data: venuesData, isSuccess, isError, error, refetch, isLoading } = useVenues({ limit: '100' });
+  const {
+    data: venuesData,
+    isSuccess,
+    isError,
+    error,
+    refetch,
+    isLoading,
+  } = useVenues({ limit: '100' });
   const venues = isSuccess ? (venuesData ?? []) : [];
 
   const handleDeleteVenue = useCallback(
@@ -121,7 +140,10 @@ export const VenuesPage = () => {
         sortable: true,
         sortValue: (row) => row.address ?? '',
         cell: (row) => (
-          <div className="flex max-w-60 items-start gap-1.5 text-muted-foreground" title={row.address}>
+          <div
+            className="flex max-w-60 items-start gap-1.5 text-muted-foreground"
+            title={row.address}
+          >
             <MapPinIcon className="mt-0.5 size-3.5 shrink-0" />
             <span className="line-clamp-2 text-sm">{row.address || '—'}</span>
           </div>
@@ -154,7 +176,11 @@ export const VenuesPage = () => {
         id: 'actions',
         header: '',
         cell: (row) => (
-          <VenueRowActions venue={row} onDelete={handleDeleteVenue} onView={(id) => router.push(`/venues/${id}`)} />
+          <VenueRowActions
+            venue={row}
+            onDelete={handleDeleteVenue}
+            onView={(id) => router.push(`/venues/${id}`)}
+          />
         ),
       },
     ],
@@ -286,7 +312,9 @@ export const VenuesPage = () => {
                     <TableCell
                       key={column.id}
                       className={cn('px-4 py-3.5 text-sm', column.className)}
-                      onClick={column.id === 'actions' ? (event) => event.stopPropagation() : undefined}
+                      onClick={
+                        column.id === 'actions' ? (event) => event.stopPropagation() : undefined
+                      }
                     >
                       {column.cell(venue)}
                     </TableCell>

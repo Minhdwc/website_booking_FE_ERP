@@ -148,18 +148,12 @@ export function can(user: SessionUser | null | undefined, permission: Permission
   return user.permissions.includes(permission);
 }
 
-export function canAny(
-  user: SessionUser | null | undefined,
-  permissions: Permission[],
-): boolean {
+export function canAny(user: SessionUser | null | undefined, permissions: Permission[]): boolean {
   if (!permissions.length) return true;
   return permissions.some((permission) => can(user, permission));
 }
 
-export function canAll(
-  user: SessionUser | null | undefined,
-  permissions: Permission[],
-): boolean {
+export function canAll(user: SessionUser | null | undefined, permissions: Permission[]): boolean {
   if (!permissions.length) return true;
   return permissions.every((permission) => can(user, permission));
 }

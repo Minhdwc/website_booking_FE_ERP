@@ -14,7 +14,12 @@ type DaySlotGridProps = {
   courtName: string;
   date: string;
   bookings: IBooking[];
-  onWalkIn: (prefill: { courtId: string; date: string; startTime: string; endTime: string }) => void;
+  onWalkIn: (prefill: {
+    courtId: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+  }) => void;
   onBookingDetail: (bookingId: string) => void;
 };
 
@@ -147,14 +152,10 @@ export function DaySlotGrid({
           );
 
           if (isAvailable) {
-            return (
-              <BookingGate.Create key={slotKey}>{button}</BookingGate.Create>
-            );
+            return <BookingGate.Create key={slotKey}>{button}</BookingGate.Create>;
           }
 
-          return (
-            <div key={slotKey}>{button}</div>
-          );
+          return <div key={slotKey}>{button}</div>;
         })}
       </div>
     </div>

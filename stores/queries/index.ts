@@ -98,11 +98,7 @@ export {
 export { reviewKeys, useReviews, useDeleteReview } from './review';
 export { userKeys, useUsers, useCreateUser, useUpdateUser, useDeleteUser } from './user';
 export { vietqrKeys, useVietQrBanks } from './vietqr';
-export {
-  operatingHoursKeys,
-  useOperatingHours,
-  useReplaceOperatingHours,
-} from './operating-hours';
+export { operatingHoursKeys, useOperatingHours, useReplaceOperatingHours } from './operating-hours';
 export {
   priceRuleKeys,
   usePriceRules,
@@ -110,8 +106,4 @@ export {
   useUpdatePriceRule,
   useDeletePriceRule,
 } from './price-rule';
-export {
-  supportTicketKeys,
-  useSupportTickets,
-  useUpdateSupportTicket,
-} from './support-ticket';
+export { supportTicketKeys, useSupportTickets, useUpdateSupportTicket } from './support-ticket';

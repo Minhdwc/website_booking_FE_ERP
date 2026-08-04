@@ -69,9 +69,18 @@ function SortLabel({
   onClick: () => void;
 }) {
   return (
-    <button type="button" className="inline-flex cursor-pointer items-center gap-1 hover:text-foreground" onClick={onClick}>
+    <button
+      type="button"
+      className="inline-flex cursor-pointer items-center gap-1 hover:text-foreground"
+      onClick={onClick}
+    >
       {label}
-      {active && (direction === 'asc' ? <ArrowUpIcon className="size-3" /> : <ArrowDownIcon className="size-3" />)}
+      {active &&
+        (direction === 'asc' ? (
+          <ArrowUpIcon className="size-3" />
+        ) : (
+          <ArrowDownIcon className="size-3" />
+        ))}
     </button>
   );
 }
@@ -246,7 +255,10 @@ export function UsersPage() {
                     />
                   </TableCell>
                   {table.visibleColumns.map((column) => (
-                    <TableCell key={column.id} className={cn('px-4 py-3.5 text-sm', column.className)}>
+                    <TableCell
+                      key={column.id}
+                      className={cn('px-4 py-3.5 text-sm', column.className)}
+                    >
                       {column.cell(user)}
                     </TableCell>
                   ))}
@@ -276,7 +288,9 @@ export function UsersPage() {
                 : 'Tạo tài khoản đầu tiên để bắt đầu.'
             }
             action={
-              isSearching ? { label: 'Xóa tìm kiếm', onClick: () => table.setSearch('') } : undefined
+              isSearching
+                ? { label: 'Xóa tìm kiếm', onClick: () => table.setSearch('') }
+                : undefined
             }
           />
           {!isSearching && (
@@ -290,13 +304,7 @@ export function UsersPage() {
   );
 }
 
-function UserRowActions({
-  user,
-  onDelete,
-}: {
-  user: IUser;
-  onDelete: (id: string) => void;
-}) {
+function UserRowActions({ user, onDelete }: { user: IUser; onDelete: (id: string) => void }) {
   return (
     <Popover>
       <PopoverTrigger

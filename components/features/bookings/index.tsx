@@ -106,8 +106,7 @@ const matchesSearch = (booking: IBooking, q: string) => {
 };
 
 function BookingStatusCell({ booking }: { booking: IBooking }) {
-  const expiresAt =
-    booking.status === 'waiting_payment' ? booking.expiresAt : undefined;
+  const expiresAt = booking.status === 'waiting_payment' ? booking.expiresAt : undefined;
   const { formatted, remainingMs, isExpired } = useCountdown(expiresAt);
 
   if (booking.status === 'waiting_payment' && booking.expiresAt) {
@@ -152,9 +151,18 @@ function SortLabel({
   onClick: () => void;
 }) {
   return (
-    <button type="button" className="inline-flex cursor-pointer items-center gap-1 hover:text-foreground" onClick={onClick}>
+    <button
+      type="button"
+      className="inline-flex cursor-pointer items-center gap-1 hover:text-foreground"
+      onClick={onClick}
+    >
       {label}
-      {active && (direction === 'asc' ? <ArrowUpIcon className="size-3" /> : <ArrowDownIcon className="size-3" />)}
+      {active &&
+        (direction === 'asc' ? (
+          <ArrowUpIcon className="size-3" />
+        ) : (
+          <ArrowDownIcon className="size-3" />
+        ))}
     </button>
   );
 }
@@ -166,7 +174,7 @@ export const BookingsPage = () => {
 
   const { data: bookingsData, isSuccess, isLoading, isError, error } = useBookings();
   const bookings = useMemo(
-    () => (isSuccess ? bookingsData ?? [] : []),
+    () => (isSuccess ? (bookingsData ?? []) : []),
     [isSuccess, bookingsData],
   );
 
@@ -207,7 +215,9 @@ export const BookingsPage = () => {
         cell: (row) => (
           <div className="min-w-0 max-w-45">
             <p className="truncate font-medium">{getBookingCustomerName(row)}</p>
-            <p className="truncate text-xs text-muted-foreground">{getBookingCustomerContact(row)}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {getBookingCustomerContact(row)}
+            </p>
           </div>
         ),
       },
@@ -233,9 +243,7 @@ export const BookingsPage = () => {
         sortValue: (row) => row.items?.[0]?.startTime ?? '',
         cell: (row) => {
           const item = row.items?.[0];
-          return item
-            ? `${formatSlotTime(item.startTime)} – ${formatSlotTime(item.endTime)}`
-            : '—';
+          return item ? `${formatSlotTime(item.startTime)} – ${formatSlotTime(item.endTime)}` : '—';
         },
       },
       {
@@ -365,10 +373,7 @@ export const BookingsPage = () => {
                   />
                 </TableHead>
                 {table.visibleColumns.map((column) => (
-                  <TableHead
-                    key={column.id}
-                    className={cn('px-4 py-3 text-xs', column.className)}
-                  >
+                  <TableHead key={column.id} className={cn('px-4 py-3 text-xs', column.className)}>
                     {column.sortable ? (
                       <SortLabel
                         label={column.header}
@@ -397,7 +402,10 @@ export const BookingsPage = () => {
                     />
                   </TableCell>
                   {table.visibleColumns.map((column) => (
-                    <TableCell key={column.id} className={cn('px-4 py-2.5 text-sm', column.className)}>
+                    <TableCell
+                      key={column.id}
+                      className={cn('px-4 py-2.5 text-sm', column.className)}
+                    >
                       {column.cell(booking)}
                     </TableCell>
                   ))}

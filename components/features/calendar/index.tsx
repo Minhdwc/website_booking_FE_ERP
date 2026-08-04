@@ -4,7 +4,10 @@ import { useMemo, useState } from 'react';
 import { CalendarRange, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 
 import { PageHeader } from '@/components/custom/page-header';
-import { BookingCreateDialog, type WalkInInitialValues } from '@/components/features/bookings/dialog-create';
+import {
+  BookingCreateDialog,
+  type WalkInInitialValues,
+} from '@/components/features/bookings/dialog-create';
 import { BookingEditDialog } from '@/components/features/bookings/dialog-edit';
 import { CourtBlockDialog } from '@/components/features/calendar/dialog-court-block';
 import { DaySlotGrid } from '@/components/features/calendar/day-slot-grid';
@@ -113,7 +116,11 @@ function bookingMatchesFilters(
   return booking.items?.some((item) => {
     const day = normalizeDateKey(item.date);
     if (day < filters.from || day > filters.to) return false;
-    if (filters.venueId && item.court?.venueId !== filters.venueId && item.court?.venue?.id !== filters.venueId) {
+    if (
+      filters.venueId &&
+      item.court?.venueId !== filters.venueId &&
+      item.court?.venue?.id !== filters.venueId
+    ) {
       return false;
     }
     if (filters.courtId && item.courtId !== filters.courtId) return false;
@@ -143,7 +150,10 @@ export function CalendarPage() {
 
   const { data: bookings = [], isLoading } = useBookings({ limit: '200' });
   const { data: venues = [] } = useVenues({ limit: '100' });
-  const { data: courts = [] } = useCourts({ limit: '100', ...(venueFilter ? { venueId: venueFilter } : {}) });
+  const { data: courts = [] } = useCourts({
+    limit: '100',
+    ...(venueFilter ? { venueId: venueFilter } : {}),
+  });
 
   const dateRange = useMemo(() => {
     if (viewMode === 'day') {
@@ -188,7 +198,12 @@ export function CalendarPage() {
       booking.items?.forEach((item) => {
         const day = normalizeDateKey(item.date);
         if (day < dateRange.from || day > dateRange.to) return;
-        if (venueFilter && item.court?.venueId !== venueFilter && item.court?.venue?.id !== venueFilter) return;
+        if (
+          venueFilter &&
+          item.court?.venueId !== venueFilter &&
+          item.court?.venue?.id !== venueFilter
+        )
+          return;
         if (courtFilter && item.courtId !== courtFilter) return;
         const courtName = item.court?.name ?? item.courtId;
         list.push({
@@ -229,7 +244,8 @@ export function CalendarPage() {
   const shiftAnchor = (delta: number) => {
     setAnchorDate((current) => {
       if (viewMode === 'day') return addDays(current, delta);
-      if (viewMode === 'month') return new Date(current.getFullYear(), current.getMonth() + delta, 1);
+      if (viewMode === 'month')
+        return new Date(current.getFullYear(), current.getMonth() + delta, 1);
       return addDays(current, delta * 7);
     });
   };
@@ -253,7 +269,11 @@ export function CalendarPage() {
         actions={
           <div className="flex gap-2">
             <BookingGate.Create>
-              <Button size="sm" variant="outline" onClick={() => openWalkIn({ date: dateRange.from })}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => openWalkIn({ date: dateRange.from })}
+              >
                 Walk-in
               </Button>
             </BookingGate.Create>
@@ -307,7 +327,9 @@ export function CalendarPage() {
 
         <Select
           value={courtFilter || '__all__'}
-          onValueChange={(value) => setCourtFilter(!value || value === '__all__' ? undefined : value)}
+          onValueChange={(value) =>
+            setCourtFilter(!value || value === '__all__' ? undefined : value)
+          }
         >
           <SelectTrigger className="w-full lg:w-48">
             <SelectValue placeholder="Sân" />

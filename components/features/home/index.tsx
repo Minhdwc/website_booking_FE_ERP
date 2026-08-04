@@ -93,10 +93,7 @@ const adminShortcuts = [
   { title: 'Bộ môn', href: '/sports', icon: MapPinnedIcon, description: 'Danh mục bộ môn' },
 ];
 
-function countByStatus(
-  rows: { status: string; count: number }[] | undefined,
-  status: string,
-) {
+function countByStatus(rows: { status: string; count: number }[] | undefined, status: string) {
   return rows?.find((row) => row.status === status)?.count ?? 0;
 }
 
@@ -109,16 +106,17 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
   const isAdmin = variant === 'admin' || user?.role === 'admin';
   const [from, setFrom] = useState(daysAgoIsoDate(30));
   const [to, setTo] = useState(todayIsoDate());
-  const [appliedRange, setAppliedRange] = useState({ from: daysAgoIsoDate(30), to: todayIsoDate() });
+  const [appliedRange, setAppliedRange] = useState({
+    from: daysAgoIsoDate(30),
+    to: todayIsoDate(),
+  });
 
   const { pendingBookings, pendingCount, isLoading } = usePendingBookings();
   const { data: reportSummary, isLoading: isReportLoading } = useReportSummary(appliedRange);
   const { data: analytics, isLoading: isAnalyticsLoading } = useAnalyticsOverview(appliedRange, {
     enabled: isAdmin,
   });
-  const { data: courts = [], isLoading: isCourtsLoading } = useCourts(
-    { limit: '100' },
-  );
+  const { data: courts = [], isLoading: isCourtsLoading } = useCourts({ limit: '100' });
   const { data: openTickets = [] } = useSupportTickets({ limit: '100' }, { enabled: isAdmin });
 
   const openTicketCount = useMemo(
@@ -191,9 +189,7 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
           title="Tổng lượt đặt"
           value={isReportLoading ? '—' : totalBookings}
           description={
-            isReportLoading
-              ? undefined
-              : `${confirmedCount} xác nhận · ${cancelledCount} huỷ`
+            isReportLoading ? undefined : `${confirmedCount} xác nhận · ${cancelledCount} huỷ`
           }
           icon={CalendarDaysIcon}
           loading={isReportLoading}
@@ -211,7 +207,7 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
             isAdmin
               ? isReportLoading
                 ? '—'
-                : reportSummary?.revenue.paidCount ?? 0
+                : (reportSummary?.revenue.paidCount ?? 0)
               : isCourtsLoading
                 ? '—'
                 : activeCourts
@@ -264,7 +260,9 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
 
           <div className="grid gap-4 lg:grid-cols-2">
             <div>
-              <h3 className="mb-2 text-xs font-medium text-muted-foreground">Doanh thu theo ngày</h3>
+              <h3 className="mb-2 text-xs font-medium text-muted-foreground">
+                Doanh thu theo ngày
+              </h3>
               {isReportLoading ? (
                 <Skeleton className="h-48 w-full" />
               ) : revenueChartData.length === 0 ? (
@@ -292,7 +290,9 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
             </div>
 
             <div>
-              <h3 className="mb-2 text-xs font-medium text-muted-foreground">Lượt đặt theo trạng thái</h3>
+              <h3 className="mb-2 text-xs font-medium text-muted-foreground">
+                Lượt đặt theo trạng thái
+              </h3>
               {isReportLoading ? (
                 <Skeleton className="h-48 w-full" />
               ) : statusChartData.length === 0 ? (
@@ -345,7 +345,9 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
             </div>
 
             <div>
-              <h3 className="mb-2 text-xs font-medium text-muted-foreground">Top sân theo lượt đặt</h3>
+              <h3 className="mb-2 text-xs font-medium text-muted-foreground">
+                Top sân theo lượt đặt
+              </h3>
               {isReportLoading ? (
                 <Skeleton className="h-48 w-full" />
               ) : topCourts.length === 0 ? (
@@ -492,7 +494,10 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
           <div className="border-b border-border/70 px-5 py-4">
             <div className="flex items-baseline justify-between">
               <h2 className="text-sm font-semibold text-heading">Hàng đợi hỗ trợ</h2>
-              <Link href="/admin/tickets" className="text-xs font-medium text-brand-600 hover:underline">
+              <Link
+                href="/admin/tickets"
+                className="text-xs font-medium text-brand-600 hover:underline"
+              >
                 Xem tất cả
               </Link>
             </div>
@@ -537,7 +542,10 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
             <div className="flex items-baseline justify-between">
               <h2 className="text-sm font-semibold text-heading">Lịch đặt sân gần đây</h2>
               {pendingCount > 0 ? (
-                <Link href="/bookings" className="text-xs font-medium text-brand-600 hover:underline">
+                <Link
+                  href="/bookings"
+                  className="text-xs font-medium text-brand-600 hover:underline"
+                >
                   {pendingCount} chờ xác nhận
                 </Link>
               ) : null}

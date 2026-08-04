@@ -2,11 +2,11 @@
 
 Dashboard vận hành cho **chủ cơ sở (owner)** và **quản trị viên (admin)**: quản lý sân, lịch đặt, doanh thu, khách hàng, chat, báo cáo.
 
-| | |
-|---|---|
-| **Repo** | [Minhdwc/website_booking_FE_ERP](https://github.com/Minhdwc/website_booking_FE_ERP) |
-| **Port dev** | `3002` |
-| **Backend** | `http://localhost:3001/api/v1` |
+|              |                                                                                     |
+| ------------ | ----------------------------------------------------------------------------------- |
+| **Repo**     | [Minhdwc/website_booking_FE_ERP](https://github.com/Minhdwc/website_booking_FE_ERP) |
+| **Port dev** | `3002`                                                                              |
+| **Backend**  | `http://localhost:3001/api/v1`                                                      |
 
 ## Tech stack
 
@@ -42,49 +42,49 @@ BACKEND_URL=http://localhost:3001
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
 ```
 
-| Biến | Mô tả |
-|------|--------|
-| `BACKEND_URL` | Base URL API + target rewrite `/api/v1/*` |
-| `NEXT_PUBLIC_API_BASE_URL` | Host cho Socket.io realtime |
+| Biến                       | Mô tả                                     |
+| -------------------------- | ----------------------------------------- |
+| `BACKEND_URL`              | Base URL API + target rewrite `/api/v1/*` |
+| `NEXT_PUBLIC_API_BASE_URL` | Host cho Socket.io realtime               |
 
 ## Scripts
 
-| Lệnh | Mô tả |
-|------|--------|
-| `npm run dev` | Dev server port 3002 (Turbopack) |
-| `npm run build` | Build production |
-| `npm run start` | Chạy bản build |
-| `npm run lint` / `lint:fix` | ESLint |
-| `npm run type-check` | Kiểm tra TypeScript |
-| `npm run format` | Prettier |
+| Lệnh                        | Mô tả                            |
+| --------------------------- | -------------------------------- |
+| `npm run dev`               | Dev server port 3002 (Turbopack) |
+| `npm run build`             | Build production                 |
+| `npm run start`             | Chạy bản build                   |
+| `npm run lint` / `lint:fix` | ESLint                           |
+| `npm run type-check`        | Kiểm tra TypeScript              |
+| `npm run format`            | Prettier                         |
 
 ## Phân quyền & routes
 
 ### Owner — vận hành cơ sở
 
-| Route | Tính năng |
-|-------|-----------|
-| `/dashboard` | Tổng quan đặt sân & doanh thu |
-| `/calendar` | Lịch sân theo tuần |
-| `/bookings` | Quản lý booking (giữ/chốt) |
-| `/courts`, `/courts/[id]` | CRUD sân |
-| `/venues`, `/venues/[id]` | Quản lý cơ sở |
-| `/customers` | Danh sách khách |
-| `/reviews` | Đánh giá |
-| `/chat` | Chat với khách |
-| `/reports` | Báo cáo doanh thu |
+| Route                        | Tính năng                          |
+| ---------------------------- | ---------------------------------- |
+| `/dashboard`                 | Tổng quan đặt sân & doanh thu      |
+| `/calendar`                  | Lịch sân theo tuần                 |
+| `/bookings`                  | Quản lý booking (giữ/chốt)         |
+| `/courts`, `/courts/[id]`    | CRUD sân                           |
+| `/venues`, `/venues/[id]`    | Quản lý cơ sở                      |
+| `/customers`                 | Danh sách khách                    |
+| `/reviews`                   | Đánh giá                           |
+| `/chat`                      | Chat với khách                     |
+| `/reports`                   | Báo cáo doanh thu                  |
 | `/sports`, `/payment-method` | Cấu hình môn thể thao & thanh toán |
-| `/account/*` | Hồ sơ tài khoản |
+| `/account/*`                 | Hồ sơ tài khoản                    |
 
 ### Admin — quản trị nền tảng
 
-| Route | Tính năng |
-|-------|-----------|
-| `/admin/dashboard` | Tổng quan hệ thống |
-| `/admin/reports` | Thống kê toàn nền tảng |
-| `/admin/tickets` | Ticket hỗ trợ |
-| `/users` | Quản lý người dùng |
-| `/analytics` | Phân tích xu hướng |
+| Route              | Tính năng              |
+| ------------------ | ---------------------- |
+| `/admin/dashboard` | Tổng quan hệ thống     |
+| `/admin/reports`   | Thống kê toàn nền tảng |
+| `/admin/tickets`   | Ticket hỗ trợ          |
+| `/users`           | Quản lý người dùng     |
+| `/analytics`       | Phân tích xu hướng     |
 
 > Một số trang onboarding owner (`/owner/register`, `/owner/pending`, `/admin/owners`) đang ở dạng stub.
 
@@ -108,12 +108,12 @@ provider/               # Session, query, socket providers
 
 ## Hệ sinh thái
 
-| Repo | Vai trò | Port |
-|------|---------|------|
-| [public-user-booking-FE](https://github.com/Minhdwc/public-user-booking-FE) | Web người dùng | 3000 |
-| **website_booking_FE_ERP** (repo này) | Dashboard owner/admin | 3002 |
-| [BE-booking-sport](https://github.com/Minhdwc/BE-booking-sport) | API NestJS | 3001 |
-| Mobile (Expo) | App iOS/Android | — |
+| Repo                                                                        | Vai trò               | Port |
+| --------------------------------------------------------------------------- | --------------------- | ---- |
+| [public-user-booking-FE](https://github.com/Minhdwc/public-user-booking-FE) | Web người dùng        | 3000 |
+| **website_booking_FE_ERP** (repo này)                                       | Dashboard owner/admin | 3002 |
+| [BE-booking-sport](https://github.com/Minhdwc/BE-booking-sport)             | API NestJS            | 3001 |
+| Mobile (Expo)                                                               | App iOS/Android       | —    |
 
 ## Docker
 

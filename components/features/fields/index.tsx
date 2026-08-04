@@ -103,9 +103,18 @@ function SortLabel({
   onClick: () => void;
 }) {
   return (
-    <button type="button" className="inline-flex cursor-pointer items-center gap-1 hover:text-foreground" onClick={onClick}>
+    <button
+      type="button"
+      className="inline-flex cursor-pointer items-center gap-1 hover:text-foreground"
+      onClick={onClick}
+    >
       {label}
-      {active && (direction === 'asc' ? <ArrowUpIcon className="size-3" /> : <ArrowDownIcon className="size-3" />)}
+      {active &&
+        (direction === 'asc' ? (
+          <ArrowUpIcon className="size-3" />
+        ) : (
+          <ArrowDownIcon className="size-3" />
+        ))}
     </button>
   );
 }
@@ -119,14 +128,20 @@ export const FieldsPage = () => {
 
   const { data: venuesData, isSuccess: venuesSuccess } = useVenues({ limit: '100' });
   const venues = useMemo(
-    () => (venuesSuccess ? venuesData ?? [] : []),
+    () => (venuesSuccess ? (venuesData ?? []) : []),
     [venuesSuccess, venuesData],
   );
-  const { data: fieldsData, isSuccess: fieldsSuccess, isLoading, isError, error } = useCourts({
+  const {
+    data: fieldsData,
+    isSuccess: fieldsSuccess,
+    isLoading,
+    isError,
+    error,
+  } = useCourts({
     limit: '100',
   });
   const courts = useMemo(
-    () => (fieldsSuccess ? fieldsData ?? [] : []),
+    () => (fieldsSuccess ? (fieldsData ?? []) : []),
     [fieldsSuccess, fieldsData],
   );
   const hasVenues = venues.length > 0;
@@ -218,9 +233,7 @@ export const FieldsPage = () => {
         header: 'Trạng thái',
         sortable: true,
         sortValue: (row) => row.status,
-        cell: (row) => (
-          <Badge variant={statusVariant[row.status]}>{statusLabel[row.status]}</Badge>
-        ),
+        cell: (row) => <Badge variant={statusVariant[row.status]}>{statusLabel[row.status]}</Badge>,
       },
       {
         id: 'actions',
@@ -393,7 +406,9 @@ export const FieldsPage = () => {
                     <TableCell
                       key={column.id}
                       className={cn('px-4 py-3.5 text-sm', column.className)}
-                      onClick={column.id === 'actions' ? (event) => event.stopPropagation() : undefined}
+                      onClick={
+                        column.id === 'actions' ? (event) => event.stopPropagation() : undefined
+                      }
                     >
                       {column.cell(court)}
                     </TableCell>
@@ -419,7 +434,9 @@ export const FieldsPage = () => {
             <SearchIcon className="size-5" />
           </div>
           <h2 className="mt-4 text-base font-semibold text-foreground">Không tìm thấy sân nào</h2>
-          <p className="mt-1 max-w-sm text-sm text-muted-foreground">Thử đổi từ khoá hoặc bộ lọc cơ sở.</p>
+          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+            Thử đổi từ khoá hoặc bộ lọc cơ sở.
+          </p>
           <Button variant="outline" size="sm" className="mt-4" onClick={clearFilters}>
             <XIcon className="size-3.5" />
             Xoá bộ lọc

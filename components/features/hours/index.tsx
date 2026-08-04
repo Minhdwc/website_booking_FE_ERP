@@ -18,10 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { IOperatingHour } from '@/stores/api/types';
-import {
-  useOperatingHours,
-  useReplaceOperatingHours,
-} from '@/stores/queries/operating-hours';
+import { useOperatingHours, useReplaceOperatingHours } from '@/stores/queries/operating-hours';
 import { useVenues } from '@/stores/queries/venue';
 
 const DEFAULT_HOURS: IOperatingHour[] = [
