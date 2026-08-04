@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { LineChart, Send } from 'lucide-react';
+import { LineChart } from 'lucide-react';
 
 import { PageHeader } from '@/components/custom/page-header';
 import { StatCard } from '@/components/custom/stat-card';

@@ -11,7 +11,6 @@ import {
   LandmarkIcon,
   MapPinIcon,
   MoreHorizontalIcon,
-  SearchIcon,
   Trash2,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';

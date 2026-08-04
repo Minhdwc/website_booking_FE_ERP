@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { MessageCircle, Send } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -134,15 +134,10 @@ function MessagePanel({ conversationId }: { conversationId: string }) {
 }
 
 export function ChatPage() {
-  const [activeConversationId, setActiveConversationId] = useState<string>();
+  const [selectedConversationId, setSelectedConversationId] = useState<string>();
   const { data: conversations = [], isLoading } = useChatConversations();
+  const activeConversationId = selectedConversationId ?? conversations[0]?.id;
   const activeConversation = conversations.find((row) => row.id === activeConversationId);
-
-  useEffect(() => {
-    if (!activeConversationId && conversations[0]?.id) {
-      setActiveConversationId(conversations[0].id);
-    }
-  }, [activeConversationId, conversations]);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
@@ -164,7 +159,7 @@ export function ChatPage() {
             <ConversationList
               conversations={conversations}
               activeId={activeConversationId}
-              onSelect={setActiveConversationId}
+              onSelect={setSelectedConversationId}
             />
           )}
         </div>

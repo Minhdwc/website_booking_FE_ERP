@@ -118,11 +118,17 @@ export const FieldsPage = () => {
   const deleteCourtMutation = useDeleteCourt();
 
   const { data: venuesData, isSuccess: venuesSuccess } = useVenues({ limit: '100' });
-  const venues = venuesSuccess ? venuesData : [];
+  const venues = useMemo(
+    () => (venuesSuccess ? venuesData ?? [] : []),
+    [venuesSuccess, venuesData],
+  );
   const { data: fieldsData, isSuccess: fieldsSuccess, isLoading, isError, error } = useCourts({
     limit: '100',
   });
-  const courts = fieldsSuccess ? fieldsData : [];
+  const courts = useMemo(
+    () => (fieldsSuccess ? fieldsData ?? [] : []),
+    [fieldsSuccess, fieldsData],
+  );
   const hasVenues = venues.length > 0;
 
   const handleDelete = useCallback(

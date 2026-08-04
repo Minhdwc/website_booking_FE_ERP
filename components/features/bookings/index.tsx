@@ -105,38 +105,32 @@ const matchesSearch = (booking: IBooking, q: string) => {
   return haystack.includes(q.toLowerCase());
 };
 
-function HoldBadge({ expiresAt }: { expiresAt: string }) {
+function BookingStatusCell({ booking }: { booking: IBooking }) {
+  const expiresAt =
+    booking.status === 'waiting_payment' ? booking.expiresAt : undefined;
   const { formatted, remainingMs, isExpired } = useCountdown(expiresAt);
 
-  if (isExpired) {
-    return <Badge variant="outline">Hết hạn giữ chỗ</Badge>;
-  }
-
-  const underTwoMinutes = remainingMs < 2 * 60 * 1000;
-  const underFiveMinutes = remainingMs < 5 * 60 * 1000;
-
-  return (
-    <Badge
-      variant="secondary"
-      className={cn(
-        'font-medium tabular-nums',
-        underTwoMinutes && 'bg-red-100 text-red-800 hover:bg-red-100',
-        !underTwoMinutes && underFiveMinutes && 'bg-amber-100 text-amber-900 hover:bg-amber-100',
-        !underFiveMinutes && 'bg-amber-50 text-amber-800 hover:bg-amber-50',
-      )}
-    >
-      Đang giữ chỗ · còn {formatted}
-    </Badge>
-  );
-}
-
-function BookingStatusCell({ booking }: { booking: IBooking }) {
   if (booking.status === 'waiting_payment' && booking.expiresAt) {
-    const { isExpired } = useCountdown(booking.expiresAt);
     if (isExpired) {
       return <Badge variant={statusVariant.waiting_payment}>{statusLabel.waiting_payment}</Badge>;
     }
-    return <HoldBadge expiresAt={booking.expiresAt} />;
+
+    const underTwoMinutes = remainingMs < 2 * 60 * 1000;
+    const underFiveMinutes = remainingMs < 5 * 60 * 1000;
+
+    return (
+      <Badge
+        variant="secondary"
+        className={cn(
+          'font-medium tabular-nums',
+          underTwoMinutes && 'bg-red-100 text-red-800 hover:bg-red-100',
+          !underTwoMinutes && underFiveMinutes && 'bg-amber-100 text-amber-900 hover:bg-amber-100',
+          !underFiveMinutes && 'bg-amber-50 text-amber-800 hover:bg-amber-50',
+        )}
+      >
+        Đang giữ chỗ · còn {formatted}
+      </Badge>
+    );
   }
 
   return (
@@ -171,7 +165,10 @@ export const BookingsPage = () => {
   const deleteBookingMutation = useDeleteBooking();
 
   const { data: bookingsData, isSuccess, isLoading, isError, error } = useBookings();
-  const bookings = isSuccess ? bookingsData : [];
+  const bookings = useMemo(
+    () => (isSuccess ? bookingsData ?? [] : []),
+    [isSuccess, bookingsData],
+  );
 
   const handleDelete = useCallback(
     async (bookingId: string) => {

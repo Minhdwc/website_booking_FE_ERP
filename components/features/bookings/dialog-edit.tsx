@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2Icon, PencilIcon } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -88,7 +88,7 @@ function BookingEditForm({ bookingId, onClose }: { bookingId: string; onClose: (
     ? statusOptions
     : statusOptions.filter((option) => option.value !== 'cancelled');
 
-  const selectedStatus = form.watch('status');
+  const selectedStatus = useWatch({ control: form.control, name: 'status' });
 
   const handleSubmit = async (values: FormValues) => {
     if (!booking) return;
