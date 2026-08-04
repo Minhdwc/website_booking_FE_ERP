@@ -33,7 +33,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { geocodeAddress } from '@/lib/osm/geocode';
 import { operatingHoursService } from '@/stores/service/operating-hours.service';
 import { VenueDetailResponse } from '@/stores/service/venue.service';
-import { useCreateVenue, venueKeys } from '@/stores/queries/venue.query';
+import { useCreateVenue, venueKeys } from '@/stores/queries/venue';
 import { useQueryClient } from '@tanstack/react-query';
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;

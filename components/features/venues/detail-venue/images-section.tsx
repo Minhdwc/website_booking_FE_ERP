@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { IVenueImage } from '@/stores/api/types';
-import { useDeleteVenueImage, useUploadVenueImage } from '@/stores/queries/venue.query';
+import { useDeleteVenueImage, useUploadVenueImage } from '@/stores/queries/venue';
 
 type VenueImagesSectionProps = {
   venueId: string;

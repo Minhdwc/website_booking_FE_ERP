@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useCreatePaymentMethod } from '@/stores/queries/payment-method.query';
+import { useCreatePaymentMethod } from '@/stores/queries/payment-method';
 
 const formSchema = z.object({
   code: z

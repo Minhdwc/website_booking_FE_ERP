@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { IVenuePaymentAccount } from '@/stores/api/types';
-import { useUpdateVenuePaymentAccount } from '@/stores/queries/venue-payment-account.query';
+import { useUpdateVenuePaymentAccount } from '@/stores/queries/venue-payment-account';
 
 const formSchema = z
   .object({

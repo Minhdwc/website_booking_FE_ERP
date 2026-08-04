@@ -16,7 +16,7 @@ import { ComboboxPopoverContent } from '@/components/custom/combobox/combobox-po
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { useSports } from '@/stores/queries/sport.query';
+import { useSports } from '@/stores/queries/sport';
 
 type ComboboxSportProps = {
   value?: string;

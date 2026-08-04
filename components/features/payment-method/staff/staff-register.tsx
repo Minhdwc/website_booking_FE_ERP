@@ -29,8 +29,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { IVenuePaymentAccount } from '@/stores/api/types';
-import { usePaymentMethods } from '@/stores/queries/payment-method.query';
-import { useCreateVenuePaymentAccount } from '@/stores/queries/venue-payment-account.query';
+import { usePaymentMethods } from '@/stores/queries/payment-method';
+import { useCreateVenuePaymentAccount } from '@/stores/queries/venue-payment-account';
 
 const emptyValues = {
   paymentMethodId: '',

@@ -16,7 +16,7 @@ import { ComboboxPopoverContent } from '@/components/custom/combobox/combobox-po
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { useCourts } from '@/stores/queries/court.query';
+import { useCourts } from '@/stores/queries/court';
 
 type ComboboxCourtsProps = {
   value?: string;

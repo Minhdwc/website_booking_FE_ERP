@@ -38,8 +38,8 @@ import {
 } from '@/components/ui/table';
 import { formatCurrency, formatDate, formatRelativeTime } from '@/lib/format';
 import { BookingStatus, CourtStatus } from '@/stores/api/types';
-import { useBookings } from '@/stores/queries/booking.query';
-import { useDeleteCourt, useCourt } from '@/stores/queries/court.query';
+import { useBookings } from '@/stores/queries/booking';
+import { useDeleteCourt, useCourt } from '@/stores/queries/court';
 
 const formatDurationMinutes = (minutes: number) => {
   if (!minutes || minutes < 0) return '—';

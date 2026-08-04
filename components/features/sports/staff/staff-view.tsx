@@ -22,8 +22,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { IVenueSport } from '@/stores/api/types';
-import { useDeleteVenueSport, useVenueSports } from '@/stores/queries/venue-sport.query';
-import { useVenues } from '@/stores/queries/venue.query';
+import { useDeleteVenueSport, useVenueSports } from '@/stores/queries/venue-sport';
+import { useVenues } from '@/stores/queries/venue';
 
 export const StaffSportsView = () => {
   const { data: venues = [], isLoading: venuesLoading } = useVenues();

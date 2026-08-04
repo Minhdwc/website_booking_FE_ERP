@@ -29,8 +29,8 @@ import {
   useCreatePriceRule,
   useDeletePriceRule,
   usePriceRules,
-} from '@/stores/queries/price-rule.query';
-import { useCourts } from '@/stores/queries/court.query';
+} from '@/stores/queries/price-rule';
+import { useCourts } from '@/stores/queries/court';
 
 const DAY_OPTIONS = [
   { value: 1, label: 'T2' },

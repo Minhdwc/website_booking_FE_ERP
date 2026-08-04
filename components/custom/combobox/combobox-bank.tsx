@@ -17,7 +17,7 @@ import { ComboboxPopoverContent } from '@/components/custom/combobox/combobox-po
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { useVietQrBanks } from '@/stores/queries/vietqr.query';
+import { useVietQrBanks } from '@/stores/queries/vietqr';
 import { IVietQrBank } from '@/stores/service/vietqr.service';
 
 type ComboboxBankProps = {

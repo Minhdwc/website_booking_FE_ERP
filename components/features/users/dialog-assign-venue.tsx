@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { IUser, IVenue } from '@/stores/api/types';
-import { useVenues } from '@/stores/queries/venue.query';
+import { useVenues } from '@/stores/queries/venue';
 import { venueService } from '@/stores/service/venue.service';
 
 type VenueOwnerRow = {

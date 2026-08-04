@@ -34,7 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { IUser } from '@/stores/api/types';
-import { useUpdateUser } from '@/stores/queries/user.query';
+import { useUpdateUser } from '@/stores/queries/user';
 
 const formSchema = z.object({
   name: z.string().min(2),

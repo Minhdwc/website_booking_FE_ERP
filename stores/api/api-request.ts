@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig, Method } from 'axios';
 import { clearSession, getAccessToken, getRefreshToken, setTokens } from '@/lib/auth/session';
+import { ApiError, parseApiError } from '@/stores/api/api-error';
 
 const API_PREFIX = '/api/v1';
 
@@ -135,13 +136,8 @@ export async function apiRequest<T>(
     });
     return res.data;
   } catch (error) {
-    if (error instanceof AxiosError) {
-      const message =
-        (error.response?.data as { message?: string } | undefined)?.message ||
-        error.message ||
-        'Request failed';
-      throw new Error(typeof message === 'string' ? message : 'Request failed');
-    }
-    throw error;
+    throw parseApiError(error);
   }
 }
+
+export { ApiError };

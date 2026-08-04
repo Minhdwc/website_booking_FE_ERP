@@ -7,6 +7,7 @@ import {
   setTokens,
   SessionUser,
 } from '@/lib/auth/session';
+import { enrichSessionUser } from '@/lib/auth/permissions';
 import { accountService, AccountMeResponse } from '@/stores/service/account.service';
 import { authService, AuthLoginResponse, AuthRefreshResponse } from '@/stores/service/auth.service';
 import { useRouter } from 'next/navigation';
@@ -62,7 +63,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        setUser(me.data);
+        setUser(enrichSessionUser(me.data));
       } catch {
         clearSession();
         setUser(null);
@@ -94,7 +95,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       throw new Error('Tài khoản không có quyền truy cập hệ thống ERP');
     }
 
-    setUser(me.data);
+    setUser(enrichSessionUser(me.data));
+  }, []);
+
+  const setUserWithPermissions = useCallback((nextUser: SessionUser) => {
+    setUser(enrichSessionUser(nextUser));
   }, []);
 
   const value = useMemo(
@@ -104,9 +109,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated: Boolean(user),
       login,
       logout,
-      setUser,
+      setUser: setUserWithPermissions,
     }),
-    [user, isLoading, login, logout],
+    [user, isLoading, login, logout, setUserWithPermissions],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

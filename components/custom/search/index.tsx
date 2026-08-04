@@ -13,12 +13,12 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { navSections } from '@/lib/utils/menu-config';
-import { useSession } from '@/provider/session-provider';
+import { isNavItemVisible, navSections } from '@/lib/utils/menu-config';
+import { usePermissions } from '@/hooks/use-permission';
 
 export function Search() {
   const router = useRouter();
-  const { user } = useSession();
+  const { user, can, canAny } = usePermissions();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -38,11 +38,12 @@ export function Search() {
     router.push(href);
   };
 
-  const role = user?.role;
   const itemsByGroup = navSections
     .map((section) => ({
       label: section.label,
-      items: section.items.filter((item) => !item.roles || (role && item.roles.includes(role))),
+      items: section.items.filter((item) =>
+        isNavItemVisible(item, { can, canAny, role: user?.role }),
+      ),
     }))
     .filter((section) => section.items.length > 0);
 

@@ -7,7 +7,7 @@ export {
   useDeleteVenue,
   useUploadVenueImage,
   useDeleteVenueImage,
-} from './venue.query';
+} from './venue';
 export {
   bookingKeys,
   useBookings,
@@ -17,14 +17,14 @@ export {
   useUpdateBooking,
   useDeleteBooking,
   usePendingBookings,
-} from './booking.query';
+} from './booking';
 export {
   notificationKeys,
   useNotifications,
   useNotificationUnreadCount,
   useMarkNotificationRead,
   useMarkAllNotificationsRead,
-} from './notification.query';
+} from './notification';
 export {
   courtKeys,
   useCourts,
@@ -35,7 +35,7 @@ export {
   useUploadCourtImage,
   useDeleteCourtImage,
   prefetchCourt,
-} from './court.query';
+} from './court';
 export {
   paymentKeys,
   usePayments,
@@ -44,7 +44,7 @@ export {
   useUpdatePayment,
   useDeletePayment,
   useCreateVnpayUrl,
-} from './payment.query';
+} from './payment';
 export {
   userPaymentMethodKeys,
   useUserPaymentMethods,
@@ -52,7 +52,7 @@ export {
   useCreateUserPaymentMethod,
   useUpdateUserPaymentMethod,
   useDeleteUserPaymentMethod,
-} from './user-payment-method.query';
+} from './user-payment-method';
 export {
   venuePaymentAccountKeys,
   useVenuePaymentAccounts,
@@ -61,7 +61,7 @@ export {
   useUpdateVenuePaymentAccount,
   useUploadVenuePaymentAccountQrCode,
   useDeleteVenuePaymentAccount,
-} from './venue-payment-account.query';
+} from './venue-payment-account';
 export {
   amenityKeys,
   useAmenities,
@@ -69,8 +69,8 @@ export {
   useCreateAmenity,
   useUpdateAmenity,
   useDeleteAmenity,
-} from './amenity.query';
-export { reportKeys, useReportSummary } from './report.query';
+} from './amenity';
+export { reportKeys, useReportSummary } from './report';
 export {
   sportKeys,
   useSports,
@@ -78,7 +78,7 @@ export {
   useCreateSport,
   useUpdateSport,
   useDeleteSport,
-} from './sport.query';
+} from './sport';
 export {
   paymentMethodKeys,
   usePaymentMethods,
@@ -86,7 +86,7 @@ export {
   useCreatePaymentMethod,
   useUpdatePaymentMethod,
   useDeletePaymentMethod,
-} from './payment-method.query';
+} from './payment-method';
 export {
   venueSportKeys,
   useVenueSports,
@@ -94,24 +94,24 @@ export {
   useCreateVenueSport,
   useUpdateVenueSport,
   useDeleteVenueSport,
-} from './venue-sport.query';
-export { reviewKeys, useReviews, useDeleteReview } from './review.query';
-export { userKeys, useUsers, useCreateUser, useUpdateUser, useDeleteUser } from './user.query';
-export { vietqrKeys, useVietQrBanks } from './vietqr.query';
+} from './venue-sport';
+export { reviewKeys, useReviews, useDeleteReview } from './review';
+export { userKeys, useUsers, useCreateUser, useUpdateUser, useDeleteUser } from './user';
+export { vietqrKeys, useVietQrBanks } from './vietqr';
 export {
   operatingHoursKeys,
   useOperatingHours,
   useReplaceOperatingHours,
-} from './operating-hours.query';
+} from './operating-hours';
 export {
   priceRuleKeys,
   usePriceRules,
   useCreatePriceRule,
   useUpdatePriceRule,
   useDeletePriceRule,
-} from './price-rule.query';
+} from './price-rule';
 export {
   supportTicketKeys,
   useSupportTickets,
   useUpdateSupportTicket,
-} from './support-ticket.query';
+} from './support-ticket';

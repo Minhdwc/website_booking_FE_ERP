@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/table';
 import { formatDate, normalizeDateKey, toLocalIsoDate } from '@/lib/format';
 import { BookingStatus, IBooking } from '@/stores/api/types';
-import { useBookings } from '@/stores/queries/booking.query';
+import { useBookings } from '@/stores/queries/booking';
 
 const STATUS_LABEL: Record<BookingStatus, string> = {
   waiting_payment: 'Chờ TT',

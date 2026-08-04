@@ -20,8 +20,8 @@ import { IOperatingHour } from '@/stores/api/types';
 import {
   useOperatingHours,
   useReplaceOperatingHours,
-} from '@/stores/queries/operating-hours.query';
-import { useVenues } from '@/stores/queries/venue.query';
+} from '@/stores/queries/operating-hours';
+import { useVenues } from '@/stores/queries/venue';
 
 const DEFAULT_HOURS: IOperatingHour[] = [
   { dayOfWeek: 1, openTime: '06:00', closeTime: '22:00' },

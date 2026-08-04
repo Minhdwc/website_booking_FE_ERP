@@ -31,7 +31,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Textarea } from '@/components/ui/textarea';
-import { useCreateCourt } from '@/stores/queries/court.query';
+import { useCreateCourt } from '@/stores/queries/court';
 
 const formatDurationMinutes = (minutes: number) => {
   if (!minutes || minutes < 0) return '—';

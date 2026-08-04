@@ -1,16 +1,29 @@
 'use client';
 
-import { useMemo } from 'react';
-import { CalendarDaysIcon, MoreHorizontalIcon, SearchIcon, Trash2Icon, XIcon } from 'lucide-react';
-import { toast } from 'sonner';
+import { useCallback, useMemo } from 'react';
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  CalendarDaysIcon,
+  MoreHorizontalIcon,
+  SearchIcon,
+  Trash2Icon,
+} from 'lucide-react';
 
 import { EmptyState } from '@/components/custom/empty-state';
 import { PageHeader } from '@/components/custom/page-header';
+import {
+  DataTablePaginationBar,
+  DataTableSelectionHeader,
+  DataTableToolbar,
+} from '@/components/custom/data-table';
+import type { DataTableColumn } from '@/lib/data-table/types';
+import { exportRowsToCsv, useClientDataTable } from '@/hooks/use-client-data-table';
 import { BookingsCreateDialog } from '@/components/features/bookings/dialog-create';
 import { DialogEditBooking } from '@/components/features/bookings/dialog-edit';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,11 +36,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useCountdown } from '@/hooks/use-countdown';
+import { BookingGate } from '@/components/auth/permission-gates';
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { BookingStatus, IBooking } from '@/stores/api/types';
 import { useErpUiStore } from '@/stores/index.store';
-import { useBookings, useDeleteBooking } from '@/stores/queries/booking.query';
+import { useBookings, useDeleteBooking } from '@/stores/queries/booking';
+import { toast } from 'sonner';
 
 const statusLabel: Record<BookingStatus, string> = {
   waiting_payment: 'Chờ thanh toán',
@@ -46,6 +62,15 @@ const statusVariant: Record<BookingStatus, 'default' | 'secondary' | 'outline' |
   expired: 'outline',
   paid_at_venue: 'default',
 };
+
+const statusFilters: { value: BookingStatus | 'all'; label: string }[] = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'waiting_payment', label: 'Chờ TT' },
+  { value: 'confirmed', label: 'Đã xác nhận' },
+  { value: 'completed', label: 'Hoàn thành' },
+  { value: 'cancelled', label: 'Đã huỷ' },
+  { value: 'expired', label: 'Hết hạn' },
+];
 
 const getBookingCustomerName = (booking: IBooking) =>
   booking.customerName || booking.user?.name || 'Khách';
@@ -107,7 +132,11 @@ function HoldBadge({ expiresAt }: { expiresAt: string }) {
 
 function BookingStatusCell({ booking }: { booking: IBooking }) {
   if (booking.status === 'waiting_payment' && booking.expiresAt) {
-    return <PendingBookingStatus expiresAt={booking.expiresAt} />;
+    const { isExpired } = useCountdown(booking.expiresAt);
+    if (isExpired) {
+      return <Badge variant={statusVariant.waiting_payment}>{statusLabel.waiting_payment}</Badge>;
+    }
+    return <HoldBadge expiresAt={booking.expiresAt} />;
   }
 
   return (
@@ -117,28 +146,26 @@ function BookingStatusCell({ booking }: { booking: IBooking }) {
   );
 }
 
-function PendingBookingStatus({ expiresAt }: { expiresAt: string }) {
-  const { isExpired } = useCountdown(expiresAt);
-
-  if (isExpired) {
-    return <Badge variant={statusVariant.waiting_payment}>{statusLabel.waiting_payment}</Badge>;
-  }
-
-  return <HoldBadge expiresAt={expiresAt} />;
+function SortLabel({
+  label,
+  active,
+  direction,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  direction: 'asc' | 'desc';
+  onClick: () => void;
+}) {
+  return (
+    <button type="button" className="inline-flex cursor-pointer items-center gap-1 hover:text-foreground" onClick={onClick}>
+      {label}
+      {active && (direction === 'asc' ? <ArrowUpIcon className="size-3" /> : <ArrowDownIcon className="size-3" />)}
+    </button>
+  );
 }
 
-const statusFilters: { value: BookingStatus | 'all'; label: string }[] = [
-  { value: 'all', label: 'Tất cả' },
-  { value: 'waiting_payment', label: 'Chờ TT' },
-  { value: 'confirmed', label: 'Đã xác nhận' },
-  { value: 'completed', label: 'Hoàn thành' },
-  { value: 'cancelled', label: 'Đã huỷ' },
-  { value: 'expired', label: 'Hết hạn' },
-];
-
 export const BookingsPage = () => {
-  const bookingSearch = useErpUiStore((state) => state.bookingSearch);
-  const setBookingSearch = useErpUiStore((state) => state.setBookingSearch);
   const bookingStatusFilter = useErpUiStore((state) => state.bookingStatusFilter);
   const setBookingStatusFilter = useErpUiStore((state) => state.setBookingStatusFilter);
   const deleteBookingMutation = useDeleteBooking();
@@ -146,29 +173,118 @@ export const BookingsPage = () => {
   const { data: bookingsData, isSuccess, isLoading, isError, error } = useBookings();
   const bookings = isSuccess ? bookingsData : [];
 
-  const filtered = useMemo(() => {
-    let result = bookings;
-    if (bookingStatusFilter !== 'all') {
-      result = result.filter((booking: IBooking) => booking.status === bookingStatusFilter);
-    }
-    if (bookingSearch.trim()) {
-      result = result.filter((booking: IBooking) => matchesSearch(booking, bookingSearch.trim()));
-    }
-    return result;
-  }, [bookings, bookingSearch, bookingStatusFilter]);
+  const handleDelete = useCallback(
+    async (bookingId: string) => {
+      if (!window.confirm('Bạn có chắc chắn muốn xóa đặt sân này không?')) return;
+      try {
+        await deleteBookingMutation.mutateAsync(bookingId);
+        toast.success('Xóa đặt sân thành công');
+      } catch (err) {
+        showApiErrorToast(err, 'Không xóa được đặt sân');
+      }
+    },
+    [deleteBookingMutation],
+  );
 
-  const isNotEmpty = filtered.length > 0;
-  const isSearching = bookingSearch.trim().length > 0;
+  const statusFiltered = useMemo(() => {
+    if (bookingStatusFilter === 'all') return bookings;
+    return bookings.filter((booking) => booking.status === bookingStatusFilter);
+  }, [bookings, bookingStatusFilter]);
+
+  const columns = useMemo<DataTableColumn<IBooking>[]>(
+    () => [
+      {
+        id: 'code',
+        header: 'Mã',
+        sortable: true,
+        sortValue: (row) => row.bookingCode,
+        cell: (row) => (
+          <span className="font-mono text-xs text-muted-foreground">{row.bookingCode}</span>
+        ),
+      },
+      {
+        id: 'customer',
+        header: 'Khách',
+        sortable: true,
+        sortValue: (row) => getBookingCustomerName(row),
+        cell: (row) => (
+          <div className="min-w-0 max-w-45">
+            <p className="truncate font-medium">{getBookingCustomerName(row)}</p>
+            <p className="truncate text-xs text-muted-foreground">{getBookingCustomerContact(row)}</p>
+          </div>
+        ),
+      },
+      {
+        id: 'court',
+        header: 'Sân',
+        sortable: true,
+        sortValue: (row) => row.items?.[0]?.court?.name ?? '',
+        cell: (row) => row.items?.[0]?.court?.name || '—',
+      },
+      {
+        id: 'date',
+        header: 'Ngày',
+        sortable: true,
+        sortValue: (row) => row.items?.[0]?.date ?? '',
+        className: 'hidden lg:table-cell',
+        cell: (row) => (row.items?.[0] ? formatDate(row.items[0].date) : '—'),
+      },
+      {
+        id: 'slot',
+        header: 'Khung giờ',
+        className: 'hidden md:table-cell',
+        sortValue: (row) => row.items?.[0]?.startTime ?? '',
+        cell: (row) => {
+          const item = row.items?.[0];
+          return item
+            ? `${formatSlotTime(item.startTime)} – ${formatSlotTime(item.endTime)}`
+            : '—';
+        },
+      },
+      {
+        id: 'amount',
+        header: 'Số tiền',
+        sortable: true,
+        sortValue: (row) => row.finalAmount,
+        cell: (row) => (
+          <span className="font-medium tabular-nums">{formatCurrency(row.finalAmount)}</span>
+        ),
+      },
+      {
+        id: 'status',
+        header: 'Trạng thái',
+        sortable: true,
+        sortValue: (row) => row.status,
+        cell: (row) => <BookingStatusCell booking={row} />,
+      },
+      {
+        id: 'actions',
+        header: '',
+        cell: (row) => <BookingRowActions booking={row} onDelete={handleDelete} />,
+      },
+    ],
+    [handleDelete],
+  );
+
+  const table = useClientDataTable({
+    data: statusFiltered,
+    columns,
+    getRowId: (row) => row.id,
+    searchPredicate: matchesSearch,
+    initialPageSize: 20,
+  });
+
+  const isSearching = table.search.trim().length > 0;
   const isFilteringByStatus = bookingStatusFilter !== 'all';
+  const isNotEmpty = table.allRows.length > 0;
+  const pageAllSelected =
+    table.pageRows.length > 0 && table.pageRows.every((row) => table.selectedIds.has(row.id));
 
-  const handleDelete = async (bookingId: string) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa đặt sân này không?')) return;
-    try {
-      await deleteBookingMutation.mutateAsync(bookingId);
-      toast.success('Xóa đặt sân thành công');
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Không xóa được đặt sân');
-    }
+  const handleExport = () => {
+    const exportColumns = table.allColumns.filter(
+      (column) => column.id !== 'actions' && !table.hiddenColumns.has(column.id),
+    );
+    exportRowsToCsv(table.allRows, exportColumns, 'bookings.csv');
   };
 
   return (
@@ -181,37 +297,27 @@ export const BookingsPage = () => {
           <>
             {bookings.length > 0 && (
               <Badge variant="secondary" className="font-semibold tabular-nums">
-                {filtered.length}
+                {table.allRows.length}
               </Badge>
             )}
-            <BookingsCreateDialog />
+            <BookingGate.Create>
+              <BookingsCreateDialog />
+            </BookingGate.Create>
           </>
         }
       />
 
-      <InputGroup className="h-9 w-full max-w-md rounded-xl border-border/70 bg-card shadow-sm">
-        <InputGroupAddon>
-          <SearchIcon className="size-3.5" />
-        </InputGroupAddon>
-        <InputGroupInput
-          placeholder="Tìm đặt sân…"
-          className="text-sm"
-          value={bookingSearch}
-          onChange={(event) => setBookingSearch(event.target.value)}
-        />
-        {isSearching && (
-          <InputGroupAddon align="inline-end">
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              aria-label="Xoá tìm kiếm"
-              onClick={() => setBookingSearch('')}
-            >
-              <XIcon />
-            </Button>
-          </InputGroupAddon>
-        )}
-      </InputGroup>
+      <DataTableToolbar
+        search={table.search}
+        onSearchChange={table.setSearch}
+        searchPlaceholder="Tìm đặt sân…"
+        selectedCount={table.selectedIds.size}
+        onClearSelection={table.clearSelection}
+        columns={table.allColumns as DataTableColumn<unknown>[]}
+        hiddenColumns={table.hiddenColumns}
+        onToggleColumn={table.toggleColumn}
+        onExport={handleExport}
+      />
 
       <div className="flex flex-wrap gap-2">
         {statusFilters.map((filter) => (
@@ -255,99 +361,61 @@ export const BookingsPage = () => {
           <Table>
             <TableHeader>
               <TableRow className="border-b border-border/60 bg-muted/40 hover:bg-transparent">
-                <TableHead className="px-4 py-3 text-xs">Mã</TableHead>
-                <TableHead className="px-4 py-3 text-xs">Khách</TableHead>
-                <TableHead className="px-4 py-3 text-xs">Sân</TableHead>
-                <TableHead className="hidden px-4 py-3 text-xs lg:table-cell">Ngày</TableHead>
-                <TableHead className="hidden px-4 py-3 text-xs md:table-cell">Khung giờ</TableHead>
-                <TableHead className="px-4 py-3 text-xs text-right">Số tiền</TableHead>
-                <TableHead className="px-4 py-3 text-xs">Trạng thái</TableHead>
-                <TableHead className="w-28 px-4 py-3 text-right text-xs">
-                  <span className="sr-only">Thao tác</span>
+                <TableHead className="w-10 px-3 py-3">
+                  <DataTableSelectionHeader
+                    checked={pageAllSelected}
+                    onCheckedChange={() => table.toggleAllPageRows()}
+                  />
                 </TableHead>
+                {table.visibleColumns.map((column) => (
+                  <TableHead
+                    key={column.id}
+                    className={cn('px-4 py-3 text-xs', column.className)}
+                  >
+                    {column.sortable ? (
+                      <SortLabel
+                        label={column.header}
+                        active={table.sortBy === column.id}
+                        direction={table.sortDirection}
+                        onClick={() => table.toggleSort(column.id)}
+                      />
+                    ) : (
+                      column.header
+                    )}
+                  </TableHead>
+                ))}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((booking: IBooking) => {
-                const primaryItem = booking.items?.[0];
-                return (
-                  <TableRow
-                    key={booking.id}
-                    className="group border-b border-border/40 last:border-b-0 hover:bg-foreground/3"
-                  >
-                    <TableCell className="px-4 py-2.5 font-mono text-xs text-muted-foreground">
-                      {booking.bookingCode}
+              {table.pageRows.map((booking) => (
+                <TableRow
+                  key={booking.id}
+                  className="group border-b border-border/40 last:border-b-0 hover:bg-foreground/3"
+                >
+                  <TableCell className="px-3 py-2.5">
+                    <Checkbox
+                      checked={table.selectedIds.has(booking.id)}
+                      onCheckedChange={() => table.toggleRow(booking.id)}
+                      aria-label={`Chọn ${booking.bookingCode}`}
+                    />
+                  </TableCell>
+                  {table.visibleColumns.map((column) => (
+                    <TableCell key={column.id} className={cn('px-4 py-2.5 text-sm', column.className)}>
+                      {column.cell(booking)}
                     </TableCell>
-                    <TableCell className="max-w-45 px-4 py-2.5">
-                      <div className="min-w-0">
-                        <p className="truncate font-medium text-foreground">
-                          {getBookingCustomerName(booking)}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {getBookingCustomerContact(booking)}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="px-4 py-2.5 text-sm text-muted-foreground">
-                      {primaryItem?.court?.name || '—'}
-                    </TableCell>
-                    <TableCell className="hidden px-4 py-2.5 text-sm tabular-nums lg:table-cell">
-                      {primaryItem ? formatDate(primaryItem.date) : '—'}
-                    </TableCell>
-                    <TableCell className="hidden px-4 py-2.5 text-sm tabular-nums text-muted-foreground md:table-cell">
-                      {primaryItem
-                        ? `${formatSlotTime(primaryItem.startTime)} – ${formatSlotTime(primaryItem.endTime)}`
-                        : '—'}
-                    </TableCell>
-                    <TableCell className="px-4 py-2.5 text-right text-sm font-medium tabular-nums">
-                      {formatCurrency(booking.finalAmount)}
-                    </TableCell>
-                    <TableCell className="px-4 py-2.5">
-                      <BookingStatusCell booking={booking} />
-                    </TableCell>
-                    <TableCell className="px-3 py-2.5 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        {booking.status === 'waiting_payment' ? (
-                          <DialogEditBooking
-                            bookingId={booking.id}
-                            triggerLabel="Xác nhận"
-                            triggerClassName="h-8 rounded-lg px-2.5 text-xs font-medium text-primary hover:bg-primary/10"
-                          />
-                        ) : null}
-                        <Popover>
-                          <PopoverTrigger
-                            render={
-                              <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                aria-label="Mở thao tác"
-                                className="text-muted-foreground opacity-60 transition-opacity group-hover:opacity-100 aria-expanded:opacity-100"
-                              />
-                            }
-                          >
-                            <MoreHorizontalIcon className="size-4" />
-                          </PopoverTrigger>
-                          <PopoverContent align="end" className="w-44 gap-0 p-1">
-                            <DialogEditBooking bookingId={booking.id} />
-                            <Separator className="my-1" />
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="w-full justify-start gap-2 font-normal text-destructive hover:text-destructive"
-                              onClick={() => handleDelete(booking.id)}
-                            >
-                              <Trash2Icon className="size-3.5" />
-                              Xóa
-                            </Button>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                  ))}
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
+          <DataTablePaginationBar
+            pagination={table.pagination}
+            onPageChange={table.setPage}
+            onPageSizeChange={(size) => {
+              table.setPageSize(size);
+              table.setPage(1);
+            }}
+          />
         </div>
       )}
 
@@ -361,14 +429,14 @@ export const BookingsPage = () => {
           }
           description={
             isSearching
-              ? `Không có kết quả khớp với “${bookingSearch}”.`
+              ? `Không có kết quả khớp với “${table.search}”.`
               : isFilteringByStatus
                 ? `Không có đặt sân ở trạng thái “${statusFilters.find((f) => f.value === bookingStatusFilter)?.label}”.`
                 : 'Tạo đặt sân đầu tiên hoặc chờ khách đặt qua app.'
           }
           action={
             isSearching
-              ? { label: 'Xóa tìm kiếm', onClick: () => setBookingSearch('') }
+              ? { label: 'Xóa tìm kiếm', onClick: () => table.setSearch('') }
               : isFilteringByStatus
                 ? { label: 'Xóa bộ lọc', onClick: () => setBookingStatusFilter('all') }
                 : undefined
@@ -378,3 +446,56 @@ export const BookingsPage = () => {
     </div>
   );
 };
+
+function BookingRowActions({
+  booking,
+  onDelete,
+}: {
+  booking: IBooking;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <div className="flex items-center justify-end gap-1">
+      {booking.status === 'waiting_payment' ? (
+        <BookingGate.ConfirmPayment>
+          <DialogEditBooking
+            bookingId={booking.id}
+            triggerLabel="Xác nhận"
+            triggerClassName="h-8 rounded-lg px-2.5 text-xs font-medium text-primary hover:bg-primary/10"
+          />
+        </BookingGate.ConfirmPayment>
+      ) : null}
+      <Popover>
+        <PopoverTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Mở thao tác"
+              className="text-muted-foreground opacity-60 transition-opacity group-hover:opacity-100 aria-expanded:opacity-100"
+            />
+          }
+        >
+          <MoreHorizontalIcon className="size-4" />
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-44 gap-0 p-1">
+          <BookingGate.Edit>
+            <DialogEditBooking bookingId={booking.id} />
+          </BookingGate.Edit>
+          <BookingGate.Delete>
+            <Separator className="my-1" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2 font-normal text-destructive hover:text-destructive"
+              onClick={() => onDelete(booking.id)}
+            >
+              <Trash2Icon className="size-3.5" />
+              Xóa
+            </Button>
+          </BookingGate.Delete>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}

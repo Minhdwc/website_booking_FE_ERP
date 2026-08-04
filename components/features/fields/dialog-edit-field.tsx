@@ -40,7 +40,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { CourtStatus } from '@/stores/api/types';
-import { useCourt, useUpdateCourt } from '@/stores/queries/court.query';
+import { useCourt, useUpdateCourt } from '@/stores/queries/court';
 
 const formatDurationMinutes = (minutes: number) => {
   if (!minutes || minutes < 0) return '—';

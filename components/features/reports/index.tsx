@@ -30,7 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useReportSummary } from '@/stores/queries/report.query';
+import { useReportSummary } from '@/stores/queries/report';
 import { reportService } from '@/stores/service/report.service';
 
 const STATUS_LABEL: Record<string, string> = {

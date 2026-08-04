@@ -5,6 +5,7 @@ import { MessageCircle, Send } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { PageHeader } from '@/components/custom/page-header';
+import { ChatGate } from '@/components/auth/permission-gates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,7 +17,7 @@ import {
   useSendChatMessage,
   type ChatConversation,
   type ChatMessage,
-} from '@/stores/queries/chat.query';
+} from '@/stores/queries/chat';
 
 function formatTime(value: string) {
   return new Date(value).toLocaleString('vi-VN', {
@@ -57,7 +58,7 @@ function ConversationList({
             type="button"
             onClick={() => onSelect(conversation.id)}
             className={cn(
-              'flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors hover:bg-muted/60',
+              'flex w-full cursor-pointer flex-col gap-1 px-4 py-3 text-left transition-colors hover:bg-muted/60',
               activeId === conversation.id && 'bg-brand-50',
             )}
           >
@@ -115,17 +116,19 @@ function MessagePanel({ conversationId }: { conversationId: string }) {
         ))}
       </div>
 
-      <form onSubmit={handleSubmit} className="flex gap-2 border-t border-border/70 p-3">
-        <Input
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          placeholder="Trả lời khách hàng..."
-          disabled={sendMessage.isPending}
-        />
-        <Button type="submit" disabled={sendMessage.isPending || !draft.trim()}>
-          <Send className="size-4" />
-        </Button>
-      </form>
+      <ChatGate.View>
+        <form onSubmit={handleSubmit} className="flex gap-2 border-t border-border/70 p-3">
+          <Input
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            placeholder="Trả lời khách hàng..."
+            disabled={sendMessage.isPending}
+          />
+          <Button type="submit" disabled={sendMessage.isPending || !draft.trim()}>
+            <Send className="size-4" />
+          </Button>
+        </form>
+      </ChatGate.View>
     </div>
   );
 }

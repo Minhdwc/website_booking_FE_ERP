@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { IVenueSport } from '@/stores/api/types';
-import { useCreateVenueSport } from '@/stores/queries/venue-sport.query';
+import { useCreateVenueSport } from '@/stores/queries/venue-sport';
 
 const formSchema = z.object({
   sportId: z.string().min(1, { message: 'Chọn bộ môn' }),

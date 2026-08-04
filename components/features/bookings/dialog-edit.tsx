@@ -34,7 +34,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useBooking, useUpdateBooking } from '@/stores/queries/booking.query';
+import { usePermission } from '@/hooks/use-permission';
+import { useBooking, useUpdateBooking } from '@/stores/queries/booking';
 
 const formSchema = z
   .object({
@@ -78,6 +79,7 @@ export const DialogEditBooking = ({
   const [open, setOpen] = useState(false);
   const { data: booking, isLoading, isError, error } = useBooking(bookingId);
   const updateBookingMutation = useUpdateBooking();
+  const canCancel = usePermission('bookings:cancel');
   const isSaving = updateBookingMutation.isPending;
   const primaryItem = booking?.items?.[0];
 
@@ -89,6 +91,10 @@ export const DialogEditBooking = ({
         ? { status: booking.status as FormValues['status'], reason: '' }
         : undefined,
   });
+
+  const availableStatusOptions = canCancel
+    ? statusOptions
+    : statusOptions.filter((option) => option.value !== 'cancelled');
 
   const selectedStatus = form.watch('status');
 
@@ -186,7 +192,7 @@ export const DialogEditBooking = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {statusOptions.map((option) => (
+                        {availableStatusOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>

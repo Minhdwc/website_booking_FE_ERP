@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ERP — Minh Đức Booking Sport
 
-## Getting Started
+Dashboard vận hành cho **chủ cơ sở (owner)** và **quản trị viên (admin)**: quản lý sân, lịch đặt, doanh thu, khách hàng, chat, báo cáo.
 
-First, run the development server:
+| | |
+|---|---|
+| **Repo** | [Minhdwc/website_booking_FE_ERP](https://github.com/Minhdwc/website_booking_FE_ERP) |
+| **Port dev** | `3002` |
+| **Backend** | `http://localhost:3001/api/v1` |
+
+## Tech stack
+
+- **Next.js 16** (App Router, Turbopack) + **React 19** + **TypeScript**
+- **Tailwind CSS 4**, shadcn/Radix UI, **MUI** (date pickers)
+- **TanStack Query**, **Zustand**, **Axios**
+- **Socket.io** (chat realtime)
+- **Recharts** (biểu đồ), **MapLibre GL** (bản đồ)
+- **react-hook-form** + **Zod**
+
+## Yêu cầu
+
+- Node.js 20+
+- Backend API đang chạy
+- Tài khoản role `owner` hoặc `admin` (role `user` không truy cập được ERP)
+
+## Cài đặt & chạy local
 
 ```bash
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Mở [http://localhost:3002](http://localhost:3002).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Biến môi trường
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+File `.env.example`:
 
-## Learn More
+```env
+BACKEND_URL=http://localhost:3001
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
+```
 
-To learn more about Next.js, take a look at the following resources:
+| Biến | Mô tả |
+|------|--------|
+| `BACKEND_URL` | Base URL API + target rewrite `/api/v1/*` |
+| `NEXT_PUBLIC_API_BASE_URL` | Host cho Socket.io realtime |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Lệnh | Mô tả |
+|------|--------|
+| `npm run dev` | Dev server port 3002 (Turbopack) |
+| `npm run build` | Build production |
+| `npm run start` | Chạy bản build |
+| `npm run lint` / `lint:fix` | ESLint |
+| `npm run type-check` | Kiểm tra TypeScript |
+| `npm run format` | Prettier |
 
-## Deploy on Vercel
+## Phân quyền & routes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Owner — vận hành cơ sở
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Route | Tính năng |
+|-------|-----------|
+| `/dashboard` | Tổng quan đặt sân & doanh thu |
+| `/calendar` | Lịch sân theo tuần |
+| `/bookings` | Quản lý booking (giữ/chốt) |
+| `/courts`, `/courts/[id]` | CRUD sân |
+| `/venues`, `/venues/[id]` | Quản lý cơ sở |
+| `/customers` | Danh sách khách |
+| `/reviews` | Đánh giá |
+| `/chat` | Chat với khách |
+| `/reports` | Báo cáo doanh thu |
+| `/sports`, `/payment-method` | Cấu hình môn thể thao & thanh toán |
+| `/account/*` | Hồ sơ tài khoản |
+
+### Admin — quản trị nền tảng
+
+| Route | Tính năng |
+|-------|-----------|
+| `/admin/dashboard` | Tổng quan hệ thống |
+| `/admin/reports` | Thống kê toàn nền tảng |
+| `/admin/tickets` | Ticket hỗ trợ |
+| `/users` | Quản lý người dùng |
+| `/analytics` | Phân tích xu hướng |
+
+> Một số trang onboarding owner (`/owner/register`, `/owner/pending`, `/admin/owners`) đang ở dạng stub.
+
+## Cấu trúc thư mục
+
+```
+app/
+  (auth)/               # Login, register
+  (erp)/                # Trang ERP (AuthGuard + RoleGuard)
+components/
+  features/             # UI theo domain
+  layout/               # Sidebar, header, guards
+  ui/                   # shadcn primitives
+stores/
+  api/                  # Axios client
+  service/              # API services
+  queries/              # React Query hooks
+lib/                    # Auth session, utils
+provider/               # Session, query, socket providers
+```
+
+## Hệ sinh thái
+
+| Repo | Vai trò | Port |
+|------|---------|------|
+| [public-user-booking-FE](https://github.com/Minhdwc/public-user-booking-FE) | Web người dùng | 3000 |
+| **website_booking_FE_ERP** (repo này) | Dashboard owner/admin | 3002 |
+| [BE-booking-sport](https://github.com/Minhdwc/BE-booking-sport) | API NestJS | 3001 |
+| Mobile (Expo) | App iOS/Android | — |
+
+## Docker
+
+Repo có `Dockerfile` để build image production. Cấu hình deploy tùy môi trường hosting.

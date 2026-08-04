@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useCreateWalkInBooking } from '@/stores/queries/booking.query';
+import { useCreateWalkInBooking } from '@/stores/queries/booking';
 
 const formSchema = z.object({
   customerName: z.string().min(2, { message: 'Nhập tên khách' }),

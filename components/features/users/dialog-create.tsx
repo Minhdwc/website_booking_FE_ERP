@@ -33,7 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useCreateUser } from '@/stores/queries/user.query';
+import { useCreateUser } from '@/stores/queries/user';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Tên tối thiểu 2 ký tự' }),

@@ -14,9 +14,9 @@ import {
 import { EmptyState } from '@/components/custom/empty-state';
 import { PageHeader } from '@/components/custom/page-header';
 import { StatCard } from '@/components/custom/stat-card';
-import { usePendingBookings } from '@/stores/queries/booking.query';
-import { useReportSummary } from '@/stores/queries/report.query';
-import { useSupportTickets } from '@/stores/queries/support-ticket.query';
+import { usePendingBookings } from '@/stores/queries/booking';
+import { useReportSummary } from '@/stores/queries/report';
+import { useSupportTickets } from '@/stores/queries/support-ticket';
 import { useSession } from '@/provider/session-provider';
 import { formatDate, formatRelativeTime } from '@/lib/format';
 import { cn } from '@/lib/utils';

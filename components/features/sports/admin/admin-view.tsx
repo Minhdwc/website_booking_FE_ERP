@@ -22,7 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ISport } from '@/stores/api/types';
-import { useDeleteSport, useSports } from '@/stores/queries/sport.query';
+import { useDeleteSport, useSports } from '@/stores/queries/sport';
 
 const formatDate = (value: string) => {
   try {

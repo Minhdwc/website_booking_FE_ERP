@@ -29,7 +29,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { IPaymentMethod } from '@/stores/api/types';
-import { useUpdatePaymentMethod } from '@/stores/queries/payment-method.query';
+import { useUpdatePaymentMethod } from '@/stores/queries/payment-method';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Tên tối thiểu 2 ký tự' }),

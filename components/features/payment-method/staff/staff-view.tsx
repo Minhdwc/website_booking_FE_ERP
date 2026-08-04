@@ -27,8 +27,8 @@ import {
   useDeleteVenuePaymentAccount,
   useUpdateVenuePaymentAccount,
   useVenuePaymentAccounts,
-} from '@/stores/queries/venue-payment-account.query';
-import { useVenues } from '@/stores/queries/venue.query';
+} from '@/stores/queries/venue-payment-account';
+import { useVenues } from '@/stores/queries/venue';
 
 function accountSummary(item: IVenuePaymentAccount) {
   const code = item.paymentMethod?.code;

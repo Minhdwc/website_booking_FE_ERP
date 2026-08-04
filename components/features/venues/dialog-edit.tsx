@@ -34,7 +34,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { geocodeAddress } from '@/lib/osm/geocode';
 import { operatingHoursService } from '@/stores/service/operating-hours.service';
-import { useUpdateVenue, useVenue, venueKeys } from '@/stores/queries/venue.query';
+import { useUpdateVenue, useVenue, venueKeys } from '@/stores/queries/venue';
 import { useQueryClient } from '@tanstack/react-query';
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;

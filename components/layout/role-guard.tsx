@@ -5,21 +5,22 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Loader2Icon, ShieldAlertIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { isAdminOnlyRoute } from '@/lib/auth/route-access';
+import { getDefaultHomeRoute } from '@/lib/auth/permissions';
+import { getRouteDenialRedirect, isRouteAllowed } from '@/lib/auth/route-access';
 import { useSession } from '@/provider/session-provider';
 
 export function RoleGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isLoading } = useSession();
-  const adminOnly = isAdminOnlyRoute(pathname);
-  const denied = adminOnly && user?.role !== 'admin';
+  const denied = !isRouteAllowed(user, pathname);
+  const fallbackRoute = getRouteDenialRedirect(user);
 
   useEffect(() => {
     if (!isLoading && denied) {
-      router.replace(user?.role === 'owner' ? '/dashboard' : '/login');
+      router.replace(fallbackRoute);
     }
-  }, [denied, isLoading, router, user?.role]);
+  }, [denied, fallbackRoute, isLoading, router]);
 
   if (isLoading) {
     return (
@@ -36,10 +37,10 @@ export function RoleGuard({ children }: { children: React.ReactNode }) {
         <div className="space-y-1">
           <h1 className="text-lg font-semibold">Không có quyền truy cập</h1>
           <p className="text-sm text-muted-foreground">
-            Trang này chỉ dành cho quản trị viên hệ thống.
+            Bạn không có quyền xem trang này. Liên hệ quản trị viên nếu cần truy cập.
           </p>
         </div>
-        <Button size="sm" onClick={() => router.replace('/dashboard')}>
+        <Button size="sm" onClick={() => router.replace(getDefaultHomeRoute(user))}>
           Về trang chủ
         </Button>
       </div>

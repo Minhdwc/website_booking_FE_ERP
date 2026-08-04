@@ -25,7 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ISupportTicket, SupportTicketStatus } from '@/stores/api/types';
-import { useSupportTickets, useUpdateSupportTicket } from '@/stores/queries/support-ticket.query';
+import { useSupportTickets, useUpdateSupportTicket } from '@/stores/queries/support-ticket';
 
 const STATUS_LABEL: Record<SupportTicketStatus, string> = {
   open: 'Mở',

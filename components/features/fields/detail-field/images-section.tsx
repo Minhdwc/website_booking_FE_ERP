@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ICourtImage } from '@/stores/api/types';
-import { useDeleteCourtImage, useUploadCourtImage } from '@/stores/queries/court.query';
+import { useDeleteCourtImage, useUploadCourtImage } from '@/stores/queries/court';
 
 type FieldImagesSectionProps = {
   courtId: string;

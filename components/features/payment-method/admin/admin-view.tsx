@@ -23,7 +23,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { IPaymentMethod } from '@/stores/api/types';
-import { useDeletePaymentMethod, usePaymentMethods } from '@/stores/queries/payment-method.query';
+import { useDeletePaymentMethod, usePaymentMethods } from '@/stores/queries/payment-method';
 
 export const AdminPaymentMethodView = () => {
   const [search, setSearch] = useState('');

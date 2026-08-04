@@ -6,8 +6,8 @@ import { io, Socket } from 'socket.io-client';
 import { toast } from 'sonner';
 import { getAccessToken } from '@/lib/auth/session';
 import { useSession } from '@/provider/session-provider';
-import { bookingKeys } from '@/stores/queries/booking.query';
-import { notificationKeys } from '@/stores/queries/notification.query';
+import { bookingKeys } from '@/stores/queries/booking';
+import { notificationKeys } from '@/stores/queries/notification';
 
 function getSocketUrl() {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';

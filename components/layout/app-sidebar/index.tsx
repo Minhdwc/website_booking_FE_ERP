@@ -20,22 +20,24 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
-import { navSections } from '@/lib/utils/menu-config';
-import { useSession } from '@/provider/session-provider';
-import { usePendingBookings } from '@/stores/queries/booking.query';
+import { getDefaultHomeRoute } from '@/lib/auth/permissions';
+import { isNavItemVisible, navSections } from '@/lib/utils/menu-config';
+import { usePermissions } from '@/hooks/use-permission';
+import { usePendingBookings } from '@/stores/queries/booking';
 
 export const AppSidebar = () => {
   const pathname = usePathname();
-  const { user } = useSession();
+  const { user, can, canAny } = usePermissions();
   const { pendingCount } = usePendingBookings();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const role = user?.role;
 
   const sections = navSections
     .map((section) => ({
       ...section,
-      items: section.items.filter((item) => !item.roles || (role && item.roles.includes(role))),
+      items: section.items.filter((item) =>
+        isNavItemVisible(item, { can, canAny, role: user?.role }),
+      ),
     }))
     .filter((section) => section.items.length > 0);
 
@@ -50,7 +52,7 @@ export const AppSidebar = () => {
     >
       <SidebarHeader className="px-4 py-4">
         <Link
-          href="/dashboard"
+          href={getDefaultHomeRoute(user)}
           className={cn(
             'group/logo flex items-center gap-3 rounded-xl border border-transparent p-1 transition-all',
             'hover:border-border/80 hover:bg-muted/50',

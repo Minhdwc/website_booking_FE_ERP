@@ -16,7 +16,7 @@ import { ComboboxPopoverContent } from '@/components/custom/combobox/combobox-po
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { usePaymentMethods } from '@/stores/queries/payment-method.query';
+import { usePaymentMethods } from '@/stores/queries/payment-method';
 
 type ComboboxPaymentMethodProps = {
   value?: string;

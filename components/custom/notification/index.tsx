@@ -20,7 +20,7 @@ import {
   useMarkNotificationRead,
   useNotificationUnreadCount,
   useNotifications,
-} from '@/stores/queries/notification.query';
+} from '@/stores/queries/notification';
 import { INotification } from '@/stores/api/types';
 
 export function Notification() {

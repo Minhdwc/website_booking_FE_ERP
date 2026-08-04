@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { ISport } from '@/stores/api/types';
-import { useUpdateSport } from '@/stores/queries/sport.query';
+import { useUpdateSport } from '@/stores/queries/sport';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Tên bộ môn không được ít hơn 2 ký tự' }),

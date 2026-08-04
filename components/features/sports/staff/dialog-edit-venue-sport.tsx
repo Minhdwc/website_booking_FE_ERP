@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { IVenueSport } from '@/stores/api/types';
-import { useUpdateVenueSport } from '@/stores/queries/venue-sport.query';
+import { useUpdateVenueSport } from '@/stores/queries/venue-sport';
 import { Switch } from '@/components/ui/switch';
 
 const formSchema = z.object({

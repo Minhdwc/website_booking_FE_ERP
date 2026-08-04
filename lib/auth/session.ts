@@ -7,6 +7,7 @@ export interface SessionUser {
   role: string;
   venueId: string | null;
   isActive: boolean;
+  permissions?: string[];
 }
 
 const ACCESS_TOKEN_KEY = 'accessToken';
@@ -45,7 +46,6 @@ function migrateLegacyTokens() {
   clearLegacyTokenKeys();
 }
 
-/** Keep only accessToken, refreshToken, theme in localStorage. */
 function pruneLocalStorage() {
   const allowed = new Set<string>(ALLOWED_STORAGE_KEYS);
 

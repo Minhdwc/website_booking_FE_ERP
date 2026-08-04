@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
+  ArrowDownIcon,
+  ArrowUpIcon,
   Building2Icon,
   ClockIcon,
   EyeIcon,
@@ -11,7 +13,6 @@ import {
   MoreHorizontalIcon,
   SearchIcon,
   Trash2,
-  XIcon,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -19,11 +20,19 @@ import { toast } from 'sonner';
 import { VenuesCreateDialog } from '@/components/features/venues/dialog-create';
 import { DialogEditVenue } from '@/components/features/venues/dialog-edit';
 import { VenuesSetupPage } from '@/components/features/venues/setup-page';
+import { VenueGate } from '@/components/auth/permission-gates';
+import {
+  DataTablePaginationBar,
+  DataTableSelectionHeader,
+  DataTableToolbar,
+} from '@/components/custom/data-table';
 import { ErrorState } from '@/components/custom/error-state';
 import { PageHeader } from '@/components/custom/page-header';
+import type { DataTableColumn } from '@/lib/data-table/types';
+import { exportRowsToCsv, useClientDataTable } from '@/hooks/use-client-data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -34,49 +43,145 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { formatTimeRange } from '@/lib/format';
+import { cn } from '@/lib/utils';
 import { useVenuesOnboarding } from '@/hooks/use-venues-onboarding';
 import { IVenue } from '@/stores/api/types';
-import { useErpUiStore } from '@/stores/index.store';
-import { prefetchVenue, useDeleteVenue, useVenues } from '@/stores/queries/venue.query';
+import { prefetchVenue, useDeleteVenue, useVenues } from '@/stores/queries/venue';
+
+const matchesSearch = (venue: IVenue, q: string) => {
+  const haystack = [venue.name, venue.description, venue.address].filter(Boolean).join(' ').toLowerCase();
+  return haystack.includes(q.toLowerCase());
+};
+
+function SortLabel({
+  label,
+  active,
+  direction,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  direction: 'asc' | 'desc';
+  onClick: () => void;
+}) {
+  return (
+    <button type="button" className="inline-flex cursor-pointer items-center gap-1 hover:text-foreground" onClick={onClick}>
+      {label}
+      {active && (direction === 'asc' ? <ArrowUpIcon className="size-3" /> : <ArrowDownIcon className="size-3" />)}
+    </button>
+  );
+}
 
 export const VenuesPage = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const venueSearch = useErpUiStore((state) => state.venueSearch);
-  const setVenueSearch = useErpUiStore((state) => state.setVenueSearch);
   const deleteVenueMutation = useDeleteVenue();
 
-  useEffect(() => {
-    setVenueSearch('');
-  }, [setVenueSearch]);
-
-  const {
-    data: venuesData,
-    isSuccess,
-    isError,
-    error,
-    refetch,
-  } = useVenues(venueSearch ? { search: venueSearch } : undefined);
-
+  const { data: venuesData, isSuccess, isError, error, refetch, isLoading } = useVenues({ limit: '100' });
   const venues = isSuccess ? (venuesData ?? []) : [];
-  const isNotEmpty = venues.length > 0;
-  const isSearching = venueSearch.trim().length > 0;
-  const isEmpty = isSuccess && !isNotEmpty;
-  const isPending = !isSuccess && !isError;
-  const { startTour } = useVenuesOnboarding({ enabled: isEmpty });
 
-  const handleDeleteVenue = async (venueId: string) => {
-    try {
-      if (!window.confirm('Bạn có chắc chắn muốn xóa cơ sở này không?')) {
-        return;
+  const handleDeleteVenue = useCallback(
+    async (venueId: string) => {
+      if (!window.confirm('Bạn có chắc chắn muốn xóa cơ sở này không?')) return;
+      try {
+        await deleteVenueMutation.mutateAsync(venueId);
+        toast.success('Xóa cơ sở thành công');
+      } catch (err) {
+        showApiErrorToast(err, 'Không xóa được cơ sở');
       }
-      const res = await deleteVenueMutation.mutateAsync(venueId);
-      console.log(res);
-      toast.success('Xóa cơ sở thành công');
-    } catch (error: any) {
-      toast.error(error.message || 'Không xóa được cơ sở');
-    }
+    },
+    [deleteVenueMutation],
+  );
+
+  const columns = useMemo<DataTableColumn<IVenue>[]>(
+    () => [
+      {
+        id: 'name',
+        header: 'Cơ sở',
+        sortable: true,
+        sortValue: (row) => row.name,
+        cell: (row) => (
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-muted-foreground transition-colors group-hover:border-brand-300 group-hover:bg-brand-50 group-hover:text-brand-600">
+              <Building2Icon className="size-4" />
+            </div>
+            <div className="min-w-0 max-w-60">
+              <p className="truncate font-semibold text-heading">{row.name}</p>
+              {row.description ? (
+                <p className="truncate text-xs text-muted-foreground">{row.description}</p>
+              ) : null}
+            </div>
+          </div>
+        ),
+      },
+      {
+        id: 'address',
+        header: 'Địa chỉ',
+        sortable: true,
+        sortValue: (row) => row.address ?? '',
+        cell: (row) => (
+          <div className="flex max-w-60 items-start gap-1.5 text-muted-foreground" title={row.address}>
+            <MapPinIcon className="mt-0.5 size-3.5 shrink-0" />
+            <span className="line-clamp-2 text-sm">{row.address || '—'}</span>
+          </div>
+        ),
+      },
+      {
+        id: 'hours',
+        header: 'Giờ hoạt động',
+        sortValue: (row) => row.operatingHours?.[0]?.openTime ?? '',
+        cell: (row) => {
+          const operatingHour = row.operatingHours?.[0];
+          return operatingHour ? (
+            <Badge variant="outline" className="gap-1.5 font-normal tabular-nums">
+              <ClockIcon className="size-3 text-muted-foreground" />
+              {formatTimeRange(operatingHour.openTime, operatingHour.closeTime)}
+            </Badge>
+          ) : (
+            <span className="text-sm text-muted-foreground/60">—</span>
+          );
+        },
+      },
+      {
+        id: 'break',
+        header: 'Giờ nghỉ',
+        className: 'hidden md:table-cell',
+        defaultVisible: false,
+        cell: () => <span className="text-sm text-muted-foreground/60">—</span>,
+      },
+      {
+        id: 'actions',
+        header: '',
+        cell: (row) => (
+          <VenueRowActions venue={row} onDelete={handleDeleteVenue} onView={(id) => router.push(`/venues/${id}`)} />
+        ),
+      },
+    ],
+    [handleDeleteVenue, router],
+  );
+
+  const table = useClientDataTable({
+    data: venues,
+    columns,
+    getRowId: (row) => row.id,
+    searchPredicate: matchesSearch,
+    initialPageSize: 20,
+  });
+
+  const isSearching = table.search.trim().length > 0;
+  const isNotEmpty = table.allRows.length > 0;
+  const isEmpty = isSuccess && !isNotEmpty;
+  const pageAllSelected =
+    table.pageRows.length > 0 && table.pageRows.every((row) => table.selectedIds.has(row.id));
+  const { startTour } = useVenuesOnboarding({ enabled: isEmpty && !isSearching });
+
+  const handleExport = () => {
+    const exportColumns = table.allColumns.filter(
+      (column) => column.id !== 'actions' && !table.hiddenColumns.has(column.id),
+    );
+    exportRowsToCsv(table.allRows, exportColumns, 'venues.csv');
   };
 
   return (
@@ -84,32 +189,33 @@ export const VenuesPage = () => {
       <PageHeader
         title="Cơ sở"
         icon={LandmarkIcon}
-        actions={<>{(isNotEmpty || isSearching) && <VenuesCreateDialog />}</>}
+        actions={
+          <>
+            {venues.length > 0 && (
+              <Badge variant="secondary" className="font-semibold tabular-nums">
+                {table.allRows.length}
+              </Badge>
+            )}
+            <VenueGate.Create>
+              {(isNotEmpty || isSearching) && <VenuesCreateDialog />}
+            </VenueGate.Create>
+          </>
+        }
       />
 
-      <InputGroup className="h-9 w-full max-w-65 rounded-lg border-border/70 bg-card shadow-sm">
-        <InputGroupAddon>
-          <SearchIcon className="size-3.5" />
-        </InputGroupAddon>
-        <InputGroupInput
-          placeholder="Tìm cơ sở…"
-          className="text-sm"
-          value={venueSearch}
-          onChange={(event) => setVenueSearch(event.target.value)}
+      {(isNotEmpty || isSearching) && (
+        <DataTableToolbar
+          search={table.search}
+          onSearchChange={table.setSearch}
+          searchPlaceholder="Tìm cơ sở…"
+          selectedCount={table.selectedIds.size}
+          onClearSelection={table.clearSelection}
+          columns={table.allColumns as DataTableColumn<unknown>[]}
+          hiddenColumns={table.hiddenColumns}
+          onToggleColumn={table.toggleColumn}
+          onExport={handleExport}
         />
-        {isSearching && (
-          <InputGroupAddon align="inline-end">
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              aria-label="Xoá tìm kiếm"
-              onClick={() => setVenueSearch('')}
-            >
-              <XIcon />
-            </Button>
-          </InputGroupAddon>
-        )}
-      </InputGroup>
+      )}
 
       {isError && (
         <ErrorState
@@ -119,11 +225,8 @@ export const VenuesPage = () => {
         />
       )}
 
-      {isPending && (
+      {isLoading && !isError && (
         <div className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
-          <div className="border-b border-border/60 bg-card px-4 py-3.5">
-            <Skeleton className="h-4 w-2/3 max-w-md" />
-          </div>
           <div className="space-y-0 divide-y divide-border/40">
             {[0, 1, 2, 3].map((row) => (
               <div key={row} className="flex items-center gap-4 px-4 py-4">
@@ -132,131 +235,135 @@ export const VenuesPage = () => {
                   <Skeleton className="h-4 w-1/3" />
                   <Skeleton className="h-3 w-1/2" />
                 </div>
-                <Skeleton className="hidden h-4 w-24 sm:block" />
-                <Skeleton className="hidden h-4 w-20 md:block" />
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {isSuccess && isNotEmpty && (
+      {!isLoading && !isError && isNotEmpty && (
         <div className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow className="border-b border-border/60 bg-muted/40 hover:bg-muted/40">
-                <TableHead className="px-4 py-3 text-xs">Cơ sở</TableHead>
-                <TableHead className="px-4 py-3 text-xs">Địa chỉ</TableHead>
-                <TableHead className="px-4 py-3 text-xs">Giờ hoạt động</TableHead>
-                <TableHead className="px-4 py-3 text-xs hidden md:table-cell">Giờ nghỉ</TableHead>
-                <TableHead className="px-4 py-3 text-xs w-14 text-right">
-                  <span className="sr-only">Thao tác</span>
+              <TableRow className="border-b border-border/60 bg-muted/40 hover:bg-transparent">
+                <TableHead className="w-10 px-3 py-3">
+                  <DataTableSelectionHeader
+                    checked={pageAllSelected}
+                    onCheckedChange={() => table.toggleAllPageRows()}
+                  />
                 </TableHead>
+                {table.visibleColumns.map((column) => (
+                  <TableHead key={column.id} className={cn('px-4 py-3 text-xs', column.className)}>
+                    {column.sortable ? (
+                      <SortLabel
+                        label={column.header}
+                        active={table.sortBy === column.id}
+                        direction={table.sortDirection}
+                        onClick={() => table.toggleSort(column.id)}
+                      />
+                    ) : (
+                      column.header
+                    )}
+                  </TableHead>
+                ))}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {venues.map((venue: IVenue) => {
-                const operatingHour = venue.operatingHours?.[0];
-
-                return (
-                  <TableRow
-                    key={venue.id}
-                    className="group cursor-pointer border-b border-border/40 last:border-b-0 transition-colors hover:bg-muted/40"
-                    onMouseEnter={() => {
-                      prefetchVenue(queryClient, venue.id);
-                    }}
-                    onClick={() => router.push(`/venues/${venue.id}`)}
-                  >
-                    <TableCell className="max-w-60 px-4 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-muted-foreground transition-colors group-hover:border-brand-300 group-hover:bg-brand-50 group-hover:text-brand-600">
-                          <Building2Icon className="size-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="truncate font-semibold text-heading">{venue.name}</p>
-                          {venue.description ? (
-                            <p className="truncate text-xs text-muted-foreground">
-                              {venue.description}
-                            </p>
-                          ) : null}
-                        </div>
-                      </div>
-                    </TableCell>
+              {table.pageRows.map((venue) => (
+                <TableRow
+                  key={venue.id}
+                  className="group cursor-pointer border-b border-border/40 last:border-b-0 transition-colors hover:bg-muted/40"
+                  onMouseEnter={() => prefetchVenue(queryClient, venue.id)}
+                  onClick={() => router.push(`/venues/${venue.id}`)}
+                >
+                  <TableCell className="px-3 py-3.5" onClick={(event) => event.stopPropagation()}>
+                    <Checkbox
+                      checked={table.selectedIds.has(venue.id)}
+                      onCheckedChange={() => table.toggleRow(venue.id)}
+                      aria-label={`Chọn ${venue.name}`}
+                    />
+                  </TableCell>
+                  {table.visibleColumns.map((column) => (
                     <TableCell
-                      className="max-w-60 px-4 py-3.5 whitespace-normal"
-                      title={venue.address}
+                      key={column.id}
+                      className={cn('px-4 py-3.5 text-sm', column.className)}
+                      onClick={column.id === 'actions' ? (event) => event.stopPropagation() : undefined}
                     >
-                      <div className="flex items-start gap-1.5 text-muted-foreground">
-                        <MapPinIcon className="mt-0.5 size-3.5 shrink-0" />
-                        <span className="line-clamp-2 text-sm">{venue.address || '—'}</span>
-                      </div>
+                      {column.cell(venue)}
                     </TableCell>
-                    <TableCell className="px-4 py-3.5 whitespace-nowrap">
-                      {operatingHour ? (
-                        <Badge variant="outline" className="gap-1.5 font-normal tabular-nums">
-                          <ClockIcon className="size-3 text-muted-foreground" />
-                          {formatTimeRange(operatingHour.openTime, operatingHour.closeTime)}
-                        </Badge>
-                      ) : (
-                        <span className="text-sm text-muted-foreground/60">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="hidden px-4 py-3.5 whitespace-nowrap md:table-cell">
-                      <span className="text-sm text-muted-foreground/60">—</span>
-                    </TableCell>
-                    <TableCell
-                      className="px-3 py-3.5 text-right"
-                      onClick={(event) => event.stopPropagation()}
-                    >
-                      <Popover>
-                        <PopoverTrigger
-                          render={
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              aria-label="Mở thao tác"
-                              className="text-muted-foreground opacity-60 transition-opacity group-hover:opacity-100 aria-expanded:opacity-100 cursor-pointer"
-                            />
-                          }
-                        >
-                          <MoreHorizontalIcon className="size-4" />
-                        </PopoverTrigger>
-                        <PopoverContent align="end" className="w-44 gap-0 p-1">
-                          <Button
-                            variant="ghost"
-                            className="h-9 justify-start rounded-lg px-3 text-foreground hover:text-foreground"
-                            onClick={() => router.push(`/venues/${venue.id}`)}
-                          >
-                            <EyeIcon className="mr-2 size-3.5 text-brand-600" />
-                            Xem chi tiết
-                          </Button>
-                          <DialogEditVenue venueId={venue.id} />
-                          <Button
-                            variant="ghost"
-                            className="h-9 justify-start rounded-lg px-3 text-destructive hover:text-destructive"
-                            onClick={() => handleDeleteVenue(venue.id)}
-                          >
-                            <Trash2 className="mr-2 size-3.5" />
-                            Xóa
-                          </Button>
-                        </PopoverContent>
-                      </Popover>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                  ))}
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
+          <DataTablePaginationBar
+            pagination={table.pagination}
+            onPageChange={table.setPage}
+            onPageSizeChange={(size) => {
+              table.setPageSize(size);
+              table.setPage(1);
+            }}
+          />
         </div>
       )}
 
       {isEmpty && (
         <VenuesSetupPage
           onReplayTour={startTour}
-          searchQuery={isSearching ? venueSearch : undefined}
-          onClearSearch={isSearching ? () => setVenueSearch('') : undefined}
+          searchQuery={isSearching ? table.search : undefined}
+          onClearSearch={isSearching ? () => table.setSearch('') : undefined}
         />
       )}
     </div>
   );
 };
+
+function VenueRowActions({
+  venue,
+  onDelete,
+  onView,
+}: {
+  venue: IVenue;
+  onDelete: (id: string) => void;
+  onView: (id: string) => void;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Mở thao tác"
+            className="text-muted-foreground opacity-60 transition-opacity group-hover:opacity-100 aria-expanded:opacity-100"
+          />
+        }
+      >
+        <MoreHorizontalIcon className="size-4" />
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-44 gap-0 p-1">
+        <Button
+          variant="ghost"
+          className="h-9 justify-start rounded-lg px-3 text-foreground hover:text-foreground"
+          onClick={() => onView(venue.id)}
+        >
+          <EyeIcon className="mr-2 size-3.5 text-brand-600" />
+          Xem chi tiết
+        </Button>
+        <VenueGate.Edit>
+          <DialogEditVenue venueId={venue.id} />
+        </VenueGate.Edit>
+        <VenueGate.Delete>
+          <Button
+            variant="ghost"
+            className="h-9 justify-start rounded-lg px-3 text-destructive hover:text-destructive"
+            onClick={() => onDelete(venue.id)}
+          >
+            <Trash2 className="mr-2 size-3.5" />
+            Xóa
+          </Button>
+        </VenueGate.Delete>
+      </PopoverContent>
+    </Popover>
+  );
+}

@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useAnalyticsOverview } from '@/stores/queries/analytics.query';
+import { useAnalyticsOverview } from '@/stores/queries/analytics';
 
 const STATUS_LABEL: Record<string, string> = {
   waiting_payment: 'Đang giữ chỗ',

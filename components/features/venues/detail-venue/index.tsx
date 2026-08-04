@@ -41,9 +41,9 @@ import {
 import { formatCurrency } from '@/lib/format';
 import { CourtStatus, ICourt } from '@/stores/api/types';
 import { useErpUiStore } from '@/stores/index.store';
-import { useVenuePaymentAccounts } from '@/stores/queries/venue-payment-account.query';
-import { useVenueSports } from '@/stores/queries/venue-sport.query';
-import { useDeleteVenue, useVenue } from '@/stores/queries/venue.query';
+import { useVenuePaymentAccounts } from '@/stores/queries/venue-payment-account';
+import { useVenueSports } from '@/stores/queries/venue-sport';
+import { useDeleteVenue, useVenue } from '@/stores/queries/venue';
 
 const statusLabel: Record<CourtStatus, string> = {
   active: 'Hoạt động',

@@ -6,12 +6,10 @@ import type { BookingStatus } from '@/stores/api/types';
 export type BookingStatusFilter = BookingStatus | 'all';
 
 type ErpUiState = {
-  venueSearch: string;
   fieldVenueFilter?: string;
   bookingSearch: string;
   bookingStatusFilter: BookingStatusFilter;
   paymentSearch: string;
-  setVenueSearch: (value: string) => void;
   setFieldVenueFilter: (venueId?: string) => void;
   setBookingSearch: (value: string) => void;
   setBookingStatusFilter: (value: BookingStatusFilter) => void;
@@ -20,7 +18,6 @@ type ErpUiState = {
 };
 
 const initialFilters = {
-  venueSearch: '',
   fieldVenueFilter: undefined as string | undefined,
   bookingSearch: '',
   bookingStatusFilter: 'all' as BookingStatusFilter,
@@ -29,7 +26,6 @@ const initialFilters = {
 
 export const useErpUiStore = create<ErpUiState>((set) => ({
   ...initialFilters,
-  setVenueSearch: (venueSearch) => set({ venueSearch }),
   setFieldVenueFilter: (fieldVenueFilter) => set({ fieldVenueFilter }),
   setBookingSearch: (bookingSearch) => set({ bookingSearch }),
   setBookingStatusFilter: (bookingStatusFilter) => set({ bookingStatusFilter }),

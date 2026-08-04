@@ -12,19 +12,21 @@ import {
   MessageCircle,
   Star,
   Users,
-  Clock,
-  Tags,
   UserRound,
-  ShieldCheck,
   LifeBuoy,
 } from 'lucide-react';
+
+import type { Permission } from '@/lib/auth/permissions';
 
 export type NavItem = {
   title: string;
   description?: string;
   href: string;
   icon: LucideIcon;
+  /** @deprecated Prefer `permissions` */
   roles?: string[];
+  permissions?: Permission[];
+  anyOfPermissions?: Permission[];
 };
 
 export type NavSection = {
@@ -40,35 +42,35 @@ export const navSections: NavSection[] = [
         title: 'Trang chủ',
         href: '/dashboard',
         icon: LayoutDashboard,
-        roles: ['owner'],
+        permissions: ['dashboard:view'],
         description: 'Tổng quan đặt sân và doanh thu',
       },
       {
         title: 'Admin Dashboard',
         href: '/admin/dashboard',
         icon: LayoutDashboard,
-        roles: ['admin'],
+        permissions: ['admin_dashboard:view'],
         description: 'Ticket hỗ trợ và báo cáo hệ thống',
       },
       {
         title: 'Báo cáo',
         href: '/reports',
         icon: BarChart3,
-        roles: ['owner'],
+        permissions: ['reports:view'],
         description: 'Doanh thu và lượt đặt',
       },
       {
         title: 'Báo cáo hệ thống',
         href: '/admin/reports',
         icon: BarChart3,
-        roles: ['admin'],
+        permissions: ['admin_reports:view'],
         description: 'Thống kê toàn nền tảng',
       },
       {
         title: 'Phân tích',
         href: '/analytics',
         icon: LineChart,
-        roles: ['admin'],
+        permissions: ['analytics:view'],
         description: 'Xu hướng và chỉ số',
       },
     ],
@@ -80,49 +82,49 @@ export const navSections: NavSection[] = [
         title: 'Lịch sân',
         href: '/calendar',
         icon: CalendarRange,
-        roles: ['owner'],
+        permissions: ['calendar:view'],
         description: 'Lịch tuần hiện tại',
       },
       {
         title: 'Đặt sân',
         href: '/bookings',
         icon: CalendarDays,
-        roles: ['owner'],
+        permissions: ['bookings:view'],
         description: 'Giữ chỗ và xác nhận đơn',
       },
       {
         title: 'Chat',
         href: '/chat',
         icon: MessageCircle,
-        roles: ['admin', 'owner'],
+        permissions: ['chat:view'],
         description: 'Tin nhắn khách hàng',
       },
       {
         title: 'Sân',
         href: '/courts',
         icon: MapPinned,
-        roles: ['owner'],
+        permissions: ['courts:view'],
         description: 'Quản lý danh sách sân',
       },
       {
         title: 'Khách hàng',
         href: '/customers',
         icon: UserRound,
-        roles: ['owner'],
+        permissions: ['customers:view'],
         description: 'Danh sách khách đặt sân',
       },
       {
         title: 'Cơ sở',
         href: '/venues',
         icon: Landmark,
-        roles: ['owner'],
+        permissions: ['venues:view'],
         description: 'Thông tin cơ sở thể thao',
       },
       {
         title: 'Đánh giá',
         href: '/reviews',
         icon: Star,
-        roles: ['owner'],
+        permissions: ['reviews:view'],
         description: 'Phản hồi từ khách',
       },
     ],
@@ -134,7 +136,7 @@ export const navSections: NavSection[] = [
         title: 'Hỗ trợ',
         href: '/admin/tickets',
         icon: LifeBuoy,
-        roles: ['admin'],
+        permissions: ['support_tickets:view'],
         description: 'Ticket hệ thống',
       },
     ],
@@ -142,37 +144,50 @@ export const navSections: NavSection[] = [
   {
     label: 'Danh mục',
     items: [
-      { title: 'Bộ môn', href: '/sports', icon: Dumbbell, description: 'Danh mục bộ môn' },
+      {
+        title: 'Bộ môn',
+        href: '/sports',
+        icon: Dumbbell,
+        anyOfPermissions: ['sports:catalog_manage', 'sports:venue_manage'],
+        description: 'Danh mục bộ môn',
+      },
       {
         title: 'Phương thức TT',
         href: '/payment-method',
         icon: WalletCards,
+        anyOfPermissions: ['payment_methods:catalog_manage', 'payment_methods:venue_manage'],
         description: 'Cấu hình thanh toán',
       },
       {
         title: 'Tài khoản',
         href: '/users',
         icon: Users,
-        roles: ['admin'],
+        permissions: ['users:view'],
         description: 'Quản lý người dùng',
       },
     ],
   },
-  // {
-  //   label: 'Chủ sân',
-  //   items: [
-  //     {
-  //       title: 'Đăng ký chủ sân',
-  //       href: '/owner/register',
-  //       icon: ShieldCheck,
-  //       roles: ['owner'],
-  //     },
-  //     {
-  //       title: 'Trạng thái duyệt',
-  //       href: '/owner/pending',
-  //       icon: Clock,
-  //       roles: ['owner'],
-  //     },
-  //   ],
-  // },
 ];
+
+export function isNavItemVisible(
+  item: NavItem,
+  check: {
+    can: (permission: Permission) => boolean;
+    canAny: (permissions: Permission[]) => boolean;
+    role?: string;
+  },
+): boolean {
+  if (item.anyOfPermissions?.length) {
+    return check.canAny(item.anyOfPermissions);
+  }
+
+  if (item.permissions?.length) {
+    return check.canAny(item.permissions);
+  }
+
+  if (item.roles?.length) {
+    return Boolean(check.role && item.roles.includes(check.role));
+  }
+
+  return true;
+}

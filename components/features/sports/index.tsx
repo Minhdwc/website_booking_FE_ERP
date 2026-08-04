@@ -3,10 +3,12 @@
 import { AdminSportsView } from '@/components/features/sports/admin/admin-view';
 import { StaffSportsView } from '@/components/features/sports/staff/staff-view';
 import { Skeleton } from '@/components/ui/skeleton';
+import { usePermission } from '@/hooks/use-permission';
 import { useSession } from '@/provider/session-provider';
 
 export const SportsPage = () => {
-  const { user, isLoading } = useSession();
+  const canManageCatalog = usePermission('sports:catalog_manage');
+  const { isLoading } = useSession();
 
   if (isLoading) {
     return (
@@ -17,7 +19,7 @@ export const SportsPage = () => {
     );
   }
 
-  if (user?.role === 'admin') {
+  if (canManageCatalog) {
     return <AdminSportsView />;
   }
 
