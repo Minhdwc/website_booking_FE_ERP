@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react';
 import { DumbbellIcon, MoreHorizontalIcon, SearchIcon, Trash2Icon, XIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
+
 import { SportsCreateDialog } from '@/components/features/sports/admin/dialog-create';
 import { SportsEditDialog } from '@/components/features/sports/admin/dialog-edit';
 import { EmptyState } from '@/components/custom/empty-state';
@@ -50,7 +52,7 @@ export const AdminSportsView = () => {
       await deleteSportMutation.mutateAsync(sport.id);
       toast.success('Xóa bộ môn thành công');
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err.message || 'Không xóa được bộ môn');
+      showApiErrorToast(err, 'Không xóa được bộ môn');
     }
   };
 

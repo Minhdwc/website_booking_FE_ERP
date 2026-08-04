@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { MoreHorizontalIcon, Trash2Icon, WalletCardsIcon } from 'lucide-react';
 import { toast } from 'sonner';
-
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { DialogEditVenuePayment } from '@/components/features/payment-method/staff/dialog-edit';
 import { DialogRegisterVenuePayment } from '@/components/features/payment-method/staff/staff-register';
 import { ComboboxVenue } from '@/components/custom/combobox/combobox-venue';
@@ -87,7 +87,7 @@ export const StaffPaymentMethodView = () => {
       });
       toast.success(item.isActive ? 'Đã tạm dừng phương thức' : 'Đã kích hoạt phương thức');
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err.message || 'Không cập nhật được trạng thái');
+      showApiErrorToast(err, 'Không cập nhật được trạng thái');
     }
   };
 
@@ -97,7 +97,7 @@ export const StaffPaymentMethodView = () => {
       await deleteMutation.mutateAsync(item.id);
       toast.success('Đã hủy đăng ký phương thức');
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err.message || 'Không hủy được đăng ký');
+      showApiErrorToast(err, 'Không hủy được đăng ký');
     }
   };
 

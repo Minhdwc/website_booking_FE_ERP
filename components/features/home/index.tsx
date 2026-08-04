@@ -1,8 +1,18 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import {
+  BanknoteIcon,
   CalendarDaysIcon,
   ChartColumnIcon,
   LandmarkIcon,
@@ -14,22 +24,45 @@ import {
 import { EmptyState } from '@/components/custom/empty-state';
 import { PageHeader } from '@/components/custom/page-header';
 import { StatCard } from '@/components/custom/stat-card';
+import { Button } from '@/components/ui/button';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  daysAgoIsoDate,
+  formatCurrency,
+  formatDate,
+  formatRelativeTime,
+  todayIsoDate,
+} from '@/lib/format';
+import { cn } from '@/lib/utils';
+import { useSession } from '@/provider/session-provider';
 import { usePendingBookings } from '@/stores/queries/booking';
+import { useCourts } from '@/stores/queries/court';
 import { useReportSummary } from '@/stores/queries/report';
 import { useSupportTickets } from '@/stores/queries/support-ticket';
-import { useSession } from '@/provider/session-provider';
-import { formatDate, formatRelativeTime } from '@/lib/format';
-import { cn } from '@/lib/utils';
+
+const STATUS_LABEL: Record<string, string> = {
+  waiting_payment: 'Chờ TT',
+  confirmed: 'Đã xác nhận',
+  cancelled: 'Huỷ',
+  completed: 'Hoàn thành',
+  expired: 'Hết hạn',
+  paid_at_venue: 'Tại quầy',
+};
 
 const ownerShortcuts = [
   { title: 'Lịch sân', href: '/calendar', icon: CalendarDaysIcon, description: 'Tuần hiện tại' },
+  { title: 'Đặt sân', href: '/bookings', icon: CalendarDaysIcon, description: 'Chờ xác nhận' },
+  { title: 'Thanh toán', href: '/payments', icon: BanknoteIcon, description: 'Giao dịch' },
   { title: 'Sân', href: '/courts', icon: MapPinnedIcon, description: 'Danh sách sân' },
   { title: 'Cơ sở', href: '/venues', icon: LandmarkIcon, description: 'Quản lý cơ sở' },
   {
-    title: 'Thanh toán',
+    title: 'PT thanh toán',
     href: '/payment-method',
     icon: WalletCardsIcon,
-    description: 'PT thanh toán',
+    description: 'Cấu hình thu tiền',
   },
 ];
 
@@ -40,6 +73,13 @@ const adminShortcuts = [
   { title: 'Bộ môn', href: '/sports', icon: MapPinnedIcon, description: 'Danh mục bộ môn' },
 ];
 
+function countByStatus(
+  rows: { status: string; count: number }[] | undefined,
+  status: string,
+) {
+  return rows?.find((row) => row.status === status)?.count ?? 0;
+}
+
 type HomeProps = {
   variant?: 'owner' | 'admin';
 };
@@ -47,8 +87,15 @@ type HomeProps = {
 export const Home = ({ variant = 'owner' }: HomeProps) => {
   const { user } = useSession();
   const isAdmin = variant === 'admin' || user?.role === 'admin';
+  const [from, setFrom] = useState(daysAgoIsoDate(30));
+  const [to, setTo] = useState(todayIsoDate());
+  const [appliedRange, setAppliedRange] = useState({ from: daysAgoIsoDate(30), to: todayIsoDate() });
+
   const { pendingBookings, pendingCount, isLoading } = usePendingBookings();
-  const { data: reportSummary, isLoading: isReportLoading } = useReportSummary();
+  const { data: reportSummary, isLoading: isReportLoading } = useReportSummary(appliedRange);
+  const { data: courts = [], isLoading: isCourtsLoading } = useCourts(
+    { limit: '100' },
+  );
   const { data: openTickets = [] } = useSupportTickets({ limit: '100' }, { enabled: isAdmin });
 
   const openTicketCount = useMemo(
@@ -56,9 +103,35 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
     [openTickets],
   );
 
+  const activeCourts = useMemo(
+    () => courts.filter((court) => court.status === 'active').length,
+    [courts],
+  );
+
   const revenueTotal = reportSummary?.revenue.total ?? 0;
   const totalBookings =
     reportSummary?.bookingsByStatus.reduce((sum, row) => sum + row.count, 0) ?? 0;
+  const confirmedCount = countByStatus(reportSummary?.bookingsByStatus, 'confirmed');
+  const cancelledCount = countByStatus(reportSummary?.bookingsByStatus, 'cancelled');
+  const topCourt = reportSummary?.topCourts?.[0];
+
+  const statusChartData = useMemo(
+    () =>
+      (reportSummary?.bookingsByStatus ?? []).map((row) => ({
+        status: STATUS_LABEL[row.status] ?? row.status,
+        count: row.count,
+      })),
+    [reportSummary?.bookingsByStatus],
+  );
+
+  const revenueChartData = useMemo(
+    () =>
+      (reportSummary?.revenueByDay ?? []).map((row) => ({
+        date: row.date.slice(5),
+        total: row.total,
+      })),
+    [reportSummary?.revenueByDay],
+  );
 
   const shortcuts = isAdmin ? adminShortcuts : ownerShortcuts;
 
@@ -74,42 +147,166 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
         icon={ChartColumnIcon}
       />
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Tổng doanh thu"
-          value={isReportLoading ? '0' : `${revenueTotal.toLocaleString('vi-VN')} VNĐ`}
+          value={isReportLoading ? '—' : formatCurrency(revenueTotal)}
           description={isReportLoading ? undefined : 'Theo khoảng báo cáo mặc định'}
           icon={WalletCardsIcon}
           loading={isReportLoading}
         />
         <StatCard
-          title={isAdmin ? 'Tổng lượt đặt' : 'Tổng lượt đặt'}
-          value={isReportLoading ? '0' : totalBookings}
-          description="Theo báo cáo"
+          title="Tổng lượt đặt"
+          value={isReportLoading ? '—' : totalBookings}
+          description={
+            isReportLoading
+              ? undefined
+              : `${confirmedCount} xác nhận · ${cancelledCount} huỷ`
+          }
           icon={CalendarDaysIcon}
           loading={isReportLoading}
         />
         <StatCard
-          title={isAdmin ? 'Ticket mở' : 'Sân đang hoạt động'}
-          value={isAdmin ? openTicketCount : '—'}
-          description={isAdmin ? 'Chưa resolved' : 'Xem tại Courts'}
-          icon={isAdmin ? UsersIcon : MapPinnedIcon}
+          title={isAdmin ? 'Ticket mở' : 'Chờ xác nhận'}
+          value={isAdmin ? openTicketCount : pendingCount}
+          description={isAdmin ? 'Chưa resolved' : 'Waiting payment'}
+          icon={isAdmin ? UsersIcon : CalendarDaysIcon}
+          loading={isAdmin ? false : isLoading}
+        />
+        <StatCard
+          title={isAdmin ? 'Doanh thu đã thu' : 'Sân hoạt động'}
+          value={
+            isAdmin
+              ? isReportLoading
+                ? '—'
+                : reportSummary?.revenue.paidCount ?? 0
+              : isCourtsLoading
+                ? '—'
+                : activeCourts
+          }
+          description={isAdmin ? 'Giao dịch thành công' : `/${courts.length} sân`}
+          icon={isAdmin ? BanknoteIcon : MapPinnedIcon}
+          loading={isAdmin ? isReportLoading : isCourtsLoading}
         />
       </section>
+
+      {!isAdmin && (
+        <section className="rounded-xl border border-border/70 bg-card p-5 shadow-sm">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-heading">Biểu đồ hoạt động</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {formatDate(appliedRange.from)} – {formatDate(appliedRange.to)}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="home-from" className="text-xs">
+                  Từ
+                </Label>
+                <Input
+                  id="home-from"
+                  type="date"
+                  value={from}
+                  onChange={(event) => setFrom(event.target.value)}
+                  className="h-8 w-36 bg-card text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="home-to" className="text-xs">
+                  Đến
+                </Label>
+                <Input
+                  id="home-to"
+                  type="date"
+                  value={to}
+                  onChange={(event) => setTo(event.target.value)}
+                  className="h-8 w-36 bg-card text-xs"
+                />
+              </div>
+              <Button size="sm" variant="outline" onClick={() => setAppliedRange({ from, to })}>
+                Áp dụng
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div>
+              <h3 className="mb-2 text-xs font-medium text-muted-foreground">Doanh thu theo ngày</h3>
+              {isReportLoading ? (
+                <Skeleton className="h-48 w-full" />
+              ) : revenueChartData.length === 0 ? (
+                <p className="py-16 text-center text-sm text-muted-foreground">Chưa có dữ liệu</p>
+              ) : (
+                <ChartContainer
+                  config={{ total: { label: 'Doanh thu', color: 'var(--chart-1)' } }}
+                  className="aspect-auto h-48 w-full"
+                >
+                  <AreaChart data={revenueChartData}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="date" tickLine={false} axisLine={false} />
+                    <YAxis tickLine={false} axisLine={false} width={48} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area
+                      type="monotone"
+                      dataKey="total"
+                      stroke="var(--color-total)"
+                      fill="var(--color-total)"
+                      fillOpacity={0.2}
+                    />
+                  </AreaChart>
+                </ChartContainer>
+              )}
+            </div>
+
+            <div>
+              <h3 className="mb-2 text-xs font-medium text-muted-foreground">Lượt đặt theo trạng thái</h3>
+              {isReportLoading ? (
+                <Skeleton className="h-48 w-full" />
+              ) : statusChartData.length === 0 ? (
+                <p className="py-16 text-center text-sm text-muted-foreground">Chưa có dữ liệu</p>
+              ) : (
+                <ChartContainer
+                  config={{ count: { label: 'Số lượng', color: 'var(--chart-2)' } }}
+                  className="aspect-auto h-48 w-full"
+                >
+                  <BarChart data={statusChartData}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="status" tickLine={false} axisLine={false} />
+                    <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={32} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="count" fill="var(--color-count)" radius={6} />
+                  </BarChart>
+                </ChartContainer>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {!isAdmin && topCourt && !isReportLoading && (
+        <section className="rounded-xl border border-border/70 bg-card p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-heading">Sân đặt nhiều nhất</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {topCourt.court?.name ?? 'Sân'} · {topCourt.bookingCount} lượt
+            {topCourt.court?.venue?.name ? ` · ${topCourt.court.venue.name}` : ''}
+          </p>
+        </section>
+      )}
 
       <section className="rounded-xl border border-border/70 bg-card p-5 shadow-sm">
         <div className="mb-4 flex items-baseline justify-between">
           <h2 className="text-sm font-semibold text-heading">Lối tắt nhanh</h2>
           <Link
             href={isAdmin ? '/admin/reports' : '/reports'}
-            className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground underline-offset-4 hover:text-brand-600 hover:underline"
+            className="inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-muted-foreground underline-offset-4 hover:text-brand-600 hover:underline"
           >
             <ChartColumnIcon className="size-3.5" />
             Báo cáo
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {shortcuts.map((item) => (
             <Link
               key={item.href}
@@ -135,10 +332,7 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
           <div className="border-b border-border/70 px-5 py-4">
             <div className="flex items-baseline justify-between">
               <h2 className="text-sm font-semibold text-heading">Hàng đợi hỗ trợ</h2>
-              <Link
-                href="/admin/tickets"
-                className="text-xs font-medium text-brand-600 hover:underline"
-              >
+              <Link href="/admin/tickets" className="text-xs font-medium text-brand-600 hover:underline">
                 Xem tất cả
               </Link>
             </div>
@@ -183,9 +377,9 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
             <div className="flex items-baseline justify-between">
               <h2 className="text-sm font-semibold text-heading">Lịch đặt sân gần đây</h2>
               {pendingCount > 0 ? (
-                <span className="text-xs font-medium text-brand-600">
+                <Link href="/bookings" className="text-xs font-medium text-brand-600 hover:underline">
                   {pendingCount} chờ xác nhận
-                </span>
+                </Link>
               ) : null}
             </div>
           </div>
@@ -223,7 +417,8 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
                         ) : null}
                       </p>
                       <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                        {booking.user?.name} · {primaryItem ? formatDate(primaryItem.date) : '—'}
+                        {booking.user?.name ?? booking.customerName} ·{' '}
+                        {primaryItem ? formatDate(primaryItem.date) : '—'}
                       </p>
                     </div>
                     <p className="shrink-0 text-xs text-muted-foreground">

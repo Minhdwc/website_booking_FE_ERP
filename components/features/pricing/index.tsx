@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Loader2Icon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { PageHeader } from '@/components/custom/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,7 +72,7 @@ export function PricingPage() {
       });
       toast.success('Đã thêm quy tắc giá');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không tạo được quy tắc');
+      showApiErrorToast(error, 'Không tạo được quy tắc');
     }
   };
 
@@ -80,7 +81,7 @@ export function PricingPage() {
       await deleteMutation.mutateAsync({ id, courtId });
       toast.success('Đã xoá quy tắc');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không xoá được');
+      showApiErrorToast(error, 'Không xoá được');
     }
   };
 

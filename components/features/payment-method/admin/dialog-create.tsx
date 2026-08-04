@@ -7,6 +7,8 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -68,7 +70,7 @@ export const DialogCreatePaymentMethod = () => {
       toast.success('Thêm phương thức thành công');
       handleOpenChange(false);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || error.message || 'Không thêm được phương thức');
+      showApiErrorToast(error, 'Không thêm được phương thức');
     }
   };
 

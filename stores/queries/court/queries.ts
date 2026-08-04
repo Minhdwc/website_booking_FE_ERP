@@ -3,8 +3,10 @@
 import { QueryClient, useQuery } from '@tanstack/react-query';
 
 import { unwrapList } from '@/stores/api/response';
+import { ICourtAvailability } from '@/stores/api/types';
 import {
   courtService,
+  type CourtAvailabilityResponse,
   type CourtDetailResponse,
   type CourtsResponse,
 } from '@/stores/service/court.service';
@@ -37,6 +39,19 @@ export const useCourt = (id: string) =>
     queryKey: courtKeys.detail(id),
     queryFn: () => fetchCourt(id),
     enabled: Boolean(id),
+  });
+
+const fetchCourtAvailability = async (id: string, date: string): Promise<ICourtAvailability> => {
+  const response = (await courtService.getAvailability(id, date)) as CourtAvailabilityResponse;
+  return response.data;
+};
+
+export const useCourtAvailability = (courtId: string | undefined, date: string) =>
+  useQuery({
+    queryKey: courtKeys.availability(courtId ?? '', date),
+    queryFn: () => fetchCourtAvailability(courtId!, date),
+    enabled: Boolean(courtId && date),
+    staleTime: 30_000,
   });
 
 export const prefetchCourt = (queryClient: QueryClient, id: string) =>

@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { ComboboxSportVenue } from '@/components/custom/combobox/combobox-sport-venue';
 import { ComboboxVenue } from '@/components/custom/combobox/combobox-venue';
 import { formatCurrencyInput, parseCurrencyInput } from '@/lib/format';
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -140,7 +141,7 @@ export const DialogEditField = ({ courtId, triggerVariant = 'menu' }: DialogEdit
       toast.success('Cập nhật sân thành công');
       handleOpenChange(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Không cập nhật được sân. Thử lại.');
+      showApiErrorToast(err, 'Không cập nhật được sân. Thử lại.');
     }
   };
 

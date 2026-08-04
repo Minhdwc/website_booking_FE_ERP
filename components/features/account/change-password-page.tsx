@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { PageHeader } from '@/components/custom/page-header';
 import { Button } from '@/components/ui/button';
 import {
@@ -55,7 +56,7 @@ export function AccountChangePasswordPage() {
       form.reset();
       toast.success('Đổi mật khẩu thành công');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không thể đổi mật khẩu');
+      showApiErrorToast(error, 'Không thể đổi mật khẩu');
     } finally {
       setSaving(false);
     }

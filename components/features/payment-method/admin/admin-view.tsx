@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { MoreHorizontalIcon, SearchIcon, Trash2Icon, WalletCardsIcon, XIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
+
 import { DialogCreatePaymentMethod } from '@/components/features/payment-method/admin/dialog-create';
 import { DialogEditPaymentMethod } from '@/components/features/payment-method/admin/dialog-edit';
 import { EmptyState } from '@/components/custom/empty-state';
@@ -45,7 +47,7 @@ export const AdminPaymentMethodView = () => {
       await deleteMutation.mutateAsync(item.id);
       toast.success('Đã xóa phương thức');
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err.message || 'Không xóa được phương thức');
+      showApiErrorToast(err, 'Không xóa được phương thức');
     }
   };
 

@@ -8,6 +8,8 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
+
 import { ComboboxCourt } from '@/components/features/bookings/combobox-court';
 import { Button } from '@/components/ui/button';
 import {
@@ -96,7 +98,7 @@ export function CourtBlockDialog({ open, onOpenChange }: CourtBlockDialogProps) 
       toast.success('Khóa sân thành công');
       handleOpenChange(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không khóa được sân. Thử lại.');
+      showApiErrorToast(error, 'Không khóa được sân. Thử lại.');
     } finally {
       setSaving(false);
     }

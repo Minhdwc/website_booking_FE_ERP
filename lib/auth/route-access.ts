@@ -20,6 +20,7 @@ const ROUTE_RULES: RouteRule[] = [
   { prefix: '/reports', permission: 'reports:view' },
   { prefix: '/calendar', permission: 'calendar:view' },
   { prefix: '/bookings', permission: 'bookings:view' },
+  { prefix: '/payments', permission: 'payments:view' },
   { prefix: '/chat', permission: 'chat:view' },
   { prefix: '/courts', permission: 'courts:view' },
   { prefix: '/customers', permission: 'customers:view' },

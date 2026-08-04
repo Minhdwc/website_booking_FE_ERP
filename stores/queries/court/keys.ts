@@ -11,4 +11,6 @@ export const courtKeys = {
   list: (params?: CourtListParams) => [...courtKeys.lists(), params ?? {}] as const,
   details: () => [...courtKeys.all, 'detail'] as const,
   detail: (id: string) => [...courtKeys.details(), id] as const,
+  availability: (id: string, date: string) =>
+    [...courtKeys.detail(id), 'availability', date] as const,
 };

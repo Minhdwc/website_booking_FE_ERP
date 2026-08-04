@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2Icon, PencilIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -66,7 +68,7 @@ export const SportsEditDialog = ({ sport }: { sport: ISport }) => {
       toast.success('Cập nhật bộ môn thành công');
       handleOpenChange(false);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || error.message || 'Không cập nhật được bộ môn');
+      showApiErrorToast(error, 'Không cập nhật được bộ môn');
     }
   };
 

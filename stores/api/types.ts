@@ -191,6 +191,20 @@ export interface ICourt {
   venue?: IVenue;
 }
 
+export interface IAvailabilitySlot {
+  startTime: string;
+  endTime: string;
+  durationMinutes: number;
+  subtotal: number;
+  status: 'available' | 'booked' | 'past';
+}
+
+export interface ICourtAvailability {
+  courtId: string;
+  date: string;
+  slots: IAvailabilitySlot[];
+}
+
 export interface IBookingItem {
   id: string;
   bookingId: string;

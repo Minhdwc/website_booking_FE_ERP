@@ -14,6 +14,7 @@ import {
   Users,
   UserRound,
   LifeBuoy,
+  Banknote,
 } from 'lucide-react';
 
 import type { Permission } from '@/lib/auth/permissions';
@@ -91,6 +92,13 @@ export const navSections: NavSection[] = [
         icon: CalendarDays,
         permissions: ['bookings:view'],
         description: 'Giữ chỗ và xác nhận đơn',
+      },
+      {
+        title: 'Thanh toán',
+        href: '/payments',
+        icon: Banknote,
+        permissions: ['payments:view'],
+        description: 'Giao dịch thanh toán',
       },
       {
         title: 'Chat',

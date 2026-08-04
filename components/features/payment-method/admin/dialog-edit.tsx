@@ -7,6 +7,8 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -86,9 +88,7 @@ export const DialogEditPaymentMethod = ({ item }: { item: IPaymentMethod }) => {
       toast.success('Cập nhật phương thức thành công');
       handleOpenChange(false);
     } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message || error.message || 'Không cập nhật được phương thức',
-      );
+      showApiErrorToast(error, 'Không cập nhật được phương thức');
     }
   };
 

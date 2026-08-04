@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { VenueLocationMap } from '@/components/features/venues/location-map';
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -125,7 +126,7 @@ export const DialogEditVenue = ({ venueId }: { venueId: string }) => {
     } catch (error: any) {
       form.resetField('longitude');
       form.resetField('latitude');
-      toast.error(error.message || 'Không lấy được tọa độ');
+      showApiErrorToast(error, 'Không lấy được tọa độ');
     } finally {
       setIsGeocoding(false);
     }
@@ -197,7 +198,7 @@ export const DialogEditVenue = ({ venueId }: { venueId: string }) => {
       toast.success('Cập nhật cơ sở thành công');
       handleOpenChange(false);
     } catch (error: any) {
-      toast.error(error.message || 'Không cập nhật được cơ sở. Thử lại.');
+      showApiErrorToast(error, 'Không cập nhật được cơ sở. Thử lại.');
     }
   };
 

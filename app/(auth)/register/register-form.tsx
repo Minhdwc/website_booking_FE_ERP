@@ -19,6 +19,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { getApiErrorMessage, showApiErrorToast } from '@/lib/api/handle-api-error';
 import logoSquare from '@/assets/logo/logo-9-9.png';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -94,10 +95,9 @@ export const RegisterForm = () => {
       toast.success('Đăng ký thành công');
       router.push('/dashboard');
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Đăng ký thất bại. Vui lòng thử lại.';
+      const message = getApiErrorMessage(error, 'Đăng ký thất bại. Vui lòng thử lại.');
       setServerError(message);
-      toast.error(message);
+      showApiErrorToast(error, 'Đăng ký thất bại. Vui lòng thử lại.');
     }
   });
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2Icon, PlusIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { useCreateWalkInBooking } from '@/stores/queries/booking';
 
 const formSchema = z.object({
@@ -45,7 +46,11 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const defaultValues: FormValues = {
+export type WalkInInitialValues = Partial<
+  Pick<FormValues, 'courtId' | 'date' | 'startTime' | 'endTime'>
+>;
+
+const emptyValues: FormValues = {
   customerName: '',
   customerPhone: '',
   courtId: '',
@@ -55,34 +60,24 @@ const defaultValues: FormValues = {
   note: '',
 };
 
-type BookingsCreateDialogProps = {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  hideTrigger?: boolean;
-};
-
-export const BookingsCreateDialog = ({
-  open: controlledOpen,
-  onOpenChange: controlledOnOpenChange,
-  hideTrigger = false,
-}: BookingsCreateDialogProps = {}) => {
-  const [internalOpen, setInternalOpen] = useState(false);
-  const open = controlledOpen ?? internalOpen;
-  const setOpen = controlledOnOpenChange ?? setInternalOpen;
+function BookingWalkInForm({
+  onClose,
+  initialValues,
+}: {
+  onClose: () => void;
+  initialValues?: WalkInInitialValues;
+}) {
   const createWalkInMutation = useCreateWalkInBooking();
   const isSaving = createWalkInMutation.isPending;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues,
+    defaultValues: { ...emptyValues, ...initialValues },
   });
 
-  const handleOpenChange = (next: boolean) => {
-    setOpen(next);
-    if (!next) {
-      form.reset(defaultValues);
-    }
-  };
+  useEffect(() => {
+    form.reset({ ...emptyValues, ...initialValues });
+  }, [form, initialValues]);
 
   const handleSubmit = async (values: FormValues) => {
     try {
@@ -100,21 +95,155 @@ export const BookingsCreateDialog = ({
         note: values.note?.trim() || undefined,
       });
       toast.success('Tạo đặt sân walk-in thành công');
-      handleOpenChange(false);
+      onClose();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không tạo được đặt sân. Thử lại.');
+      showApiErrorToast(error, 'Không tạo được đặt sân');
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      {!hideTrigger ? (
-        <DialogTrigger render={<Button size="sm" />}>
-          <PlusIcon className="size-3.5" />
-          Thêm đặt sân
-        </DialogTrigger>
-      ) : null}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="customerName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Tên khách <span className="text-destructive">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="VD: Nguyễn Văn A" autoFocus {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
+          <FormField
+            control={form.control}
+            name="customerPhone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Số điện thoại <span className="text-destructive">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="VD: 0901234567" inputMode="tel" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="courtId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                Sân <span className="text-destructive">*</span>
+              </FormLabel>
+              <FormControl>
+                <ComboboxCourt value={field.value} onChange={field.onChange} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                Ngày <span className="text-destructive">*</span>
+              </FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="startTime"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Giờ bắt đầu <span className="text-destructive">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input type="time" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="endTime"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Giờ kết thúc <span className="text-destructive">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input type="time" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="note"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Ghi chú</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Ghi chú thêm (tuỳ chọn)" className="min-h-14" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>
+            Huỷ
+          </Button>
+          <Button type="submit" disabled={isSaving}>
+            {isSaving && <Loader2Icon className="size-3.5 animate-spin" />}
+            {isSaving ? 'Đang lưu…' : 'Lưu đặt sân'}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
+}
+
+/** Dialog controlled — calendar hoặc parent giữ state. */
+export function BookingCreateDialog({
+  open,
+  onOpenChange,
+  initialValues,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  initialValues?: WalkInInitialValues;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Tạo đặt sân walk-in</DialogTitle>
@@ -122,138 +251,30 @@ export const BookingsCreateDialog = ({
             Tạo booking cho khách tại quầy. Chỉ cần tên và số điện thoại, không cần email.
           </DialogDescription>
         </DialogHeader>
+        <BookingWalkInForm onClose={() => onOpenChange(false)} initialValues={initialValues} />
+      </DialogContent>
+    </Dialog>
+  );
+}
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="customerName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Tên khách <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="VD: Nguyễn Văn A" autoFocus {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+/** Dialog + trigger — trang bookings. */
+export const BookingsCreateDialog = () => {
+  const [open, setOpen] = useState(false);
 
-              <FormField
-                control={form.control}
-                name="customerPhone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Số điện thoại <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="VD: 0901234567" inputMode="tel" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="courtId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Sân <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <ComboboxCourt value={field.value} onChange={field.onChange} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Ngày <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="startTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Giờ bắt đầu <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="endTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Giờ kết thúc <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="note"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ghi chú</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Ghi chú thêm (tuỳ chọn)"
-                      className="min-h-14"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-                Huỷ
-              </Button>
-              <Button type="submit" disabled={isSaving}>
-                {isSaving && <Loader2Icon className="size-3.5 animate-spin" />}
-                {isSaving ? 'Đang lưu…' : 'Lưu đặt sân'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<Button size="sm" />}>
+        <PlusIcon className="size-3.5" />
+        Thêm đặt sân
+      </DialogTrigger>
+      <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Tạo đặt sân walk-in</DialogTitle>
+          <DialogDescription>
+            Tạo booking cho khách tại quầy. Chỉ cần tên và số điện thoại, không cần email.
+          </DialogDescription>
+        </DialogHeader>
+        <BookingWalkInForm onClose={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );

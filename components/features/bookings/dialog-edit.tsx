@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePermission } from '@/hooks/use-permission';
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { useBooking, useUpdateBooking } from '@/stores/queries/booking';
 
 const formSchema = z
@@ -67,16 +68,7 @@ function formatSlotTime(value: string) {
   return value;
 }
 
-export const DialogEditBooking = ({
-  bookingId,
-  triggerLabel = 'Chỉnh sửa',
-  triggerClassName,
-}: {
-  bookingId: string;
-  triggerLabel?: string;
-  triggerClassName?: string;
-}) => {
-  const [open, setOpen] = useState(false);
+function BookingEditForm({ bookingId, onClose }: { bookingId: string; onClose: () => void }) {
   const { data: booking, isLoading, isError, error } = useBooking(bookingId);
   const updateBookingMutation = useUpdateBooking();
   const canCancel = usePermission('bookings:cancel');
@@ -98,11 +90,6 @@ export const DialogEditBooking = ({
 
   const selectedStatus = form.watch('status');
 
-  const handleOpenChange = (next: boolean) => {
-    setOpen(next);
-    if (!next) form.reset();
-  };
-
   const handleSubmit = async (values: FormValues) => {
     if (!booking) return;
 
@@ -113,19 +100,150 @@ export const DialogEditBooking = ({
         : {}),
     };
     try {
-      await updateBookingMutation.mutateAsync({
-        id: booking.id,
-        body: payload,
-      });
+      await updateBookingMutation.mutateAsync({ id: booking.id, body: payload });
       toast.success('Cập nhật đặt sân thành công');
-      handleOpenChange(false);
+      onClose();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Không cập nhật được đặt sân.');
+      showApiErrorToast(err, 'Không cập nhật được đặt sân');
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-3 py-2">
+        <Skeleton className="h-9 w-full rounded-lg" />
+        <Skeleton className="h-16 w-full rounded-lg" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <p className="py-6 text-center text-sm text-destructive">
+        {error instanceof Error ? error.message : 'Không tải được đặt sân'}
+      </p>
+    );
+  }
+
+  if (!booking) return null;
+
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 text-sm">
+          <p className="font-medium text-foreground">
+            {primaryItem?.court?.name || 'Sân'} · {primaryItem?.date || '—'}
+          </p>
+          <p className="mt-1 text-muted-foreground">
+            {booking.customerName || booking.user?.name || booking.userId}
+            {booking.customerPhone || booking.user?.phone
+              ? ` · ${booking.customerPhone || booking.user?.phone}`
+              : ''}
+            {primaryItem
+              ? ` · ${formatSlotTime(primaryItem.startTime)} – ${formatSlotTime(primaryItem.endTime)}`
+              : ''}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{booking.bookingCode}</p>
+        </div>
+
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                Trạng thái <span className="text-destructive">*</span>
+              </FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {availableStatusOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {selectedStatus === 'confirmed' && (
+          <FormField
+            control={form.control}
+            name="reason"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Lý do xác nhận <span className="text-destructive">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="VD: Khách chuyển khoản ngoài hệ thống" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>
+            Huỷ
+          </Button>
+          <Button type="submit" disabled={isSaving}>
+            {isSaving && <Loader2Icon className="size-3.5 animate-spin" />}
+            {isSaving ? 'Đang lưu…' : 'Lưu thay đổi'}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
+}
+
+/** Dialog controlled — dùng từ calendar hoặc nơi parent giữ state. */
+export function BookingEditDialog({
+  bookingId,
+  open,
+  onOpenChange,
+}: {
+  bookingId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const close = () => onOpenChange(false);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Cập nhật đặt sân</DialogTitle>
+          <DialogDescription>Đổi trạng thái booking. Thông tin sân/ngày chỉ xem.</DialogDescription>
+        </DialogHeader>
+        <BookingEditForm bookingId={bookingId} onClose={close} />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** Dialog + trigger — dùng trong menu/popover của trang bookings. */
+export const DialogEditBooking = ({
+  bookingId,
+  triggerLabel = 'Chỉnh sửa',
+  triggerClassName,
+}: {
+  bookingId: string;
+  triggerLabel?: string;
+  triggerClassName?: string;
+}) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
           <Button
@@ -138,102 +256,12 @@ export const DialogEditBooking = ({
         <PencilIcon className="size-3.5 text-muted-foreground" />
         {triggerLabel}
       </DialogTrigger>
-
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Cập nhật đặt sân</DialogTitle>
           <DialogDescription>Đổi trạng thái booking. Thông tin sân/ngày chỉ xem.</DialogDescription>
         </DialogHeader>
-
-        {isLoading && (
-          <div className="space-y-3 py-2">
-            <Skeleton className="h-9 w-full rounded-lg" />
-            <Skeleton className="h-16 w-full rounded-lg" />
-          </div>
-        )}
-
-        {isError && (
-          <p className="py-6 text-center text-sm text-destructive">
-            {error instanceof Error ? error.message : 'Không tải được đặt sân'}
-          </p>
-        )}
-
-        {booking && (
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-              <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 text-sm">
-                <p className="font-medium text-foreground">
-                  {primaryItem?.court?.name || 'Sân'} · {primaryItem?.date || '—'}
-                </p>
-                <p className="mt-1 text-muted-foreground">
-                  {booking.customerName || booking.user?.name || booking.userId}
-                  {booking.customerPhone || booking.user?.phone
-                    ? ` · ${booking.customerPhone || booking.user?.phone}`
-                    : ''}
-                  {primaryItem
-                    ? ` · ${formatSlotTime(primaryItem.startTime)} – ${formatSlotTime(primaryItem.endTime)}`
-                    : ''}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">{booking.bookingCode}</p>
-              </div>
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Trạng thái <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {availableStatusOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {selectedStatus === 'confirmed' && (
-                <FormField
-                  control={form.control}
-                  name="reason"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Lý do xác nhận <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="VD: Khách chuyển khoản ngoài hệ thống" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-                  Huỷ
-                </Button>
-                <Button type="submit" disabled={isSaving}>
-                  {isSaving && <Loader2Icon className="size-3.5 animate-spin" />}
-                  {isSaving ? 'Đang lưu…' : 'Lưu thay đổi'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        )}
+        <BookingEditForm bookingId={bookingId} onClose={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );

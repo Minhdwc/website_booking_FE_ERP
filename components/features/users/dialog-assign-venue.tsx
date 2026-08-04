@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { Loader2Icon, MapPinnedIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -52,7 +54,7 @@ export function UsersAssignVenueDialog({ user }: { user: IUser }) {
       const data = (response as { data?: VenueOwnerRow[] }).data ?? [];
       setOwners(Array.isArray(data) ? data : []);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không tải được danh sách owner');
+      showApiErrorToast(error, 'Không tải được danh sách owner');
       setOwners([]);
     } finally {
       setLoading(false);
@@ -80,7 +82,7 @@ export function UsersAssignVenueDialog({ user }: { user: IUser }) {
       toast.success('Đã gán staff vào cơ sở');
       await loadOwnersForSelected(venueId);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không gán được staff');
+      showApiErrorToast(error, 'Không gán được staff');
     } finally {
       setSaving(false);
     }
@@ -94,7 +96,7 @@ export function UsersAssignVenueDialog({ user }: { user: IUser }) {
       toast.success('Đã gỡ staff khỏi cơ sở');
       await loadOwnersForSelected(venueId);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không gỡ được staff');
+      showApiErrorToast(error, 'Không gỡ được staff');
     } finally {
       setSaving(false);
     }

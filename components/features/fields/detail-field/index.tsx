@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { DialogEditField } from '@/components/features/fields/dialog-edit-field';
 import { FieldImagesSection } from '@/components/features/fields/detail-field/images-section';
 import { Badge } from '@/components/ui/badge';
@@ -115,7 +116,7 @@ export const FieldDetailPage = ({ courtId }: FieldDetailPageProps) => {
       toast.success('Đã xóa sân');
       router.replace('/courts');
     } catch (err: any) {
-      toast.error(err?.message || 'Không xóa được sân');
+      showApiErrorToast(err, 'Không xóa được sân');
     }
   };
 

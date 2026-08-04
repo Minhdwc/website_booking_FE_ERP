@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Loader2Icon } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { PageHeader } from '@/components/custom/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,7 +78,7 @@ function HoursEditor({ venueId, initialHours, replaceMutation }: HoursEditorProp
       });
       toast.success('Đã lưu giờ mở cửa');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không lưu được giờ mở cửa');
+      showApiErrorToast(error, 'Không lưu được giờ mở cửa');
     }
   };
 

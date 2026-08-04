@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { VenueLocationMap } from '@/components/features/venues/location-map';
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -125,7 +126,7 @@ export const VenuesCreateDialog = () => {
     } catch (error) {
       form.resetField('longitude');
       form.resetField('latitude');
-      toast.error(error instanceof Error ? error.message : 'Không lấy được tọa độ');
+      showApiErrorToast(error, 'Không lấy được tọa độ');
     } finally {
       setIsGeocoding(false);
     }
@@ -195,7 +196,7 @@ export const VenuesCreateDialog = () => {
       toast.success('Tạo cơ sở thành công');
       handleOpenChange(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không tạo được cơ sở. Thử lại.');
+      showApiErrorToast(error, 'Không tạo được cơ sở. Thử lại.');
     }
   };
 

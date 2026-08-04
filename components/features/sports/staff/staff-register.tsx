@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2Icon, PlusIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { z } from 'zod';
 
 import { ComboboxSport } from '@/components/custom/combobox/combobox-sport';
@@ -73,7 +75,7 @@ export const DialogRegisterVenueSport = ({
       toast.success('Đăng ký bộ môn thành công');
       handleOpenChange(false);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err.message || 'Không đăng ký được bộ môn');
+      showApiErrorToast(err, 'Không đăng ký được bộ môn');
     }
   };
 

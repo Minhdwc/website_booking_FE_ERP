@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { DialogEditVenue } from '@/components/features/venues/dialog-edit';
 import { VenueImagesSection } from '@/components/features/venues/detail-venue/images-section';
 import { VenueLocationMap } from '@/components/features/venues/location-map';
@@ -83,7 +84,7 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
       toast.success('Đã xóa cơ sở');
       router.replace('/venues');
     } catch (err: any) {
-      toast.error(err?.message || 'Không xóa được cơ sở');
+      showApiErrorToast(err, 'Không xóa được cơ sở');
     }
   };
 

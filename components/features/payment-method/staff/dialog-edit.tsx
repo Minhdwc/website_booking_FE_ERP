@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2Icon, PencilIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { z } from 'zod';
 
 import { ComboboxBank } from '@/components/custom/combobox/combobox-bank';
@@ -151,7 +153,7 @@ export const DialogEditVenuePayment = ({ item }: { item: IVenuePaymentAccount })
       toast.success('Cập nhật tài khoản thành công');
       handleOpenChange(false);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err.message || 'Không cập nhật được');
+      showApiErrorToast(err, 'Không cập nhật được');
     }
   };
 

@@ -32,6 +32,8 @@ import {
 } from '@/components/ui/table';
 import { useReportSummary } from '@/stores/queries/report';
 import { reportService } from '@/stores/service/report.service';
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
+import { daysAgoIsoDate, todayIsoDate } from '@/lib/format';
 
 const STATUS_LABEL: Record<string, string> = {
   waiting_payment: 'Đang giữ chỗ',
@@ -48,16 +50,6 @@ const PIE_COLORS = [
   'var(--chart-5)',
 ];
 
-function todayIso() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function daysAgoIso(days: number) {
-  const date = new Date();
-  date.setDate(date.getDate() - days);
-  return date.toISOString().slice(0, 10);
-}
-
 type ReportsPageProps = {
   title?: string;
   description?: string;
@@ -67,9 +59,9 @@ export function ReportsPage({
   title = 'Báo cáo',
   description = 'Doanh thu, trạng thái đặt sân và top sân theo khoảng ngày.',
 }: ReportsPageProps) {
-  const [from, setFrom] = useState(daysAgoIso(30));
-  const [to, setTo] = useState(todayIso());
-  const [applied, setApplied] = useState({ from: daysAgoIso(30), to: todayIso() });
+  const [from, setFrom] = useState(daysAgoIsoDate(30));
+  const [to, setTo] = useState(todayIsoDate());
+  const [applied, setApplied] = useState({ from: daysAgoIsoDate(30), to: todayIsoDate() });
   const [isExporting, setIsExporting] = useState(false);
 
   const { data, isLoading, isError, error, isFetching } = useReportSummary(applied);
@@ -101,7 +93,7 @@ export function ReportsPage({
       URL.revokeObjectURL(url);
       toast.success('Đã tải file CSV');
     } catch (exportError) {
-      toast.error(exportError instanceof Error ? exportError.message : 'Không xuất được CSV');
+      showApiErrorToast(exportError, 'Không xuất được CSV');
     } finally {
       setIsExporting(false);
     }

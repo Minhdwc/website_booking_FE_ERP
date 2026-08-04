@@ -7,6 +7,8 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -94,7 +96,7 @@ export function UsersCreateDialog() {
       toast.success('Tạo tài khoản thành công');
       handleOpenChange(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không tạo được tài khoản');
+      showApiErrorToast(error, 'Không tạo được tài khoản');
     }
   };
 

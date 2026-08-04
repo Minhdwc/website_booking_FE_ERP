@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { ImageIcon, Loader2Icon, Trash2Icon, UploadIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { IVenueImage } from '@/stores/api/types';
@@ -33,7 +34,7 @@ export const VenueImagesSection = ({ venueId, images }: VenueImagesSectionProps)
       await uploadMutation.mutateAsync({ venueId, file });
       toast.success('Đã thêm ảnh');
     } catch (error: any) {
-      toast.error(error?.message || 'Không tải được ảnh lên');
+      showApiErrorToast(error, 'Không tải được ảnh lên');
     } finally {
       if (inputRef.current) inputRef.current.value = '';
     }
@@ -45,7 +46,7 @@ export const VenueImagesSection = ({ venueId, images }: VenueImagesSectionProps)
       await deleteMutation.mutateAsync({ venueId, imageId: image.id });
       toast.success('Đã xóa ảnh');
     } catch (error: any) {
-      toast.error(error?.message || 'Không xóa được ảnh');
+      showApiErrorToast(error, 'Không xóa được ảnh');
     }
   };
 

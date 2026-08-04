@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { DumbbellIcon, MoreHorizontalIcon, Trash2Icon } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
+
 import { DialogEditVenueSport } from '@/components/features/sports/staff/dialog-edit-venue-sport';
 import { DialogRegisterVenueSport } from '@/components/features/sports/staff/staff-register';
 import { ComboboxVenue } from '@/components/custom/combobox/combobox-venue';
@@ -56,7 +58,7 @@ export const StaffSportsView = () => {
       await deleteMutation.mutateAsync(item.id);
       toast.success('Đã hủy đăng ký bộ môn');
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err.message || 'Không hủy được đăng ký');
+      showApiErrorToast(err, 'Không hủy được đăng ký');
     }
   };
 

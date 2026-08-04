@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { ComboboxSportVenue } from '@/components/custom/combobox/combobox-sport-venue';
 import { ComboboxVenue } from '@/components/custom/combobox/combobox-venue';
 import { formatCurrencyInput, parseCurrencyInput } from '@/lib/format';
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -100,7 +101,7 @@ export const DialogCreateField = () => {
       toast.success('Tạo sân thành công');
       handleOpenChange(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không tạo được sân. Thử lại.');
+      showApiErrorToast(error, 'Không tạo được sân. Thử lại.');
     }
   };
 

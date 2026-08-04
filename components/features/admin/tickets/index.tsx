@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { showApiErrorToast } from '@/lib/api/handle-api-error';
 import { PageHeader } from '@/components/custom/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -51,7 +52,7 @@ export function AdminTicketsPage() {
       });
       toast.success('Đã cập nhật ticket');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không cập nhật được');
+      showApiErrorToast(error, 'Không cập nhật được');
     }
   };
 

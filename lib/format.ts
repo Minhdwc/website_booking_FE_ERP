@@ -75,3 +75,13 @@ export function toLocalIsoDate(date: Date) {
 export function normalizeDateKey(value: string) {
   return value.slice(0, 10);
 }
+
+export function todayIsoDate() {
+  return toLocalIsoDate(new Date());
+}
+
+export function daysAgoIsoDate(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return toLocalIsoDate(date);
+}

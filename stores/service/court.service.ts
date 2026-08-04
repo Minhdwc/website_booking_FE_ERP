@@ -1,6 +1,6 @@
 import { apiRequest } from '@/stores/api/api-request';
 import { Response } from '@/stores/api/response';
-import { ICourt, ICourtImage } from '@/stores/api/types';
+import { ICourt, ICourtAvailability, ICourtImage } from '@/stores/api/types';
 
 export interface CourtDetailResponse {
   status: string;
@@ -20,6 +20,12 @@ export interface CourtImageResponse {
   data: ICourtImage;
 }
 
+export interface CourtAvailabilityResponse {
+  status: string;
+  message: string;
+  data: ICourtAvailability;
+}
+
 export const courtService = {
   getCourts: async (params?: {
     search?: string;
@@ -33,6 +39,14 @@ export const courtService = {
 
   getCourt: async (id: string) => {
     const response = await apiRequest(`/courts/${id}`, { method: 'GET' });
+    return response;
+  },
+
+  getAvailability: async (id: string, date: string) => {
+    const response = await apiRequest(`/courts/${id}/availability`, {
+      method: 'GET',
+      params: { date },
+    });
     return response;
   },
 
