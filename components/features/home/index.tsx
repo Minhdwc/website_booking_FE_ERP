@@ -8,6 +8,9 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
   XAxis,
   YAxis,
 } from 'recharts';
@@ -30,6 +33,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
   daysAgoIsoDate,
   formatCurrency,
   formatDate,
@@ -40,6 +51,7 @@ import { cn } from '@/lib/utils';
 import { useSession } from '@/provider/session-provider';
 import { usePendingBookings } from '@/stores/queries/booking';
 import { useCourts } from '@/stores/queries/court';
+import { useAnalyticsOverview } from '@/stores/queries/analytics';
 import { useReportSummary } from '@/stores/queries/report';
 import { useSupportTickets } from '@/stores/queries/support-ticket';
 
@@ -51,6 +63,14 @@ const STATUS_LABEL: Record<string, string> = {
   expired: 'Hết hạn',
   paid_at_venue: 'Tại quầy',
 };
+
+const PIE_COLORS = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
+];
 
 const ownerShortcuts = [
   { title: 'Lịch sân', href: '/calendar', icon: CalendarDaysIcon, description: 'Tuần hiện tại' },
@@ -93,6 +113,9 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
 
   const { pendingBookings, pendingCount, isLoading } = usePendingBookings();
   const { data: reportSummary, isLoading: isReportLoading } = useReportSummary(appliedRange);
+  const { data: analytics, isLoading: isAnalyticsLoading } = useAnalyticsOverview(appliedRange, {
+    enabled: isAdmin,
+  });
   const { data: courts = [], isLoading: isCourtsLoading } = useCourts(
     { limit: '100' },
   );
@@ -113,7 +136,7 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
     reportSummary?.bookingsByStatus.reduce((sum, row) => sum + row.count, 0) ?? 0;
   const confirmedCount = countByStatus(reportSummary?.bookingsByStatus, 'confirmed');
   const cancelledCount = countByStatus(reportSummary?.bookingsByStatus, 'cancelled');
-  const topCourt = reportSummary?.topCourts?.[0];
+  const topCourts = reportSummary?.topCourts ?? [];
 
   const statusChartData = useMemo(
     () =>
@@ -131,6 +154,15 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
         total: row.total,
       })),
     [reportSummary?.revenueByDay],
+  );
+
+  const sportChartData = useMemo(
+    () =>
+      (reportSummary?.revenueBySport ?? []).map((row) => ({
+        name: row.sportName,
+        total: row.total,
+      })),
+    [reportSummary?.revenueBySport],
   );
 
   const shortcuts = isAdmin ? adminShortcuts : ownerShortcuts;
@@ -151,7 +183,7 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
         <StatCard
           title="Tổng doanh thu"
           value={isReportLoading ? '—' : formatCurrency(revenueTotal)}
-          description={isReportLoading ? undefined : 'Theo khoảng báo cáo mặc định'}
+          description={isReportLoading ? undefined : 'Theo khoảng ngày đã chọn'}
           icon={WalletCardsIcon}
           loading={isReportLoading}
         />
@@ -281,16 +313,144 @@ export const Home = ({ variant = 'owner' }: HomeProps) => {
               )}
             </div>
           </div>
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <div>
+              <h3 className="mb-2 text-xs font-medium text-muted-foreground">Doanh thu theo môn</h3>
+              {isReportLoading ? (
+                <Skeleton className="h-48 w-full" />
+              ) : sportChartData.length === 0 ? (
+                <p className="py-16 text-center text-sm text-muted-foreground">Chưa có dữ liệu</p>
+              ) : (
+                <ChartContainer
+                  config={{ total: { label: 'Doanh thu', color: 'var(--chart-1)' } }}
+                  className="aspect-auto h-48 w-full"
+                >
+                  <PieChart>
+                    <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                    <Pie
+                      data={sportChartData}
+                      dataKey="total"
+                      nameKey="name"
+                      innerRadius={45}
+                      paddingAngle={2}
+                    >
+                      {sportChartData.map((_, index) => (
+                        <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ChartContainer>
+              )}
+            </div>
+
+            <div>
+              <h3 className="mb-2 text-xs font-medium text-muted-foreground">Top sân theo lượt đặt</h3>
+              {isReportLoading ? (
+                <Skeleton className="h-48 w-full" />
+              ) : topCourts.length === 0 ? (
+                <p className="py-16 text-center text-sm text-muted-foreground">Chưa có dữ liệu</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="text-xs">Sân</TableHead>
+                      <TableHead className="text-xs">Cơ sở</TableHead>
+                      <TableHead className="text-right text-xs">Lượt</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {topCourts.slice(0, 5).map((row) => (
+                      <TableRow key={row.courtId}>
+                        <TableCell className="py-2 text-sm font-medium">
+                          {row.court?.name ?? row.courtId}
+                        </TableCell>
+                        <TableCell className="py-2 text-sm text-muted-foreground">
+                          {row.court?.venue?.name ?? '—'}
+                        </TableCell>
+                        <TableCell className="py-2 text-right tabular-nums text-sm">
+                          {row.bookingCount}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          </div>
         </section>
       )}
 
-      {!isAdmin && topCourt && !isReportLoading && (
+      {isAdmin && (
         <section className="rounded-xl border border-border/70 bg-card p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-heading">Sân đặt nhiều nhất</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {topCourt.court?.name ?? 'Sân'} · {topCourt.bookingCount} lượt
-            {topCourt.court?.venue?.name ? ` · ${topCourt.court.venue.name}` : ''}
-          </p>
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-heading">Analytics hệ thống</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {formatDate(appliedRange.from)} – {formatDate(appliedRange.to)}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="admin-from" className="text-xs">
+                  Từ
+                </Label>
+                <Input
+                  id="admin-from"
+                  type="date"
+                  value={from}
+                  onChange={(event) => setFrom(event.target.value)}
+                  className="h-8 w-36 bg-card text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="admin-to" className="text-xs">
+                  Đến
+                </Label>
+                <Input
+                  id="admin-to"
+                  type="date"
+                  value={to}
+                  onChange={(event) => setTo(event.target.value)}
+                  className="h-8 w-36 bg-card text-xs"
+                />
+              </div>
+              <Button size="sm" variant="outline" onClick={() => setAppliedRange({ from, to })}>
+                Áp dụng
+              </Button>
+            </div>
+          </div>
+
+          {isAnalyticsLoading ? (
+            <Skeleton className="h-40 w-full" />
+          ) : (analytics?.topVenues ?? []).length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">Chưa có dữ liệu cơ sở</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="text-xs">Cơ sở</TableHead>
+                  <TableHead className="text-xs">Khu vực</TableHead>
+                  <TableHead className="text-right text-xs">Lượt đặt</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(analytics?.topVenues ?? []).slice(0, 5).map((row) => (
+                  <TableRow key={row.venueId}>
+                    <TableCell className="py-2 text-sm font-medium">
+                      {row.venue?.name ?? row.venueId}
+                    </TableCell>
+                    <TableCell className="py-2 text-sm text-muted-foreground">
+                      {row.venue?.location ?? '—'}
+                    </TableCell>
+                    <TableCell className="py-2 text-right tabular-nums text-sm">
+                      {row.bookingCount}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </section>
       )}
 

@@ -24,6 +24,7 @@ function invalidateOperationalQueries(queryClient: ReturnType<typeof useQueryCli
   void queryClient.invalidateQueries({ queryKey: courtKeys.all });
   void queryClient.invalidateQueries({ queryKey: paymentKeys.all });
   void queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+  void queryClient.invalidateQueries({ queryKey: chatKeys.all });
   void queryClient.invalidateQueries({ queryKey: reportKeys.all });
   void queryClient.invalidateQueries({ queryKey: analyticsKeys.all });
 }
@@ -70,7 +71,6 @@ export function SocketRealtimeProvider({ children }: { children: React.ReactNode
       }
 
       invalidateOperationalQueries(queryClient);
-      void queryClient.invalidateQueries({ queryKey: chatKeys.all });
     });
 
     socket.on('booking:updated', () => {

@@ -13,9 +13,13 @@ const fetchAnalyticsOverview = async (
   return response.data;
 };
 
-export const useAnalyticsOverview = (params?: AnalyticsOverviewParams) =>
+export const useAnalyticsOverview = (
+  params?: AnalyticsOverviewParams,
+  options?: { enabled?: boolean },
+) =>
   useQuery({
     queryKey: analyticsKeys.overview(params),
     queryFn: () => fetchAnalyticsOverview(params),
     staleTime: 5 * 60 * 1000,
+    enabled: options?.enabled ?? true,
   });
