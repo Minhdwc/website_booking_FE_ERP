@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { MessageCircle, Send } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
