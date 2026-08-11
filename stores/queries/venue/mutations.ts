@@ -73,3 +73,16 @@ export const useDeleteVenueImage = () => {
     },
   });
 };
+
+export const useSetVenueImageThumbnail = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ venueId, imageId }: { venueId: string; imageId: string }) =>
+      venueService.setVenueImageThumbnail(venueId, imageId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: venueKeys.detail(variables.venueId) });
+      queryClient.invalidateQueries({ queryKey: venueKeys.lists() });
+    },
+  });
+};

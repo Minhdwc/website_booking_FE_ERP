@@ -1,5 +1,5 @@
 export { bookingKeys, type BookingListParams } from './keys';
-export { useBookings, useBooking, usePendingBookings } from './queries';
+export { useBookings, useBooking, useCustomers, usePendingBookings } from './queries';
 export {
   useCreateBooking,
   useCreateWalkInBooking,

@@ -27,6 +27,13 @@ export interface IUser {
   updatedAt: string;
 }
 
+export interface ICustomer {
+  id: string;
+  email: string | null;
+  bookingCount: number;
+  lastBookingAt: string;
+}
+
 export interface IVenue {
   id: string;
   userId?: string;

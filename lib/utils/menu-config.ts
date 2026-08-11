@@ -17,15 +17,14 @@ import {
   Banknote,
 } from 'lucide-react';
 
-import type { Permission } from '@/lib/auth/permissions';
+import type { ErpRole, Permission } from '@/lib/auth/permissions';
 
 export type NavItem = {
   title: string;
   description?: string;
   href: string;
   icon: LucideIcon;
-  /** @deprecated Prefer `permissions` */
-  roles?: string[];
+  forRoles?: ErpRole[];
   permissions?: Permission[];
   anyOfPermissions?: Permission[];
 };
@@ -44,27 +43,31 @@ export const navSections: NavSection[] = [
         href: '/dashboard',
         icon: LayoutDashboard,
         permissions: ['dashboard:view'],
+        forRoles: ['owner'],
         description: 'Tổng quan đặt sân và doanh thu',
       },
       {
-        title: 'Admin Dashboard',
+        title: 'Trang chủ',
         href: '/admin/dashboard',
         icon: LayoutDashboard,
         permissions: ['admin_dashboard:view'],
-        description: 'Ticket hỗ trợ và báo cáo hệ thống',
+        forRoles: ['admin'],
+        description: 'Tổng quan hệ thống',
       },
       {
         title: 'Báo cáo',
         href: '/reports',
         icon: BarChart3,
         permissions: ['reports:view'],
+        forRoles: ['owner'],
         description: 'Doanh thu và lượt đặt',
       },
       {
-        title: 'Báo cáo hệ thống',
+        title: 'Báo cáo',
         href: '/admin/reports',
         icon: BarChart3,
         permissions: ['admin_reports:view'],
+        forRoles: ['admin'],
         description: 'Thống kê toàn nền tảng',
       },
       {
@@ -72,6 +75,7 @@ export const navSections: NavSection[] = [
         href: '/analytics',
         icon: LineChart,
         permissions: ['analytics:view'],
+        forRoles: ['admin'],
         description: 'Xu hướng và chỉ số',
       },
     ],
@@ -185,16 +189,18 @@ export function isNavItemVisible(
     role?: string;
   },
 ): boolean {
+  if (item.forRoles?.length) {
+    if (!check.role || !item.forRoles.includes(check.role as ErpRole)) {
+      return false;
+    }
+  }
+
   if (item.anyOfPermissions?.length) {
     return check.canAny(item.anyOfPermissions);
   }
 
   if (item.permissions?.length) {
     return check.canAny(item.permissions);
-  }
-
-  if (item.roles?.length) {
-    return Boolean(check.role && item.roles.includes(check.role));
   }
 
   return true;

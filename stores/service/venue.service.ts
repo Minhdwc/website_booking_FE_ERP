@@ -93,6 +93,13 @@ export const venueService = {
     return response;
   },
 
+  setVenueImageThumbnail: async (venueId: string, imageId: string) => {
+    const response = await apiRequest(`/venues/${venueId}/images/${imageId}/thumbnail`, {
+      method: 'PATCH',
+    });
+    return response;
+  },
+
   listVenueOwners: (venueId: string) => apiRequest(`/venues/${venueId}/owners`, { method: 'GET' }),
 
   addVenueOwner: (venueId: string, userId: string) =>

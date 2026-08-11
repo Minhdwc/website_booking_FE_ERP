@@ -73,3 +73,16 @@ export const useDeleteCourtImage = () => {
     },
   });
 };
+
+export const useSetCourtImageThumbnail = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ courtId, imageId }: { courtId: string; imageId: string }) =>
+      courtService.setCourtImageThumbnail(courtId, imageId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: courtKeys.detail(variables.courtId) });
+      queryClient.invalidateQueries({ queryKey: courtKeys.lists() });
+    },
+  });
+};

@@ -247,6 +247,10 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
               <p className="text-[11px] text-muted-foreground">Phương thức thanh toán</p>
             </div>
           </div>
+
+          <Separator />
+
+          <VenueImagesSection venueId={venue.id} images={images} />
         </section>
 
         <section className="overflow-hidden rounded-[22px] border border-border/80 bg-card shadow-sm lg:col-span-3">
@@ -257,10 +261,6 @@ export const VenueDetailPage = ({ venueId }: VenueDetailPageProps) => {
             <VenueLocationMap longitude={venue.longitude} latitude={venue.latitude} />
           </div>
         </section>
-      </div>
-
-      <div className="rounded-[22px] border border-border/80 bg-card p-4 shadow-sm md:p-5">
-        <VenueImagesSection venueId={venue.id} images={images} />
       </div>
 
       <section className="space-y-4">

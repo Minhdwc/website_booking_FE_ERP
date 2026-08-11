@@ -1,6 +1,6 @@
 import { apiRequest } from '@/stores/api/api-request';
 import { Response } from '@/stores/api/response';
-import { IBooking } from '@/stores/api/types';
+import { IBooking, ICustomer } from '@/stores/api/types';
 
 export interface BookingResponse {
   status: number;
@@ -14,9 +14,18 @@ export interface BookingDetailResponse {
   data: IBooking;
 }
 
+export interface BookingCustomersResponse {
+  status: string;
+  message: string;
+  data: Response<ICustomer>;
+}
+
 export const bookingService = {
   getBookings: (params?: { search?: string; page?: string; limit?: string }) =>
     apiRequest('/bookings', { method: 'GET', params }),
+
+  getCustomers: (params?: { search?: string; page?: string; limit?: string }) =>
+    apiRequest('/bookings/customers', { method: 'GET', params }),
 
   getBooking: (id: string) => apiRequest(`/bookings/${id}`, { method: 'GET' }),
 

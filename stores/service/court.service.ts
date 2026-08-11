@@ -98,4 +98,11 @@ export const courtService = {
     });
     return response;
   },
+
+  setCourtImageThumbnail: async (courtId: string, imageId: string) => {
+    const response = (await apiRequest(`/courts/${courtId}/images/${imageId}/thumbnail`, {
+      method: 'PATCH',
+    })) as CourtImageResponse;
+    return response.data;
+  },
 };

@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import { ArrowDownIcon, ArrowUpIcon, SearchIcon, UsersIcon } from 'lucide-react';
 
 import { EmptyState } from '@/components/custom/empty-state';
@@ -23,25 +22,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import { useBookings } from '@/stores/queries/booking';
+import { useCustomers } from '@/stores/queries/booking';
+import type { ICustomer } from '@/stores/api/types';
 
-type CustomerRow = {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  bookingCount: number;
-  lastBookingAt: string;
-};
+import { customerColumns } from './columns';
 
-const matchesSearch = (customer: CustomerRow, q: string) => {
-  const haystack = [customer.name, customer.email, customer.phone, customer.bookingCount]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
-  return haystack.includes(q.toLowerCase());
+const matchesSearch = (customer: ICustomer, query: string) => {
+  const haystack = [customer.email, customer.bookingCount].filter(Boolean).join(' ').toLowerCase();
+  return haystack.includes(query.toLowerCase());
 };
 
 function SortLabel({
@@ -73,97 +62,11 @@ function SortLabel({
 }
 
 export function CustomersPage() {
-  const { data: bookings = [], isLoading, isError, error } = useBookings({ limit: '200' });
-
-  const customers = useMemo(() => {
-    const map = new Map<string, CustomerRow>();
-
-    bookings.forEach((booking) => {
-      const customerKey = booking.customerPhone || booking.user?.id;
-      if (!customerKey) return;
-
-      const existing = map.get(customerKey);
-      const name = booking.customerName || booking.user?.name || 'Khách';
-      const email = booking.user?.email;
-      const phone = booking.customerPhone || booking.user?.phone;
-
-      if (!existing) {
-        map.set(customerKey, {
-          id: customerKey,
-          name,
-          email,
-          phone,
-          bookingCount: 1,
-          lastBookingAt: booking.createdAt,
-        });
-        return;
-      }
-
-      map.set(customerKey, {
-        ...existing,
-        name: existing.name || name,
-        phone: existing.phone || phone,
-        bookingCount: existing.bookingCount + 1,
-        lastBookingAt:
-          new Date(booking.createdAt) > new Date(existing.lastBookingAt)
-            ? booking.createdAt
-            : existing.lastBookingAt,
-      });
-    });
-
-    return Array.from(map.values());
-  }, [bookings]);
-
-  const columns = useMemo<DataTableColumn<CustomerRow>[]>(
-    () => [
-      {
-        id: 'name',
-        header: 'Tên',
-        sortable: true,
-        sortValue: (row) => row.name,
-        cell: (row) => <span className="font-medium">{row.name}</span>,
-      },
-      {
-        id: 'email',
-        header: 'Email',
-        sortable: true,
-        sortValue: (row) => row.email ?? '',
-        cell: (row) => <span className="text-muted-foreground">{row.email ?? '—'}</span>,
-      },
-      {
-        id: 'phone',
-        header: 'Điện thoại',
-        sortable: true,
-        sortValue: (row) => row.phone ?? '',
-        cell: (row) => <span className="text-muted-foreground">{row.phone ?? '—'}</span>,
-      },
-      {
-        id: 'bookingCount',
-        header: 'Lượt đặt',
-        sortable: true,
-        sortValue: (row) => row.bookingCount,
-        className: 'text-right',
-        cell: (row) => <span className="tabular-nums">{row.bookingCount}</span>,
-      },
-      {
-        id: 'lastBooking',
-        header: 'Đặt gần nhất',
-        sortable: true,
-        sortValue: (row) => row.lastBookingAt,
-        className: 'hidden md:table-cell',
-        cell: (row) => (
-          <span className="tabular-nums text-muted-foreground">
-            {formatDate(row.lastBookingAt)}
-          </span>
-        ),
-      },
-    ],
-    [],
-  );
+  const { data: customers = [], isLoading, isError, error } = useCustomers({ limit: '200' });
 
   const table = useClientDataTable({
     data: customers,
-    columns,
+    columns: customerColumns,
     getRowId: (row) => row.id,
     searchPredicate: matchesSearch,
     initialPageSize: 20,
@@ -246,7 +149,7 @@ export function CustomersPage() {
                     <Checkbox
                       checked={table.selectedIds.has(customer.id)}
                       onCheckedChange={() => table.toggleRow(customer.id)}
-                      aria-label={`Chọn ${customer.name}`}
+                      aria-label={`Chọn ${customer.email ?? customer.id}`}
                     />
                   </TableCell>
                   {table.visibleColumns.map((column) => (

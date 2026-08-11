@@ -276,6 +276,10 @@ export const FieldDetailPage = ({ courtId }: FieldDetailPageProps) => {
               </span>
             </p>
           </div>
+
+          <Separator />
+
+          <FieldImagesSection courtId={court.id} images={images} />
         </section>
 
         <section className="rounded-[22px] border border-border/80 bg-card p-5 shadow-sm lg:col-span-3">
@@ -352,10 +356,6 @@ export const FieldDetailPage = ({ courtId }: FieldDetailPageProps) => {
             </div>
           )}
         </section>
-      </div>
-
-      <div className="rounded-[22px] border border-border/80 bg-card p-4 shadow-sm md:p-5">
-        <FieldImagesSection courtId={court.id} images={images} />
       </div>
     </div>
   );

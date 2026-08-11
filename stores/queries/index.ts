@@ -7,6 +7,7 @@ export {
   useDeleteVenue,
   useUploadVenueImage,
   useDeleteVenueImage,
+  useSetVenueImageThumbnail,
 } from './venue';
 export {
   bookingKeys,
@@ -17,6 +18,7 @@ export {
   useUpdateBooking,
   useDeleteBooking,
   usePendingBookings,
+  useCustomers,
 } from './booking';
 export {
   notificationKeys,
@@ -34,6 +36,7 @@ export {
   useDeleteCourt,
   useUploadCourtImage,
   useDeleteCourtImage,
+  useSetCourtImageThumbnail,
   prefetchCourt,
 } from './court';
 export {

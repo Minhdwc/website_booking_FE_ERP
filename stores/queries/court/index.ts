@@ -6,4 +6,5 @@ export {
   useDeleteCourt,
   useUploadCourtImage,
   useDeleteCourtImage,
+  useSetCourtImageThumbnail,
 } from './mutations';

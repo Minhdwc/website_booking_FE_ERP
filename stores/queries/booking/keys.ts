@@ -10,4 +10,5 @@ export const bookingKeys = {
   list: (params: BookingListParams = {}) => [...bookingKeys.lists(), params] as const,
   details: () => [...bookingKeys.all, 'detail'] as const,
   detail: (id: string) => [...bookingKeys.details(), id] as const,
+  customers: (params: BookingListParams = {}) => [...bookingKeys.all, 'customers', params] as const,
 };

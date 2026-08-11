@@ -3,9 +3,10 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { unwrapList } from '@/stores/api/response';
-import { IBooking } from '@/stores/api/types';
+import { IBooking, ICustomer } from '@/stores/api/types';
 import {
   bookingService,
+  type BookingCustomersResponse,
   type BookingDetailResponse,
   type BookingResponse,
 } from '@/stores/service/booking.service';
@@ -39,6 +40,21 @@ export const useBooking = (id: string) =>
     queryKey: bookingKeys.detail(id),
     queryFn: () => fetchBooking(id),
     enabled: Boolean(id),
+  });
+
+const fetchCustomers = async (params?: BookingListParams): Promise<ICustomer[]> => {
+  const response = (await bookingService.getCustomers({
+    limit: params?.limit ?? '200',
+    ...(params?.search ? { search: params.search } : {}),
+    ...(params?.page ? { page: params.page } : {}),
+  })) as BookingCustomersResponse;
+  return unwrapList(response.data);
+};
+
+export const useCustomers = (params?: BookingListParams) =>
+  useQuery({
+    queryKey: bookingKeys.customers(params),
+    queryFn: () => fetchCustomers(params),
   });
 
 const getPendingBookings = (bookings: IBooking[]) =>

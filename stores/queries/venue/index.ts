@@ -6,4 +6,5 @@ export {
   useDeleteVenue,
   useUploadVenueImage,
   useDeleteVenueImage,
+  useSetVenueImageThumbnail,
 } from './mutations';
