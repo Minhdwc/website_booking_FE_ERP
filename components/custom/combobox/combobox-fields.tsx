@@ -1,17 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react';
+import { ChevronsUpDownIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { Input } from '@/components/ui/input';
 import { ComboboxPopoverContent } from '@/components/custom/combobox/combobox-popover-content';
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -20,25 +20,25 @@ import { useCourts } from '@/stores/queries/court';
 
 type ComboboxCourtsProps = {
   value?: string;
-  onChange: (courtId: string) => void;
+  onChange: (courtId: string | undefined) => void;
+  venueId?: string;
 };
 
-export function ComboboxCourts({ value, onChange }: ComboboxCourtsProps) {
+export function ComboboxCourts({ value, onChange, venueId }: ComboboxCourtsProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
-  const { data, isLoading } = useCourts({
+  const { data: courts, isLoading } = useCourts({
     limit: '200',
     search,
+    ...(venueId ? { venueId } : {}),
   });
 
-  const courts = data || [];
+  const selectedLabel = value ? courts!.find((court) => court.id === value)?.name : 'Tất cả sân';
 
-  if (isLoading && courts.length === 0) {
-    return <Skeleton className="h-8 w-full" />;
+  if (isLoading && !value) {
+    return <Skeleton className="h-9 w-full rounded-lg" />;
   }
-
-  const selectedLabel = value ? courts.find((court) => court.id === value)?.name : undefined;
 
   return (
     <Popover
@@ -56,48 +56,63 @@ export function ComboboxCourts({ value, onChange }: ComboboxCourtsProps) {
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="h-8 w-full justify-between font-normal"
+            className={cn(
+              'h-9 w-full justify-between gap-1.5 rounded-lg border-border/80 bg-white px-2.5 text-sm font-normal shadow-none',
+              'hover:border-emerald-200 hover:bg-emerald-50/60',
+              open && 'border-emerald-300 bg-emerald-50/40 ring-1 ring-emerald-100',
+            )}
           />
         }
       >
-        <span className="truncate">{selectedLabel || 'Chọn sân...'}</span>
-
-        <ChevronsUpDownIcon className="size-4 shrink-0 opacity-50" />
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span className={cn('truncate', !value && 'text-muted-foreground')}>{selectedLabel}</span>
+        </span>
+        <ChevronsUpDownIcon className="size-3.5 shrink-0 text-muted-foreground" />
       </PopoverTrigger>
 
-      <ComboboxPopoverContent>
-        <Command shouldFilter={false}>
-          <Input
-            className="flex h-9 w-full rounded-none border-x-0 border-t-0 border-b bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
-            placeholder="Tìm sân..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      <ComboboxPopoverContent className="overflow-hidden rounded-lg border-border/80 shadow-md">
+        <Command shouldFilter={false} value={value} className="rounded-none bg-transparent p-0.5">
+          <CommandInput placeholder="Tìm sân..." value={search} onValueChange={setSearch} />
 
-          <CommandList>
-            <CommandEmpty>Không tìm thấy sân.</CommandEmpty>
+          <CommandList className="max-h-44 p-0.5">
+            <CommandEmpty className="py-4 text-muted-foreground">Không tìm thấy sân.</CommandEmpty>
 
-            <CommandGroup>
-              {courts.map((court) => (
-                <CommandItem
-                  key={court.id}
-                  value={`${court.id} ${court.name}`}
-                  onSelect={() => {
-                    onChange(court.id);
-                    setOpen(false);
-                    setSearch('');
-                  }}
-                >
-                  <span className="truncate font-medium">{court.name}</span>
+            <CommandGroup className="p-0">
+              <CommandItem
+                value="__all__"
+                className={cn(
+                  'rounded-md px-2 py-1.5 text-sm',
+                  !value && 'bg-emerald-50 text-emerald-700',
+                )}
+                onSelect={() => {
+                  onChange(undefined);
+                  setOpen(false);
+                  setSearch('');
+                }}
+              >
+                <span className="truncate font-medium">Tất cả sân</span>
+              </CommandItem>
+              {courts!.map((court) => {
+                const isSelected = value === court.id;
 
-                  <CheckIcon
+                return (
+                  <CommandItem
+                    key={court.id}
+                    value={court.id}
                     className={cn(
-                      'ml-auto size-4 shrink-0',
-                      value === court.id ? 'opacity-100' : 'opacity-0',
+                      'rounded-md px-2 py-1.5 text-sm',
+                      isSelected && 'bg-emerald-50 text-emerald-700',
                     )}
-                  />
-                </CommandItem>
-              ))}
+                    onSelect={() => {
+                      onChange(court.id);
+                      setOpen(false);
+                      setSearch('');
+                    }}
+                  >
+                    <span className="truncate font-medium">{court.name}</span>
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           </CommandList>
         </Command>

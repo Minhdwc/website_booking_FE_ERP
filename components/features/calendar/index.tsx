@@ -1,9 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { CalendarRange, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { CalendarRange, ChevronLeftIcon, ChevronRightIcon, RefreshCwIcon } from 'lucide-react';
 
 import { PageHeader } from '@/components/custom/page-header';
+import { ComboboxCourts } from '@/components/custom/combobox/combobox-fields';
+import { ComboboxVenue } from '@/components/custom/combobox/combobox-venue';
 import {
   BookingCreateDialog,
   type WalkInInitialValues,
@@ -33,12 +36,9 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { formatDate, normalizeDateKey, toLocalIsoDate } from '@/lib/format';
-import { BookingStatus, IBooking, IVenue } from '@/stores/api/types';
+import { BookingStatus, IBooking } from '@/stores/api/types';
 import { useBookings } from '@/stores/queries/booking';
-import { useCourts } from '@/stores/queries/court';
-import { useVenues } from '@/stores/queries/venue';
-
-type ViewMode = 'day' | 'week' | 'month';
+import { courtKeys, useCourts } from '@/stores/queries/court';
 
 const STATUS_LABEL: Record<BookingStatus, string> = {
   waiting_payment: 'Chờ TT',
@@ -58,14 +58,19 @@ const STATUS_VARIANT: Record<BookingStatus, 'default' | 'secondary' | 'outline' 
   paid_at_venue: 'default',
 };
 
-const STATUS_FILTERS: { value: BookingStatus | 'all'; label: string }[] = [
-  { value: 'all', label: 'Tất cả' },
-  { value: 'waiting_payment', label: 'Chờ TT' },
+const STATUS_OPTIONS: { value: BookingStatus | 'all'; label: string }[] = [
+  { value: 'all', label: 'Tất cả trạng thái' },
+  { value: 'waiting_payment', label: 'Chờ thanh toán' },
   { value: 'confirmed', label: 'Đã xác nhận' },
   { value: 'completed', label: 'Hoàn thành' },
-  { value: 'cancelled', label: 'Huỷ' },
+  { value: 'cancelled', label: 'Đã huỷ' },
   { value: 'expired', label: 'Hết hạn' },
+  { value: 'paid_at_venue', label: 'Thanh toán tại quầy' },
 ];
+
+const STATUS_SELECT_ITEMS = Object.fromEntries(
+  STATUS_OPTIONS.map((option) => [option.value, option.label]),
+) as Record<BookingStatus | 'all', string>;
 
 function startOfWeek(date: Date) {
   const copy = new Date(date);
@@ -128,19 +133,12 @@ function bookingMatchesFilters(
   });
 }
 
-type CalendarRow = {
-  key: string;
-  date: string;
-  courtName: string;
-  booking: IBooking;
-  item: NonNullable<IBooking['items']>[number];
-};
-
 export function CalendarPage() {
-  const [viewMode, setViewMode] = useState<ViewMode>('week');
+  const queryClient = useQueryClient();
+  const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week');
   const [anchorDate, setAnchorDate] = useState(() => new Date());
-  const [venueFilter, setVenueFilter] = useState<string>();
-  const [courtFilter, setCourtFilter] = useState<string>();
+  const [venueId, setVenueId] = useState<string>();
+  const [courtId, setCourtId] = useState<string>();
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
   const [walkInOpen, setWalkInOpen] = useState(false);
   const [walkInPrefill, setWalkInPrefill] = useState<WalkInInitialValues>();
@@ -148,98 +146,86 @@ export function CalendarPage() {
   const [editBookingId, setEditBookingId] = useState<string>();
   const [editOpen, setEditOpen] = useState(false);
 
-  const { data: bookings = [], isLoading } = useBookings({ limit: '200' });
-  const { data: venues = [] } = useVenues({ limit: '100' });
+  const { data: bookings = [], isLoading, isFetching, refetch } = useBookings({ limit: '200' });
   const { data: courts = [] } = useCourts({
     limit: '100',
-    ...(venueFilter ? { venueId: venueFilter } : {}),
+    ...(venueId ? { venueId } : {}),
   });
 
-  const dateRange = useMemo(() => {
-    if (viewMode === 'day') {
-      const day = toLocalIsoDate(anchorDate);
-      return { from: day, to: day, label: formatDate(day) };
-    }
-    if (viewMode === 'month') {
-      const start = startOfMonth(anchorDate);
-      const end = endOfMonth(anchorDate);
-      return {
-        from: toLocalIsoDate(start),
-        to: toLocalIsoDate(end),
-        label: anchorDate.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' }),
-      };
-    }
+  let dateRange: { from: string; to: string; label: string };
+  if (viewMode === 'day') {
+    const day = toLocalIsoDate(anchorDate);
+    dateRange = { from: day, to: day, label: formatDate(day) };
+  } else if (viewMode === 'month') {
+    const start = startOfMonth(anchorDate);
+    const end = endOfMonth(anchorDate);
+    dateRange = {
+      from: toLocalIsoDate(start),
+      to: toLocalIsoDate(end),
+      label: anchorDate.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' }),
+    };
+  } else {
     const weekStart = startOfWeek(anchorDate);
     const weekEnd = addDays(weekStart, 6);
-    return {
+    dateRange = {
       from: toLocalIsoDate(weekStart),
       to: toLocalIsoDate(weekEnd),
       label: `${formatDate(toLocalIsoDate(weekStart))} – ${formatDate(toLocalIsoDate(weekEnd))}`,
     };
-  }, [anchorDate, viewMode]);
+  }
 
-  const filteredBookings = useMemo(
-    () =>
-      bookings.filter((booking) =>
-        bookingMatchesFilters(booking, {
-          from: dateRange.from,
-          to: dateRange.to,
-          venueId: venueFilter,
-          courtId: courtFilter,
-          status: statusFilter,
-        }),
-      ),
-    [bookings, courtFilter, dateRange.from, dateRange.to, statusFilter, venueFilter],
+  const filteredBookings = bookings.filter((booking) =>
+    bookingMatchesFilters(booking, {
+      from: dateRange.from,
+      to: dateRange.to,
+      venueId,
+      courtId,
+      status: statusFilter,
+    }),
   );
 
-  const rows = useMemo(() => {
-    const list: CalendarRow[] = [];
-    filteredBookings.forEach((booking) => {
-      booking.items?.forEach((item) => {
-        const day = normalizeDateKey(item.date);
-        if (day < dateRange.from || day > dateRange.to) return;
-        if (
-          venueFilter &&
-          item.court?.venueId !== venueFilter &&
-          item.court?.venue?.id !== venueFilter
-        )
-          return;
-        if (courtFilter && item.courtId !== courtFilter) return;
-        const courtName = item.court?.name ?? item.courtId;
-        list.push({
-          key: `${booking.id}|${item.id ?? `${day}|${courtName}`}`,
-          date: day,
-          courtName,
-          booking,
-          item,
-        });
-      });
-    });
-    return list.sort((a, b) => {
+  const rows = filteredBookings
+    .flatMap((booking) =>
+      (booking.items ?? [])
+        .filter((item) => {
+          const day = normalizeDateKey(item.date);
+          if (day < dateRange.from || day > dateRange.to) return false;
+          if (venueId && item.court?.venueId !== venueId && item.court?.venue?.id !== venueId)
+            return false;
+          if (courtId && item.courtId !== courtId) return false;
+          return true;
+        })
+        .map((item) => {
+          const day = normalizeDateKey(item.date);
+          const courtName = item.court?.name ?? item.courtId;
+          return {
+            key: `${booking.id}|${item.id ?? `${day}|${courtName}`}`,
+            date: day,
+            courtName,
+            booking,
+            item,
+          };
+        }),
+    )
+    .sort((a, b) => {
       const dateCmp = a.date.localeCompare(b.date);
       if (dateCmp !== 0) return dateCmp;
       return a.item.startTime.localeCompare(b.item.startTime);
     });
-  }, [courtFilter, dateRange.from, dateRange.to, filteredBookings, venueFilter]);
 
-  const monthDays = useMemo(() => {
-    if (viewMode !== 'month') return [];
+  const monthDays: Date[] = [];
+  if (viewMode === 'month') {
     const start = startOfMonth(anchorDate);
     const end = endOfMonth(anchorDate);
-    const days: Date[] = [];
     for (let d = new Date(start); d <= end; d = addDays(d, 1)) {
-      days.push(new Date(d));
+      monthDays.push(new Date(d));
     }
-    return days;
-  }, [anchorDate, viewMode]);
+  }
 
-  const bookingsByDay = useMemo(() => {
-    const map = new Map<string, number>();
-    rows.forEach((row) => {
-      map.set(row.date, (map.get(row.date) ?? 0) + 1);
-    });
-    return map;
-  }, [rows]);
+  const bookingsByDay = new Map<string, number>();
+  rows.forEach((row) => {
+    bookingsByDay.set(row.date, (bookingsByDay.get(row.date) ?? 0) + 1);
+  });
 
   const shiftAnchor = (delta: number) => {
     setAnchorDate((current) => {
@@ -260,40 +246,56 @@ export function CalendarPage() {
     setWalkInOpen(true);
   };
 
+  const handleVenueChange = (nextVenueId?: string) => {
+    setVenueId(nextVenueId);
+    setCourtId(undefined);
+  };
+
+  const handleRefresh = () => {
+    setVenueId(undefined);
+    setCourtId(undefined);
+    setStatusFilter('all');
+    void refetch();
+    void queryClient.invalidateQueries({ queryKey: courtKeys.all });
+  };
+
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
+    <div className="flex w-full flex-1 flex-col gap-4 px-4 py-6 lg:px-8 lg:py-8">
       <PageHeader
         title="Lịch sân"
-        description="Xem lịch đặt theo ngày/tuần/tháng, lọc theo cơ sở và sân."
         icon={CalendarRange}
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <BookingGate.Create>
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => openWalkIn({ date: dateRange.from })}
+                onClick={() =>
+                  openWalkIn({ date: dateRange.from, ...(courtId ? { courtId } : {}) })
+                }
               >
-                Walk-in
+                Khách vãng lai
               </Button>
             </BookingGate.Create>
             <Button size="sm" variant="outline" onClick={() => setBlockOpen(true)}>
-              Block sân
+              Khóa sân
             </Button>
           </div>
         }
       />
 
-      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)}>
-        <TabsList>
-          <TabsTrigger value="day">Ngày</TabsTrigger>
-          <TabsTrigger value="week">Tuần</TabsTrigger>
-          <TabsTrigger value="month">Tháng</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Tabs value={viewMode} onValueChange={(value) => setViewMode(value)}>
+            <TabsList>
+              <TabsTrigger value="day">Ngày</TabsTrigger>
+              <TabsTrigger value="week">Tuần</TabsTrigger>
+              <TabsTrigger value="month">Tháng</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
-      <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
-        <div className="flex items-center justify-between rounded-xl border border-border/70 bg-card px-4 py-3 lg:flex-1">
+        <div className="flex w-full items-center justify-between rounded-xl border border-border/70 bg-card px-4 py-3">
           <Button size="sm" variant="outline" onClick={() => shiftAnchor(-1)}>
             <ChevronLeftIcon className="size-3.5" />
             Trước
@@ -305,92 +307,60 @@ export function CalendarPage() {
           </Button>
         </div>
 
-        <Select
-          value={venueFilter || '__all__'}
-          onValueChange={(value) => {
-            setVenueFilter(!value || value === '__all__' ? undefined : value);
-            setCourtFilter(undefined);
-          }}
-        >
-          <SelectTrigger className="w-full lg:w-48">
-            <SelectValue placeholder="Cơ sở" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">Tất cả cơ sở</SelectItem>
-            {venues.map((venue: IVenue) => (
-              <SelectItem key={venue.id} value={venue.id}>
-                {venue.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-center">
+          <ComboboxVenue value={venueId} onChange={handleVenueChange} />
 
-        <Select
-          value={courtFilter || '__all__'}
-          onValueChange={(value) =>
-            setCourtFilter(!value || value === '__all__' ? undefined : value)
-          }
-        >
-          <SelectTrigger className="w-full lg:w-48">
-            <SelectValue placeholder="Sân" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">Tất cả sân</SelectItem>
-            {courts.map((court) => (
-              <SelectItem key={court.id} value={court.id}>
-                {court.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+          {venueId && <ComboboxCourts venueId={venueId} value={courtId} onChange={setCourtId} />}
 
-      <div className="flex flex-wrap gap-2">
-        {STATUS_FILTERS.map((filter) => (
-          <Button
-            key={filter.value}
-            type="button"
-            variant={statusFilter === filter.value ? 'default' : 'outline'}
-            size="sm"
-            className="h-8 rounded-full px-3 text-xs"
-            onClick={() => setStatusFilter(filter.value)}
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => setStatusFilter(value as BookingStatus | 'all')}
+            items={STATUS_SELECT_ITEMS}
           >
-            {filter.label}
+            <SelectTrigger className="h-9 w-full">
+              <SelectValue placeholder="Trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 shrink-0"
+            aria-label="Làm mới"
+            disabled={isFetching}
+            onClick={handleRefresh}
+          >
+            <RefreshCwIcon className={cn('size-4', isFetching && 'animate-spin')} />
           </Button>
-        ))}
+        </div>
       </div>
 
       {viewMode === 'day' && (
         <div className="rounded-xl border border-border/70 bg-card p-4 shadow-sm">
           <h2 className="mb-3 text-sm font-semibold text-heading">Khung giờ theo sân</h2>
-          {courtFilter ? (
+          {courtId ? (
             <DaySlotGrid
-              courtId={courtFilter}
-              courtName={courts.find((court) => court.id === courtFilter)?.name ?? 'Sân'}
+              courtId={courtId}
+              courtName={courts.find((court) => court.id === courtId)?.name ?? 'Sân'}
               date={dateRange.from}
               bookings={bookings}
               onWalkIn={openWalkIn}
               onBookingDetail={openBookingDetail}
             />
           ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Chọn sân ở bộ lọc phía trên để xem lưới slot và tạo walk-in nhanh.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {courts.slice(0, 8).map((court) => (
-                  <Button
-                    key={court.id}
-                    size="sm"
-                    variant="outline"
-                    className="h-8"
-                    onClick={() => setCourtFilter(court.id)}
-                  >
-                    {court.name}
-                  </Button>
-                ))}
-              </div>
-            </div>
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              {venueId
+                ? 'Chọn sân để xem lưới khung giờ và đặt khách vãng lai.'
+                : 'Chọn cơ sở và sân để xem lưới khung giờ.'}
+            </p>
           )}
         </div>
       )}
@@ -447,7 +417,7 @@ export function CalendarPage() {
                 <TableHead>Giờ</TableHead>
                 <TableHead>Khách</TableHead>
                 <TableHead>Trạng thái</TableHead>
-                <TableHead className="w-24 text-right">Thao tác</TableHead>
+                <TableHead className="w-28 text-right">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -482,7 +452,7 @@ export function CalendarPage() {
                           })
                         }
                       >
-                        Walk-in
+                        Vãng lai
                       </Button>
                     </BookingGate.Create>
                   </TableCell>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Building2Icon, ChevronsUpDownIcon } from 'lucide-react';
+import { ChevronsUpDownIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -16,27 +16,24 @@ import { ComboboxPopoverContent } from '@/components/custom/combobox/combobox-po
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { useVenue, useVenues } from '@/stores/queries/venue';
+import { useVenues } from '@/stores/queries/venue';
 
 type ComboboxVenueProps = {
   value?: string;
-  onChange: (venueId: string) => void;
+  onChange: (venueId: string | undefined) => void;
 };
 
 export function ComboboxVenue({ value, onChange }: ComboboxVenueProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
-  const { data, isLoading } = useVenues({
+  const { data: venues, isLoading } = useVenues({
     limit: '200',
     search,
   });
-  const { data: selectedVenue } = useVenue(value || '');
 
-  const venues = data || [];
-  const selectedLabel = selectedVenue?.name ?? venues.find((venue) => venue.id === value)?.name;
-
-  if (isLoading && venues.length === 0 && !value) {
+  const selectedLabel = value ? venues!.find((venue) => venue.id === value)?.name : 'Tất cả cơ sở';
+  if (isLoading && !value) {
     return <Skeleton className="h-9 w-full rounded-lg" />;
   }
 
@@ -65,10 +62,7 @@ export function ComboboxVenue({ value, onChange }: ComboboxVenueProps) {
         }
       >
         <span className="flex min-w-0 items-center gap-1.5">
-          <Building2Icon className="size-3.5 shrink-0 text-emerald-600" />
-          <span className={cn('truncate', !selectedLabel && 'text-muted-foreground')}>
-            {selectedLabel || 'Chọn cơ sở...'}
-          </span>
+          <span className={cn('truncate', !value && 'text-muted-foreground')}>{selectedLabel}</span>
         </span>
         <ChevronsUpDownIcon className="size-3.5 shrink-0 text-muted-foreground" />
       </PopoverTrigger>
@@ -83,7 +77,21 @@ export function ComboboxVenue({ value, onChange }: ComboboxVenueProps) {
             </CommandEmpty>
 
             <CommandGroup className="p-0">
-              {venues.map((venue) => {
+              <CommandItem
+                value="__all__"
+                className={cn(
+                  'rounded-md px-2 py-1.5 text-sm',
+                  !value && 'bg-emerald-50 text-emerald-700',
+                )}
+                onSelect={() => {
+                  onChange(undefined);
+                  setOpen(false);
+                  setSearch('');
+                }}
+              >
+                <span className="truncate font-medium">Tất cả cơ sở</span>
+              </CommandItem>
+              {venues!.map((venue) => {
                 const isSelected = value === venue.id;
 
                 return (
@@ -100,12 +108,6 @@ export function ComboboxVenue({ value, onChange }: ComboboxVenueProps) {
                       setSearch('');
                     }}
                   >
-                    <Building2Icon
-                      className={cn(
-                        'size-3.5 shrink-0',
-                        isSelected ? 'text-emerald-600' : 'text-muted-foreground',
-                      )}
-                    />
                     <span className="truncate font-medium">{venue.name}</span>
                   </CommandItem>
                 );
